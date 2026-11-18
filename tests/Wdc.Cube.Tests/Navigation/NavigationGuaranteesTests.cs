@@ -281,8 +281,11 @@ public sealed class NavigationGuaranteesTests
         await _app.Flip(NavPlaces.ProductDetail);
         _app.ReleaseLog.Clear();
 
-        _app.Release();
-        _app.Release();
+        await _app.InvokeAsync(() =>
+        {
+            _app.Release();
+            _app.Release(); // idempotent
+        });
 
         Assert.Equal([NavPlaces.ProductDetail, NavPlaces.Products, NavPlaces.Root], _app.ReleaseLog);
         Assert.Equal(0, _app.PresenterCount);
@@ -312,10 +315,24 @@ internal sealed record PlaceBehavior
     public Exception? Throw { get; init; }
     public Place? RedirectTo { get; init; }
     public bool GoAhead { get; init; } = true;
+
+    /// <summary>Holds <c>ApplyParameters</c> until the test completes it.</summary>
+    public TaskCompletionSource? Gate { get; init; }
+
+    /// <summary>Leaves the dispatcher (<c>ConfigureAwait(false)</c>) before redirecting: the mistake D-01 forbids.</summary>
+    public bool EscapeDispatcherBeforeRedirect { get; init; }
 }
 
-internal sealed class NavApp() : CubeApplication(new TestHistoryManager(), NavPlaces.All)
+internal sealed class NavApp(PresentationDispatcher? dispatcher = null)
+    : CubeApplication(new TestHistoryManager(), NavPlaces.All, dispatcher: dispatcher)
 {
+    /// <summary>For every presenter call: whether it ran on the dispatcher.</summary>
+    public List<bool> AccessLog { get; } = [];
+
+    public List<Exception> UnexpectedErrors { get; } = [];
+
+    public override void Unexpected(string message, Exception error) => UnexpectedErrors.Add(error);
+
     private readonly Dictionary<Place, PlaceBehavior> _behaviors = [];
 
     public new TestHistoryManager History => (TestHistoryManager)base.History;
@@ -356,9 +373,15 @@ internal sealed class TestPresenter : ICubePresenter
     public async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
         Applied.Add((intent.Place.PathName, initialization, last));
+        _app.AccessLog.Add(_app.Dispatcher.CheckAccess());
         Initialized |= initialization;
 
         var behavior = _app.BehaviorOf(Place);
+        if (behavior.Gate is { } gate)
+        {
+            await gate.Task;
+        }
+
         if (behavior.Throw is { } error)
         {
             throw error;
@@ -366,6 +389,11 @@ internal sealed class TestPresenter : ICubePresenter
 
         if (behavior.RedirectTo is { } target)
         {
+            if (behavior.EscapeDispatcherBeforeRedirect)
+            {
+                await Task.Delay(1).ConfigureAwait(false);
+            }
+
             await _app.Flip(target);
             return false;
         }
@@ -380,6 +408,7 @@ internal sealed class TestPresenter : ICubePresenter
 
     public void Release()
     {
+        _app.AccessLog.Add(_app.Dispatcher.CheckAccess());
         ReleaseCount++;
         _app.ReleaseLog.Add(Place);
     }

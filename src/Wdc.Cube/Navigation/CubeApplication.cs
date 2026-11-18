@@ -17,6 +17,10 @@ namespace Wdc.Cube;
 /// <see cref="CubeNavigationException"/>;</item>
 /// <item>the address is republished at the end, on success or failure.</item>
 /// </list>
+/// <para>
+/// All presentation code runs on <see cref="Dispatcher"/> (decision D-01). Members returning a <see cref="Task"/>
+/// marshal themselves; synchronous members that read or change the navigation state require the caller to be on it.
+/// </para>
 /// </remarks>
 public class CubeApplication
 {
@@ -24,15 +28,20 @@ public class CubeApplication
     private Dictionary<int, ICubePresenter> _presenters = [];
     private FlipContext? _flip;
     private Place? _lastPlace;
-    private int _releasePhase;
+    private volatile int _releasePhase;
+    private readonly bool _ownsDispatcher;
 
     /// <summary>Creates the application.</summary>
     /// <param name="history">Where the identity of the state is published.</param>
     /// <param name="places">Every place an address can name.</param>
     /// <param name="rootPlace">The fallback place; <see cref="Place.Root"/> when omitted.</param>
     /// <param name="logger">Receives unexpected errors; nothing is logged when omitted.</param>
+    /// <param name="dispatcher">
+    /// Where the presentation code runs. When omitted, the application creates a <see cref="SerialDispatcher"/> and
+    /// disposes it on <see cref="Release"/>.
+    /// </param>
     public CubeApplication(HistoryManager history, IEnumerable<Place> places, Place? rootPlace = null,
-        ILogger? logger = null)
+        ILogger? logger = null, PresentationDispatcher? dispatcher = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(places);
@@ -40,6 +49,9 @@ public class CubeApplication
         History = history;
         RootPlace = rootPlace ?? Place.Root;
         Logger = logger ?? NullLogger.Instance;
+        _ownsDispatcher = dispatcher is null;
+        Dispatcher = dispatcher ?? new SerialDispatcher();
+        Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
         foreach (var place in places)
         {
@@ -54,6 +66,9 @@ public class CubeApplication
 
     /// <summary>Where the identity of the state is published.</summary>
     public HistoryManager History { get; }
+
+    /// <summary>Where every piece of presentation code of this application runs, one at a time.</summary>
+    public PresentationDispatcher Dispatcher { get; }
 
     /// <summary>The fallback place: where an unknown address and a fresh application resolve to.</summary>
     public Place RootPlace { get; }
@@ -106,6 +121,7 @@ public class CubeApplication
     /// </summary>
     public FlipIntent NewFlipIntent(Place place)
     {
+        Dispatcher.VerifyAccess();
         var intent = new FlipIntent(place);
         intent.CopyAttributesFrom(_flip?.TargetIntent.Attributes);
         PublishAllParameters(intent);
@@ -118,6 +134,7 @@ public class CubeApplication
     /// </summary>
     public FlipIntent NewIntentFromString(string? address)
     {
+        Dispatcher.VerifyAccess();
         var fallback = LastPlace;
         var intent = string.IsNullOrEmpty(address)
             ? new FlipIntent(fallback)
@@ -143,13 +160,17 @@ public class CubeApplication
     /// <param name="configure">Sets what the destination needs (parameters, attributes).</param>
     public Task<bool> Flip(Place place, Action<FlipIntent>? configure = null)
     {
-        var intent = NewFlipIntent(place);
-        configure?.Invoke(intent);
-        return FlipToIntent(intent);
+        ArgumentNullException.ThrowIfNull(place);
+        return Enter(() =>
+        {
+            var intent = NewFlipIntent(place);
+            configure?.Invoke(intent);
+            return FlipCore(intent);
+        });
     }
 
     /// <summary>Flips to the face named by an address.</summary>
-    public Task<bool> FlipToIntentString(string? address) => FlipToIntent(NewIntentFromString(address));
+    public Task<bool> FlipToIntentString(string? address) => Enter(() => FlipCore(NewIntentFromString(address)));
 
     /// <summary>
     /// Brings the application to the face the intent asks for.
@@ -160,9 +181,28 @@ public class CubeApplication
     /// retargets that navigation and returns whether its walk reached the leaf; the outer navigation commits.
     /// </returns>
     /// <exception cref="CubeNavigationException">Presenters keep redirecting to one another.</exception>
-    public async Task<bool> FlipToIntent(FlipIntent intent)
+    public Task<bool> FlipToIntent(FlipIntent intent)
     {
         ArgumentNullException.ThrowIfNull(intent);
+        return Enter(() => FlipCore(intent));
+    }
+
+    /// <summary>Runs <paramref name="work"/> on <see cref="Dispatcher"/> (inline when already there).</summary>
+    public Task InvokeAsync(Func<Task> work) => Dispatcher.InvokeAsync(work);
+
+    /// <summary>Runs <paramref name="action"/> on <see cref="Dispatcher"/> (inline when already there).</summary>
+    public Task InvokeAsync(Action action) => Dispatcher.InvokeAsync(action);
+
+    /// <summary>Runs <paramref name="work"/> on <see cref="Dispatcher"/> and returns its result.</summary>
+    public Task<T> InvokeAsync<T>(Func<Task<T>> work) => Dispatcher.InvokeAsync(work);
+
+    private Task<T> Enter<T>(Func<Task<T>> work) =>
+        IsReleased
+            ? Task.FromException<T>(new ObjectDisposedException(GetType().Name))
+            : Dispatcher.InvokeAsync(work);
+
+    private async Task<bool> FlipCore(FlipIntent intent)
+    {
         ObjectDisposedException.ThrowIf(IsReleased, this);
 
         if (_flip is { } running)
@@ -216,7 +256,11 @@ public class CubeApplication
     // :: History
 
     /// <summary>Republishes the identity of the state, without navigating.</summary>
-    public virtual void UpdateHistory() => History.Update(this, LastPlace);
+    public virtual void UpdateHistory()
+    {
+        Dispatcher.VerifyAccess();
+        History.Update(this, LastPlace);
+    }
 
     private void SafeUpdateHistory()
     {
@@ -230,7 +274,16 @@ public class CubeApplication
         }
     }
 
+    // The history may change on any thread (a browser callback, a test): look at it on the dispatcher.
     private void OnHistoryChanged(HistoryManager sender)
+    {
+        if (!IsReleased)
+        {
+            Dispatcher.Post(() => FollowHistoryChange(sender));
+        }
+    }
+
+    private void FollowHistoryChange(HistoryManager sender)
     {
         if (_flip is not null || IsReleased)
         {
@@ -273,9 +326,13 @@ public class CubeApplication
     public virtual void Unexpected(string message, Exception error) =>
         Logger.LogError(error, "{Message}", message);
 
-    /// <summary>Releases every presenter, leaves first, and stops following the history.</summary>
+    /// <summary>
+    /// Releases every presenter, leaves first, and stops following the history. A dispatcher created by the
+    /// application is disposed; queued items still run.
+    /// </summary>
     public virtual void Release()
     {
+        Dispatcher.VerifyAccess();
         if (_releasePhase > 0)
         {
             return;
@@ -295,8 +352,16 @@ public class CubeApplication
         finally
         {
             _releasePhase = 2;
+            Dispatcher.UnhandledException -= OnDispatcherUnhandledException;
+            if (_ownsDispatcher && Dispatcher is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
     }
+
+    private void OnDispatcherUnhandledException(Exception error) =>
+        Unexpected("Unhandled error on the presentation dispatcher", error);
 
     internal void ReleasePresenter(ICubePresenter presenter)
     {
