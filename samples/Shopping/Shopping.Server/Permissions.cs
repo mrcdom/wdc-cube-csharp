@@ -5,16 +5,22 @@ using Wdc.Rest.Server;
 
 namespace Shopping.Server;
 
-/// <summary>What a role may do: <c>entity:operation</c> (read, write, delete) and <c>data:all</c> (no per-user reach).</summary>
+/// <summary>
+/// What a role may do: <c>entity:operation</c> (read, write, delete), <c>data:all</c> (no per-user reach) and
+/// <see cref="AmendBought"/>.
+/// </summary>
 public static class Permissions
 {
     public const string AllData = "data:all";
+
+    /// <summary>Removing items from a purchase already made (one with its date of purchase); only the administrator.</summary>
+    public const string AmendBought = "purchase:amend-bought";
 
     private static readonly Dictionary<Role, string[]> s_grants = new()
     {
         [Role.Admin] = ["*", AllData],
         [Role.Manager] = ["user:read", "product:read", "product:write", "product:delete", "purchase:read", "purchase-item:read", AllData],
-        [Role.Customer] = ["user:read", "product:read", "purchase:read", "purchase:write", "purchase-item:read", "purchase-item:write"],
+        [Role.Customer] = ["user:read", "product:read", "purchase:read", "purchase:write", "purchase-item:read", "purchase-item:write", "purchase-item:delete"],
     };
 
     public static bool Has(ClaimsPrincipal user, string permission)

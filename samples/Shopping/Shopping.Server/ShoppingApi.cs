@@ -148,6 +148,7 @@ public static class ShoppingApi
                     throw new AccessDeniedException("The price of an item comes from the product.");
                 }
             },
+            BeforeDelete = (c, criteria) => RequireNotBought(c, repositories, criteria),
         }.Map(app);
     }
 
@@ -177,6 +178,34 @@ public static class ShoppingApi
         if (await repositories.Purchases.Count(criteria, context.RequestAborted) == 0)
         {
             throw new AccessDeniedException("Not your purchase.");
+        }
+    }
+
+    /// <summary>
+    /// A purchase already made (it has its date) keeps its items, whether removed one by one or left out of the
+    /// purchase's full state on update (decision D-23); only the administrator may amend it.
+    /// </summary>
+    private static async ValueTask RequireNotBought(HttpContext context, ShoppingRepositories repositories,
+        PurchaseItemCriteria criteria)
+    {
+        if (Permissions.Has(context.User, Permissions.AmendBought))
+        {
+            return;
+        }
+
+        var projection = criteria.Projection;
+        try
+        {
+            criteria.Projection = new PurchaseItem { Purchase = new Purchase { BuyDate = Mark.Instant } };
+            var items = await repositories.PurchaseItems.Fetch(criteria, cancellationToken: context.RequestAborted);
+            if (items.Any(i => i.Purchase?.BuyDate is not null))
+            {
+                throw new AccessDeniedException("The purchase was already made: its items cannot be removed.");
+            }
+        }
+        finally
+        {
+            criteria.Projection = projection;
         }
     }
 

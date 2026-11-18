@@ -30,6 +30,18 @@ public sealed class PurchaseRepository(Database database)
         })
         .Build();
 
+    /// <summary>A purchase is made when it is created (the cart is not stored): it comes with its date.</summary>
+    public override Task<bool> Insert(Purchase bean, Purchase? projection = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(bean);
+        if (bean.BuyDate is null)
+        {
+            throw new InvalidRequestException("a purchase needs its date of purchase");
+        }
+
+        return base.Insert(bean, projection, cancellationToken);
+    }
+
     /// <summary>The purchase's criteria on its table.</summary>
     private static ISqlFragment? Conditions(PurchaseCriteria criteria, FilterContext t) => Sql.And([
         t.Translate("id", criteria.PurchaseId),

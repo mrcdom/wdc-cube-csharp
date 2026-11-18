@@ -62,6 +62,12 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
     /// <summary>Checks or completes an update before it is written (inside the transaction); the second argument marks the fields sent.</summary>
     public Func<HttpContext, TEntity, TEntity, ValueTask>? BeforeUpdate { get; set; }
 
+    /// <summary>
+    /// Checks a delete before it runs (inside the transaction), given the criteria of the rows that would go, already
+    /// within the caller's reach. Applies to a delete by this route and to a child deleted in cascade (one key each).
+    /// </summary>
+    public Func<HttpContext, TCriteria, ValueTask>? BeforeDelete { get; set; }
+
     /// <summary>Removes from an answer what the caller may not see.</summary>
     public Action<HttpContext, TEntity>? SanitizeOutput { get; set; }
 
@@ -238,6 +244,11 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
         }
 
         Scope?.Invoke(context, criteria);
+        if (BeforeDelete is { } before)
+        {
+            await before(context, criteria);
+        }
+
         return RepositoryWire<TEntity, TCriteria>.WriteCount(await Writable(context).Delete(criteria, context.RequestAborted));
     }
 
@@ -284,6 +295,12 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
         foreach (var key in keys)
         {
             await RequireWithinReach(context, (TKey)key);
+            if (BeforeDelete is { } before)
+            {
+                var criteria = KeyCriteria((TKey)key);
+                Scope?.Invoke(context, criteria);
+                await before(context, criteria);
+            }
         }
     }
 
