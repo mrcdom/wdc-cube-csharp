@@ -1,0 +1,7 @@
+@inherits ScopeView<AlertScope>
+
+<div class="alert alert-@Scope.Severity.ToString().ToLowerInvariant()" role="alert">
+    <strong>@Scope.Title</strong>
+    <span>@Scope.Message</span>
+    <button class="close" @onclick="Scope.OnClose">×</button>
+</div>

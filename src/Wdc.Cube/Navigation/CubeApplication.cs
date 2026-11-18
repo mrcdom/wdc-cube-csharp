@@ -59,7 +59,8 @@ public class CubeApplication
         _ownsDispatcher = dispatcher is null;
         Dispatcher = dispatcher ?? new SerialDispatcher();
         Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-        Updates = new UpdateScheduler(Dispatcher, timeProvider, report: (message, error) => Unexpected(message, error));
+        Time = timeProvider ?? TimeProvider.System;
+        Updates = new UpdateScheduler(Dispatcher, Time, report: (message, error) => Unexpected(message, error));
 
         foreach (var place in places)
         {
@@ -77,6 +78,9 @@ public class CubeApplication
 
     /// <summary>Where every piece of presentation code of this application runs, one at a time.</summary>
     public PresentationDispatcher Dispatcher { get; }
+
+    /// <summary>The application's clock: use it for timers and "now", so tests can control time.</summary>
+    public TimeProvider Time { get; }
 
     /// <summary>Batches the scope updates of every presenter of this application into windows of about 16 ms.</summary>
     public UpdateScheduler Updates { get; }
@@ -109,7 +113,8 @@ public class CubeApplication
     protected ILogger Logger { get; }
 
     /// <summary>Every place an address can name, by path.</summary>
-    public IReadOnlyDictionary<string, Place> Places => _placesByPath;
+    /// <remarks>Not called <c>Places</c>: applications name their place table that way.</remarks>
+    public IReadOnlyDictionary<string, Place> PlacesByPath => _placesByPath;
 
     // :: Presenters
 

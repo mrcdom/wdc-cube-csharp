@@ -1,0 +1,11 @@
+@inherits ScopeView<BodyScope>
+
+<section class="home">
+    <h1>Cube tutorial</h1>
+    <p>Each menu entry is a face of the cube. The address follows the state: reload, Back and pasted links bring it back.</p>
+    <p>Alerts:</p>
+    @foreach (var severity in Enum.GetValues<AlertSeverity>())
+    {
+        <button class="alert-@severity.ToString().ToLowerInvariant()" @onclick="() => Scope.OnOpenAlert(severity)">@severity</button>
+    }
+</section>

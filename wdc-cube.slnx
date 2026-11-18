@@ -8,8 +8,17 @@
   <Folder Name="/src/">
     <Project Path="src/Wdc.Cube/Wdc.Cube.csproj" />
     <Project Path="src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <Project Path="src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+  </Folder>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/Tutorial/">
+    <Project Path="samples/Tutorial/Tutorial.Presentation/Tutorial.Presentation.csproj" />
+    <Project Path="samples/Tutorial/Tutorial.Presentation.Tests/Tutorial.Presentation.Tests.csproj" />
+    <Project Path="samples/Tutorial/Tutorial.Blazor/Tutorial.Blazor.csproj" />
+    <Project Path="samples/Tutorial/Tutorial.Blazor.Tests/Tutorial.Blazor.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />
+    <Project Path="tests/Wdc.Cube.Blazor.Tests/Wdc.Cube.Blazor.Tests.csproj" />
   </Folder>
 </Solution>

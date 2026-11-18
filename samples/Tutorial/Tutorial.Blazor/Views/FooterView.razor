@@ -1,0 +1,14 @@
+@inherits ScopeView<FooterScope>
+
+<footer class="footer">
+    <span class="todo-count"><strong>@Scope.Count</strong> @Scope.ActiveTodoWord left</span>
+    <ul class="filters">
+        <li><button class="@(Scope.Showing == ShowingOptions.All ? "selected" : null)" @onclick="Scope.OnShowAll">All</button></li>
+        <li><button class="@(Scope.Showing == ShowingOptions.Active ? "selected" : null)" @onclick="Scope.OnShowActives">Active</button></li>
+        <li><button class="@(Scope.Showing == ShowingOptions.Completed ? "selected" : null)" @onclick="Scope.OnShowCompleteds">Completed</button></li>
+    </ul>
+    @if (Scope.ClearButtonVisible)
+    {
+        <button class="clear-completed" @onclick="Scope.OnClearCompleted">Clear completed</button>
+    }
+</footer>

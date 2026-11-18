@@ -140,6 +140,16 @@ public abstract class Presenter<TApp, TScope> : IActionHost
         return (a, b, c) => ActionGuard.Wrap(this, () => action(a, b, c), name)();
     }
 
+    /// <summary>
+    /// Binds a handler that mirrors what the user types: it runs on the dispatcher but is not guarded — no immediate
+    /// flush, no address update, no history entry per keystroke. Debounce and search stay in the presenter.
+    /// </summary>
+    protected Func<T, Task> Mirror<T>(Action<T> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return arg => App.Dispatcher.InvokeAsync(() => handler(arg));
+    }
+
     void IActionHost.UpdateIfNotDirty()
     {
         if (AutoUpdate && UpdateManager.UpdateCount == 0)

@@ -1,0 +1,19 @@
+@page "/"
+@page "/{*path}"
+@using Microsoft.Extensions.Logging
+@using Tutorial.Presentation.Services
+@inject ITutorialService Service
+@inject ILoggerFactory Loggers
+
+@* Every path is the same page: the address belongs to Cube, which turns it into a face of the cube. *@
+<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.KickStart(Places.Main)">
+    <ViewSlot Scope="context.Scope" />
+</CubeHost>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    private MainPresenter Create(CubeHostContext host) =>
+        new(host.History, Service, host.Dispatcher, logger: Loggers.CreateLogger<MainPresenter>());
+}

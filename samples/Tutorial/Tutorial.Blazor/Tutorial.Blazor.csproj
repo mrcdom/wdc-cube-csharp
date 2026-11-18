@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- The tutorial drawn with Blazor (Server, interactive, no prerender). The presentation is untouched. -->
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>net11.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Tutorial.Presentation/Tutorial.Presentation.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+@inherits ScopeView<SubscriptionsScope>
+
+<section class="subscriptions">
+    <h2>Subscriptions</h2>
+    @if (Scope.Loading)
+    {
+        <p class="loading">Loading sites…</p>
+    }
+    <ul>
+        @foreach (var site in Scope.Sites)
+        {
+            <li @key="site.Id"><button class="site" @onclick="() => Scope.OnItemClicked(site)">@site.Site</button></li>
+        }
+    </ul>
+</section>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The tutorial's presentation: places, keys, presenters, scopes, services. No view technology here. -->
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tutorial.Presentation.Tests" />
+  </ItemGroup>
+</Project>

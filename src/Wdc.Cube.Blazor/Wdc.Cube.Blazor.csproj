@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Blazor renderer for Cube: resolves a scope to its component, redraws on invalidation and confirms the render. -->
+  <PropertyGroup>
+    <Description>Blazor renderer for Cube scopes (Server and WebAssembly).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Cube/Wdc.Cube.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+</Project>

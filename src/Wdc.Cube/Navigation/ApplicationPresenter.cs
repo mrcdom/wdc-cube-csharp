@@ -151,6 +151,34 @@ public abstract class ApplicationPresenter<TScope> : CubeApplication, IActionHos
         return arg => ActionGuard.Wrap(this, () => action(arg), name)();
     }
 
+    /// <summary>Guards a synchronous action with one argument.</summary>
+    protected Func<T, Task> Action<T>(Action<T> action, [CallerArgumentExpression(nameof(action))] string? name = null)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        return arg => ActionGuard.Wrap(this, () =>
+        {
+            action(arg);
+            return Task.CompletedTask;
+        }, name)();
+    }
+
+    /// <summary>Guards an asynchronous action with two arguments.</summary>
+    protected Func<T1, T2, Task> Action<T1, T2>(Func<T1, T2, Task> action,
+        [CallerArgumentExpression(nameof(action))] string? name = null)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        return (a, b) => ActionGuard.Wrap(this, () => action(a, b), name)();
+    }
+
+    /// <summary>
+    /// Binds a handler that mirrors what the user types: on the dispatcher, but without flush or address update.
+    /// </summary>
+    protected Func<T, Task> Mirror<T>(Action<T> handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        return arg => Dispatcher.InvokeAsync(() => handler(arg));
+    }
+
     void IActionHost.UpdateIfNotDirty()
     {
         if (AutoUpdate && UpdateManager.UpdateCount == 0)

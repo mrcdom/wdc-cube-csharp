@@ -1,0 +1,11 @@
+@inherits ScopeView<HeaderScope>
+
+<header class="header">
+    @if (Scope.ToggleButtonVisible)
+    {
+        <input class="toggle-all" type="checkbox" checked="@Scope.AllItemsCompleted" @onchange="Scope.OnToggleAll" />
+    }
+    <input class="new-todo" placeholder="What needs to be done?" value="@Scope.InputValue"
+           @oninput="e => Scope.OnInputChange(e.Value?.ToString() ?? string.Empty)"
+           @onkeydown="e => Scope.OnInputKeyDown(e.Key)" />
+</header>

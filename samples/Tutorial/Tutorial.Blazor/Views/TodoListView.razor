@@ -1,0 +1,12 @@
+@inherits ScopeView<TodoListScope>
+
+@if (Scope.Clock is { } clock)
+{
+    <ClockView Scope="clock" />
+}
+<ul class="todo-list">
+    @foreach (var item in Scope.Items)
+    {
+        <ItemView @key="item.Identity" Scope="item" />
+    }
+</ul>

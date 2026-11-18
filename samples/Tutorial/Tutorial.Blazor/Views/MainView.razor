@@ -1,0 +1,26 @@
+@inherits ScopeView<MainScope>
+
+<div class="app">
+    <nav class="menu">
+        <span class="brand">Cube · Blazor</span>
+        <button @onclick="Scope.OnHome">Home</button>
+        <button @onclick="Scope.OnOpenTodos">To-dos</button>
+        <button @onclick="Scope.OnOpenSubscriptions">Subscriptions</button>
+        <button @onclick="Scope.OnLogin">Login</button>
+    </nav>
+
+    <main class="body">
+        <ViewSlot Scope="Scope.Body" />
+    </main>
+
+    @if (Scope.Dialog is { } dialog)
+    {
+        <div class="backdrop">
+            <div class="dialog" role="dialog">
+                <ViewSlot Scope="dialog" />
+            </div>
+        </div>
+    }
+
+    <ViewSlot Scope="Scope.Alert" />
+</div>

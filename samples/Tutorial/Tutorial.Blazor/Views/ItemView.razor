@@ -1,0 +1,29 @@
+@inherits ScopeView<ItemScope>
+
+<li class="@(Scope.Completed ? "completed" : null) @(Scope.Editing ? "editing" : null)">
+    @if (Scope.Editing)
+    {
+        <input class="edit" value="@Scope.Title" @oninput="e => _text = e.Value?.ToString() ?? string.Empty"
+               @onkeydown="e => Scope.OnKeyDown(_text ?? Scope.Title, e.Key)" @onblur="() => Scope.OnBlur(_text ?? Scope.Title)" />
+    }
+    else
+    {
+        <input class="toggle" type="checkbox" checked="@Scope.Completed" @onchange="Scope.OnToggle" />
+        <label @ondblclick="Scope.OnEdit">@Scope.Title</label>
+        <button class="destroy" @onclick="Scope.OnDestroy">×</button>
+    }
+</li>
+
+@code {
+    // What is being typed in the edit box: view plumbing, not state the presenter needs until Enter or blur.
+    private string? _text;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (!Scope.Editing)
+        {
+            _text = null;
+        }
+    }
+}

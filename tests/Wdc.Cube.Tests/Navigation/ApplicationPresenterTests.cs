@@ -13,7 +13,7 @@ public sealed class ApplicationPresenterTests
 
         await app.KickStart(MainPlaces.Home);
 
-        Assert.Equal(("/", true, true), app.Applied[0]); // the application itself, once, as the destination
+        Assert.Equal(("", true, true), app.Applied[0]); // the application itself, once, as the destination
         Assert.Equal(("orders/detail", false, false), app.Applied[1]); // then as the root of the real walk
         Assert.Equal("dark", app.Theme);
         Assert.Same(MainPlaces.Detail, app.LastPlace);

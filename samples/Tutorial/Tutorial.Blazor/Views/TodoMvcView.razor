@@ -1,0 +1,19 @@
+@inherits ScopeView<TodoMvcScope>
+
+@* Header, list and footer are child scopes that change on their own: each one has its own view. *@
+<section class="todoapp">
+    <h2>todos</h2>
+    <button class="stress" @onclick="Scope.OnToggleStress">@(Scope.StressMode ? "Back to the sample" : "1000 items")</button>
+    @if (Scope.Header is { } header)
+    {
+        <HeaderView Scope="header" />
+    }
+    @if (Scope.List is { } list)
+    {
+        <TodoListView Scope="list" />
+    }
+    @if (Scope.Footer is { } footer)
+    {
+        <FooterView Scope="footer" />
+    }
+</section>

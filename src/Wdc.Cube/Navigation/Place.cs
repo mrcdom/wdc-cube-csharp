@@ -24,8 +24,11 @@ public sealed class Place
 {
     private static int s_lastId = -1;
 
-    /// <summary>The detached root every top-level place hangs from. It is not part of any path.</summary>
-    public static Place Root { get; } = new("/", parent: null, factory: null, id: -1);
+    /// <summary>
+    /// The detached root every top-level place hangs from. It is not part of any path, and its address is the empty
+    /// string.
+    /// </summary>
+    public static Place Root { get; } = new(string.Empty, parent: null, factory: null, id: -1);
 
     /// <summary>A detached place for intents whose place could not be resolved.</summary>
     public static Place Unknown { get; } = new("unknown", parent: null, factory: null, id: -1);

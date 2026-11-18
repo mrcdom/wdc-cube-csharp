@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+    <ProjectReference Include="../../src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <PackageReference Include="bunit" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

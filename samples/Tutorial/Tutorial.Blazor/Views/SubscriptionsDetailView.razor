@@ -1,0 +1,12 @@
+@inherits ScopeView<SubscriptionsDetailScope>
+
+<h3>Subscribe to @(Scope.Site ?? "…")</h3>
+<label>
+    E-mail
+    <input class="email" type="email" value="@Scope.Email"
+           @oninput="e => Scope.OnEmailChanged(e.Value?.ToString() ?? string.Empty)" />
+</label>
+<div class="actions">
+    <button class="subscribe" disabled="@(Scope.Site is null)" @onclick="Scope.OnSubscribe">Subscribe</button>
+    <button class="close" @onclick="Scope.OnClose">Close</button>
+</div>

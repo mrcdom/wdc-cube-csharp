@@ -1,0 +1,30 @@
+:root { --fg: #1f2328; --muted: #656d76; --line: #d0d7de; --accent: #0969da; --bg: #f6f8fa; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+button { font: inherit; cursor: pointer; border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 4px 10px; }
+button:disabled { opacity: .5; cursor: default; }
+.app { max-width: 760px; margin: 0 auto; padding: 16px; }
+.menu { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.menu .brand { font-weight: 600; margin-right: auto; }
+.body { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: grid; place-items: center; padding: 16px; }
+.dialog { background: #fff; border-radius: 8px; padding: 16px; width: min(420px, 100%); }
+.dialog input { width: 100%; padding: 6px; margin: 4px 0 12px; }
+.dialog .actions { display: flex; gap: 8px; justify-content: flex-end; }
+.alert { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; padding: 10px 12px;
+         border-radius: 8px; background: #fff; border: 1px solid var(--line); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.alert-error { border-color: #cf222e; } .alert-warning { border-color: #bf8700; }
+.alert-success { border-color: #1a7f37; } .alert-info { border-color: var(--accent); }
+.subscriptions ul, .todo-list, .filters { list-style: none; padding: 0; margin: 0; }
+.subscriptions li { margin: 4px 0; }
+.todoapp .header { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.todoapp .new-todo { flex: 1; padding: 6px; }
+.todo-list li { display: flex; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.todo-list li label { flex: 1; }
+.todo-list li.completed label { text-decoration: line-through; color: var(--muted); }
+.todo-list .edit { flex: 1; padding: 4px; }
+.footer { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; color: var(--muted); }
+.filters { display: flex; gap: 4px; }
+.filters .selected { border-color: var(--accent); color: var(--accent); }
+.clock { font-variant-numeric: tabular-nums; color: var(--muted); }
+.cube-missing-view { color: #cf222e; border: 1px dashed #cf222e; padding: 8px; }
