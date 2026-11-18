@@ -83,13 +83,21 @@ public sealed class ManualDispatcher : PresentationDispatcher
         return true;
     }
 
-    /// <summary>Runs queued items, including the ones they queue, until the queue is empty. Returns how many ran.</summary>
-    public int RunPending()
+    /// <summary>
+    /// Runs queued items, including the ones they queue, until the queue is empty. Returns how many ran.
+    /// </summary>
+    /// <param name="maxItems">A ceiling that turns an endless chain of items (a loop) into a failure, not a hang.</param>
+    /// <exception cref="InvalidOperationException">More than <paramref name="maxItems"/> items ran.</exception>
+    public int RunPending(int maxItems = 100_000)
     {
         var count = 0;
         while (RunOne())
         {
-            count++;
+            if (++count > maxItems)
+            {
+                throw new InvalidOperationException(
+                    $"More than {maxItems} items ran without the queue emptying: something keeps queueing work.");
+            }
         }
 
         return count;

@@ -46,8 +46,9 @@ public class CubeApplication
     /// Where the presentation code runs. When omitted, the application creates a <see cref="SerialDispatcher"/> and
     /// disposes it on <see cref="Release"/>.
     /// </param>
+    /// <param name="timeProvider">The clock of the update window; the system clock when omitted.</param>
     public CubeApplication(HistoryManager history, IEnumerable<Place> places, Place? rootPlace = null,
-        ILogger? logger = null, PresentationDispatcher? dispatcher = null)
+        ILogger? logger = null, PresentationDispatcher? dispatcher = null, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(places);
@@ -58,6 +59,7 @@ public class CubeApplication
         _ownsDispatcher = dispatcher is null;
         Dispatcher = dispatcher ?? new SerialDispatcher();
         Dispatcher.UnhandledException += OnDispatcherUnhandledException;
+        Updates = new UpdateScheduler(Dispatcher, timeProvider, report: (message, error) => Unexpected(message, error));
 
         foreach (var place in places)
         {
@@ -75,6 +77,9 @@ public class CubeApplication
 
     /// <summary>Where every piece of presentation code of this application runs, one at a time.</summary>
     public PresentationDispatcher Dispatcher { get; }
+
+    /// <summary>Batches the scope updates of every presenter of this application into windows of about 16 ms.</summary>
+    public UpdateScheduler Updates { get; }
 
     /// <summary>The fallback place: where an unknown address and a fresh application resolve to.</summary>
     public Place RootPlace { get; }
@@ -427,6 +432,7 @@ public class CubeApplication
         finally
         {
             _releasePhase = 2;
+            Updates.Dispose();
             Dispatcher.UnhandledException -= OnDispatcherUnhandledException;
             if (_ownsDispatcher && Dispatcher is IDisposable disposable)
             {
