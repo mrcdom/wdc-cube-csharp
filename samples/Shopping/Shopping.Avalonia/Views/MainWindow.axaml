@@ -3,13 +3,5 @@
         x:Class="Shopping.Avalonia.Views.MainWindow"
         Title="Shopping · Cube Avalonia" Width="1100" Height="760" MinWidth="420" MinHeight="480"
         Background="#F3F4F6">
-  <DockPanel>
-    <Border DockPanel.Dock="Top" Background="#E5E7EB" Padding="6,4">
-      <StackPanel Orientation="Horizontal" Spacing="4">
-        <Button x:Name="BackButton" Content="◀" ToolTip.Tip="Voltar (Alt+←)" Click="OnBack" />
-        <Button x:Name="ForwardButton" Content="▶" ToolTip.Tip="Avançar (Alt+→)" Click="OnForward" />
-      </StackPanel>
-    </Border>
-    <ContentControl x:Name="Body" />
-  </DockPanel>
+  <ContentControl x:Name="Body" />
 </Window>

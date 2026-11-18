@@ -37,7 +37,7 @@ cd samples/Shopping/Shopping.Avalonia
 dotnet run                     # or: dotnet run -- --server http://host:port   (or SHOPPING_SERVER=...)
 ```
 
-Back/forward: the ◀ ▶ buttons or Alt+←/→. In production the server needs `Shopping:Jwt:Key` (Base64, 32 bytes or
+No navigation bar on the desktop; Alt+←/→ walk back and forward. In production the server needs `Shopping:Jwt:Key` (Base64, 32 bytes or
 more); in Development a random key is used and the tokens die with the process.
 
 The Shopping presentation tests run twice: on the database and through the server (`*HttpTests`), unchanged.
