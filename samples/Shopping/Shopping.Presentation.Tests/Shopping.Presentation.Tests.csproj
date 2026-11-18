@@ -1,11 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!-- The presentation without a view, on the database (local) and through the Shopping server (HTTP). -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Shopping.Presentation/Shopping.Presentation.csproj" />
     <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
     <ProjectReference Include="../../../src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <ProjectReference Include="../Shopping.Server/Shopping.Server.csproj" />
+    <ProjectReference Include="../Shopping.Client/Shopping.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- The Shopping backend over HTTP (phase 5): the repositories as REST routes, remote transactions and JWT login,
+       for clients that run the presentation themselves (the Avalonia desktop app). -->
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Shopping.Presentation.Tests" />
+  </ItemGroup>
+</Project>

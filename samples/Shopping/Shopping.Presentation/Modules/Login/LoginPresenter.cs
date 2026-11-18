@@ -9,8 +9,6 @@ public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresen
     public const string NotRecognized = "Usuário ou senha não reconhecido!";
     public const string CommunicationFailure = "Falha de comunicação com o servidor. Verifique sua conexão.";
 
-    private readonly LoginService _service = new(app.Repositories);
-
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
         if (initialization)
@@ -29,7 +27,7 @@ public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresen
         Scope.Loading = true;
         try
         {
-            var subject = await _service.Authenticate(userName, password);
+            var subject = await App.Authentication.Login(userName, password);
             if (subject is null)
             {
                 Scope.ErrorMessage = NotRecognized;
@@ -39,7 +37,7 @@ public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresen
             await App.SignIn(subject);
             await Flip(Places.Home);
         }
-        catch (Exception caught) when (caught is System.Data.Common.DbException or TimeoutException)
+        catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException or TimeoutException)
         {
             App.Unexpected("Logging in", caught);
             Scope.ErrorMessage = CommunicationFailure;

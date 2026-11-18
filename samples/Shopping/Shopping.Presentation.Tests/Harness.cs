@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using Shopping.Domain;
 using Shopping.Persistence;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Main;
@@ -38,12 +39,22 @@ public class ShoppingDatabaseFixture : IAsyncLifetime
 
         Store = ShoppingStore.Open(Provider, connectionString, "wdc_test_" + Guid.NewGuid().ToString("N")[..10]);
         await Store.EnsureCreated();
+        await OnReady();
     }
+
+    /// <summary>What a new application instance gets: the repositories and the login (local here).</summary>
+    public virtual (ShoppingRepositories Repositories, IAuthentication Authentication) Connect() =>
+        (Store!.Repositories, new LocalAuthentication(Store.Repositories));
+
+    protected virtual Task OnReady() => Task.CompletedTask;
+
+    protected virtual Task OnDisposing() => Task.CompletedTask;
 
     public async ValueTask DisposeAsync()
     {
         if (Store is not null)
         {
+            await OnDisposing();
             await Store.Drop();
             await Store.DisposeAsync();
         }
@@ -57,11 +68,12 @@ public sealed class ShoppingSqlServerFixture() : ShoppingDatabaseFixture(Databas
 /// <summary>Starts the Shopping application at an address, with no view.</summary>
 internal sealed class Shop
 {
-    private Shop(ShoppingStore store, string address, ISessionStore session)
+    private Shop(ShoppingDatabaseFixture fixture, string address, ISessionStore session)
     {
         History = new TestHistoryManager(address);
         Session = session;
-        App = new MainPresenter(History, store.Repositories, session, timeProvider: Time);
+        var (repositories, authentication) = fixture.Connect();
+        App = new MainPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
     }
 
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 18, 15, 0, 0, TimeSpan.Zero));
@@ -75,7 +87,7 @@ internal sealed class Shop
     public static async Task<Shop> Start(ShoppingDatabaseFixture fixture, string address = "", ISessionStore? session = null)
     {
         Assert.SkipWhen(fixture.Store is null, fixture.SkipReason);
-        var shop = new Shop(fixture.Store!, address, session ?? new MemorySessionStore());
+        var shop = new Shop(fixture, address, session ?? new MemorySessionStore());
         await shop.App.Start();
         await shop.Settle();
         return shop;

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Shopping repositories and login through HTTP (phase 5): what a client that runs the presentation itself
+       plugs in instead of the database. -->
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Presentation/Shopping.Presentation.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
+  </ItemGroup>
+</Project>

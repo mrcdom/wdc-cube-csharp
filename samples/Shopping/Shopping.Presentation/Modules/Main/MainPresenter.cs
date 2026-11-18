@@ -18,16 +18,21 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     private ITimer? _errorTimer;
 
     public MainPresenter(HistoryManager history, ShoppingRepositories repositories, ISessionStore session,
-        PresentationDispatcher? dispatcher = null, TimeProvider? timeProvider = null, ILogger? logger = null)
+        PresentationDispatcher? dispatcher = null, TimeProvider? timeProvider = null, ILogger? logger = null,
+        IAuthentication? authentication = null)
         : base(new MainScope(), history, Places.All, logger, dispatcher, timeProvider)
     {
         ArgumentNullException.ThrowIfNull(repositories);
         ArgumentNullException.ThrowIfNull(session);
         Repositories = repositories;
         Session = session;
+        Authentication = authentication ?? new LocalAuthentication(repositories);
     }
 
     public ShoppingRepositories Repositories { get; }
+
+    /// <summary>Opens and closes the session: in this process, or through the server.</summary>
+    public IAuthentication Authentication { get; }
 
     public ISessionStore Session { get; }
 
@@ -51,7 +56,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
             Scope.OnDismissError = Action(() => Scope.ErrorMessage = null);
 
             // The session is read before any screen exists: a reload (F5) comes back logged in.
-            Subject = SubjectSession.Read(await Session.Get(SubjectSession.Key));
+            Subject = await ResumeSession();
         }
 
         if (last)
@@ -79,8 +84,50 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
 
     public async Task SignOut()
     {
+        var leaving = Subject;
         Subject = null;
         await Session.Remove(SubjectSession.Key);
+        if (leaving is not null)
+        {
+            try
+            {
+                await Authentication.Logout(leaving);
+            }
+            catch (Exception caught) when (caught is HttpRequestException or TimeoutException)
+            {
+                Logger.LogWarning(caught, "Logging out on the server failed; the session is closed here.");
+            }
+        }
+    }
+
+    private async Task<Subject?> ResumeSession()
+    {
+        if (SubjectSession.Read(await Session.Get(SubjectSession.Key)) is not { } stored)
+        {
+            return null;
+        }
+
+        Subject? resumed;
+        try
+        {
+            resumed = await Authentication.Resume(stored);
+        }
+        catch (Exception caught) when (caught is HttpRequestException or TimeoutException)
+        {
+            Logger.LogWarning(caught, "Taking the session back failed; starting logged out.");
+            resumed = null;
+        }
+
+        if (resumed is null)
+        {
+            await Session.Remove(SubjectSession.Key);
+        }
+        else if (resumed != stored)
+        {
+            await Session.Set(SubjectSession.Key, SubjectSession.Write(resumed)); // a renewed credential
+        }
+
+        return resumed;
     }
 
     /// <summary>Shows <paramref name="message"/> in the error toast for a few seconds.</summary>

@@ -86,6 +86,67 @@ public static class PasswordHash
         return $"{Scheme}${Iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
     }
 
+    /// <summary>
+    /// Reads a stored hash: the iterations, the salt and the derived bytes. A login challenge hands the first two to
+    /// the client, which derives the same bytes from the password without sending it (decision D-19).
+    /// </summary>
+    public static bool TryRead(string? stored, out int iterations, out byte[] salt, out byte[] hash)
+    {
+        iterations = 0;
+        salt = [];
+        hash = [];
+        var parts = stored?.Split('$');
+        if (parts is not [Scheme, var iterationsText, var saltText, var hashText]
+            || !int.TryParse(iterationsText, System.Globalization.CultureInfo.InvariantCulture, out iterations))
+        {
+            return false;
+        }
+
+        try
+        {
+            salt = Convert.FromBase64String(saltText);
+            hash = Convert.FromBase64String(hashText);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>The bytes derived from <paramref name="password"/> with this salt and iteration count.</summary>
+    public static byte[] Derive(string password, byte[] salt, int iterations) =>
+        Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, HashBytes);
+
+    /// <summary>The answer to a login challenge: <c>HMAC-SHA256(derived, userName + nonce)</c>, in Base64.</summary>
+    public static string Digest(byte[] derived, string userName, string nonce)
+    {
+        ArgumentNullException.ThrowIfNull(derived);
+        return Convert.ToBase64String(HMACSHA256.HashData(derived, System.Text.Encoding.UTF8.GetBytes(userName + nonce)));
+    }
+
+    /// <summary>Whether a challenge answer matches the stored hash, in constant time.</summary>
+    public static bool DigestMatches(string? stored, string userName, string nonce, string digest)
+    {
+        if (!TryRead(stored, out _, out _, out var hash))
+        {
+            return false;
+        }
+
+        byte[] given;
+        try
+        {
+            given = Convert.FromBase64String(digest);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        var expected = Convert.FromBase64String(Digest(hash, userName, nonce));
+        return CryptographicOperations.FixedTimeEquals(given, expected);
+    }
+
     /// <summary>Whether <paramref name="password"/> matches <paramref name="stored"/>, in constant time.</summary>
     public static bool Verify(string password, string? stored)
     {

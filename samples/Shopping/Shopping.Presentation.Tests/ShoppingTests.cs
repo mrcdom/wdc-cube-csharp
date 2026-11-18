@@ -8,7 +8,7 @@ using Shopping.Presentation.Modules.Login;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>Login, guard and session (F5).</summary>
-public sealed class SessionTests(ShoppingDatabaseFixture db) : IClassFixture<ShoppingDatabaseFixture>
+public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
 {
     [Fact]
     public async Task WithoutASession_EveryRestrictedAddressLandsOnLogin()
@@ -73,7 +73,7 @@ public sealed class SessionTests(ShoppingDatabaseFixture db) : IClassFixture<Sho
 }
 
 /// <summary>Home: the two panels and the history's pages.</summary>
-public sealed class HomeTests(ShoppingDatabaseFixture db) : IClassFixture<ShoppingDatabaseFixture>
+public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
 {
     [Fact]
     public async Task ProductsPanel_ListsTheCatalogueByName_WithPrices()
@@ -138,7 +138,7 @@ internal static class PurchasesPanel
 }
 
 /// <summary>Product, cart and receipt.</summary>
-public sealed class BuyingTests(ShoppingDatabaseFixture db) : IClassFixture<ShoppingDatabaseFixture>
+public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
 {
     private static async Task<ProductPresenter> OpenProduct(Shop shop, string name)
     {
@@ -320,3 +320,18 @@ public sealed class ImageTests(ShoppingDatabaseFixture db) : IClassFixture<Shopp
         await Assert.ThrowsAsync<KeyNotFoundException>(() => db.Store.Repositories.Products.FetchImage(999_999, TestContext.Current.CancellationToken));
     }
 }
+
+public sealed class SessionTests(ShoppingDatabaseFixture db) : SessionTestsBase(db), IClassFixture<ShoppingDatabaseFixture>;
+
+/// <summary>The same, with the repositories and the login through the Shopping server.</summary>
+public sealed class SessionHttpTests(ShoppingHttpFixture db) : SessionTestsBase(db), IClassFixture<ShoppingHttpFixture>;
+
+public sealed class HomeTests(ShoppingDatabaseFixture db) : HomeTestsBase(db), IClassFixture<ShoppingDatabaseFixture>;
+
+/// <summary>The same, with the repositories and the login through the Shopping server.</summary>
+public sealed class HomeHttpTests(ShoppingHttpFixture db) : HomeTestsBase(db), IClassFixture<ShoppingHttpFixture>;
+
+public sealed class BuyingTests(ShoppingDatabaseFixture db) : BuyingTestsBase(db), IClassFixture<ShoppingDatabaseFixture>;
+
+/// <summary>The same, with the repositories and the login through the Shopping server.</summary>
+public sealed class BuyingHttpTests(ShoppingHttpFixture db) : BuyingTestsBase(db), IClassFixture<ShoppingHttpFixture>;

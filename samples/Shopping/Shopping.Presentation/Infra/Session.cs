@@ -3,7 +3,11 @@ using System.Text.Json;
 namespace Shopping.Presentation.Infra;
 
 /// <summary>Who is logged in: what the screens need, not the user record.</summary>
-public sealed record Subject(long Id, string NickName);
+/// <param name="Id">The user.</param>
+/// <param name="NickName">How the screens greet them.</param>
+/// <param name="Credential">What takes the session back after a reload, when the authentication needs one (a refresh
+/// token through HTTP); opaque to the presentation.</param>
+public sealed record Subject(long Id, string NickName, string? Credential = null);
 
 /// <summary>
 /// What survives a reload of the page (F5) for this browser tab. The host installs it: browser session storage in

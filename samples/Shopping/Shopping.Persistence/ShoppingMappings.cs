@@ -75,6 +75,15 @@ public static class ShoppingMappings
         .Filter("purchaseItemId", "id")
         .Filter("purchaseId", "purchase_id")
         .Filter("productId", "product_id")
+        .Filter("userId", (criterion, ctx) => Sql.Exists(w =>
+        {
+            var purchase = w.NextAlias("pu");
+            w.Append("SELECT 1 FROM ").Table("purchase").Append(' ').Identifier(purchase).Append(" WHERE ");
+            Sql.And([
+                Sql.Equal(Sql.Column(purchase, "id"), ctx.Column("purchase_id")),
+                Sql.Translate(Sql.Column(purchase, "user_id"), criterion),
+            ])!.Render(w);
+        }))
         .Ordering<PurchaseItemOrderBy>(o => o switch
         {
             PurchaseItemOrderBy.NewestFirst => [SortSpec.Desc("id")],

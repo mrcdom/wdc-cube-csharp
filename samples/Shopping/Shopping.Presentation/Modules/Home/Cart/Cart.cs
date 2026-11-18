@@ -145,7 +145,7 @@ public sealed class CartPresenter(MainPresenter app) : CubePresenter<MainPresent
         {
             Show(caught.Message);
         }
-        catch (System.Data.Common.DbException caught)
+        catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException)
         {
             App.Unexpected("Registrando a compra", caught);
             Show(CartMessages.Unavailable);
