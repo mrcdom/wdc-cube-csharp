@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Camada de apresentação do Cube: places, intent, presenters, escopos, pipeline de update, histórico.
+       Não referencia nenhuma tecnologia de renderização. -->
+  <PropertyGroup>
+    <Description>Cube: presentation layer orchestrating presenters and scopes through a cube of compositions.</Description>
+  </PropertyGroup>
+</Project>

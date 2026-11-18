@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Apoio a testes de apresentação sem UI: TestHistoryManager, Settle, ScopeUpdateRecorder, PresenterOf. -->
+  <PropertyGroup>
+    <Description>Test helpers for Cube presentation code, without any renderer.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Cube/Wdc.Cube.csproj" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+<Project>
+  <!-- Configuração comum a todos os projetos. Decisões: .claude/docs/decisions/D-12-alvos-net10-net11.md -->
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <!-- Fixo para o mesmo fonte compilar igual nos dois alvos (net11 usaria C# 15 por padrão). -->
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <!-- Bibliotecas publicáveis (src/): compatíveis com trimming/AOT e documentadas. -->
+  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/src/'))">
+    <IsPackable>true</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Documentação de API pública será cobrada a partir da fase 1. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/tests/'))">
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+</Project>
