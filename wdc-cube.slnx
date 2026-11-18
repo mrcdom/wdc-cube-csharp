@@ -8,6 +8,7 @@
   <Folder Name="/src/">
     <Project Path="src/Wdc.Cube/Wdc.Cube.csproj" />
     <Project Path="src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <Project Path="src/Wdc.Cube.Codec/Wdc.Cube.Codec.csproj" />
     <Project Path="src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
     <Project Path="src/Wdc.Cube.Avalonia/Wdc.Cube.Avalonia.csproj" />
     <Project Path="src/Wdc.Domain/Wdc.Domain.csproj" />

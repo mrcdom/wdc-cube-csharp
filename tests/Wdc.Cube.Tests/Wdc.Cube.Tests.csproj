@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Wdc.Cube/Wdc.Cube.csproj" />
     <ProjectReference Include="../../src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <ProjectReference Include="../../src/Wdc.Cube.Codec/Wdc.Cube.Codec.csproj" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>

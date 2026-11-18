@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The reference address codec (decision D-20): AES-SIV over the query, the envelope of the TypeScript version.
+       Separate and optional, like its `wdc-cube/codec` subpath: an application that never seals an address does not
+       carry a cipher. -->
+  <PropertyGroup>
+    <Description>AES-SIV address codec for Cube's history (compatible with the TypeScript version).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Cube/Wdc.Cube.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wdc.Cube.Tests" />
+  </ItemGroup>
+</Project>
