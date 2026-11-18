@@ -2,6 +2,8 @@ using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Receipt;
 
+public sealed record ReceiptLine(string Description, int Quantity, string ValueLabel);
+
 public sealed class ReceiptScope : Scope
 {
     /// <summary>Only right after buying: "Compra realizada com sucesso!".</summary>
