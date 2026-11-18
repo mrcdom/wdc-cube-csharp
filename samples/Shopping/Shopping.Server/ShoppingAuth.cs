@@ -26,6 +26,9 @@ public sealed class ShoppingAuthOptions
 
     public TimeSpan ChallengeLifetime { get; set; } = TimeSpan.FromMinutes(2);
 
+    /// <summary>The master key the users' address keys derive from (decision D-22).</summary>
+    public byte[] HistoryMasterKey { get; set; } = RandomNumberGenerator.GetBytes(32);
+
     public SymmetricSecurityKey SigningKey => new(Key);
 }
 
@@ -161,7 +164,7 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingReposito
         });
         var refresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         _refresh[refresh] = (userId, now + options.RefreshLifetime);
-        return new Tokens(userId, name, access, refresh, expires);
+        return new Tokens(userId, name, access, refresh, expires, HistoryKeys.Derive(options.HistoryMasterKey, userId));
     }
 
     private async Task<User?> FindUser(string userName, CancellationToken cancellationToken)
@@ -191,13 +194,14 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingReposito
         }
     }
 
-    public sealed record Tokens(long UserId, string Name, string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt);
+    public sealed record Tokens(long UserId, string Name, string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt,
+        string HistoryKey);
 }
 
 /// <summary>
 /// <c>GET /api/auth/challenge?userName=</c> → <c>{"nonce","salt","iterations"}</c>;
 /// <c>POST /api/auth/login</c> <c>{"userName","nonce","digest"}</c> and <c>POST /api/auth/refresh</c>
-/// <c>{"refreshToken"}</c> → <c>{"userId","name","accessToken","refreshToken","expiresAt"}</c>;
+/// <c>{"refreshToken"}</c> → <c>{"userId","name","accessToken","refreshToken","expiresAt","historyKey"}</c>;
 /// <c>POST /api/auth/logout</c> <c>{"refreshToken"}</c> → <c>{"success":true}</c>.
 /// </summary>
 public static class AuthRoutes
@@ -268,6 +272,7 @@ public static class AuthRoutes
         w.WriteString("accessToken", tokens.AccessToken);
         w.WriteString("refreshToken", tokens.RefreshToken);
         w.WriteString("expiresAt", tokens.ExpiresAt);
+        w.WriteString("historyKey", tokens.HistoryKey);
         w.WriteEndObject();
     });
 

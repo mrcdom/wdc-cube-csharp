@@ -26,6 +26,8 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         if (db.Store is not null)
         {
             _ctx.Services.AddSingleton(db.Store.Repositories);
+            _ctx.Services.AddSingleton<IAuthentication>(new LocalAuthentication(db.Store.Repositories,
+                id => Domain.Users.HistoryKeys.Derive(db.HistoryMaster, id)));
         }
 
         _ctx.Services.AddSingleton<ISessionStore>(new MemorySessionStore());
@@ -82,7 +84,7 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
 
         page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Bola de vôlei").Click();
         page.WaitForAssertion(() => Assert.Equal("Bola de vôlei", page.Find(".product-page h2").TextContent), Wait);
-        Assert.StartsWith("home/product?pr-id=", Address, StringComparison.Ordinal);
+        Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key (D-22)
         Assert.Equal(3, page.FindAll(".description li").Count);
 
         page.Find(".product-page .plus").Click();
@@ -98,7 +100,7 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         page.Find(".cart-page .buy").Click();
 
         page.WaitForAssertion(() => Assert.Equal("Compra realizada com sucesso!", page.Find(".receipt-page .success").TextContent), Wait);
-        Assert.StartsWith("home/receipt?rc-id=", Address, StringComparison.Ordinal);
+        Assert.StartsWith("home/receipt?_e=", Address, StringComparison.Ordinal);
         Assert.Contains("R$ 135,90", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
         Assert.Empty(page.FindAll(".badge"));
     }

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="../Shopping.Domain/Shopping.Domain.csproj" />
     <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube.Codec/Wdc.Cube.Codec.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Shopping.Presentation.Tests" />

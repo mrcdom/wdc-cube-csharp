@@ -169,7 +169,8 @@ public sealed class RemoteAuthentication : IAuthentication
             var fields = await Fields(answer, cancellationToken);
             _credentials.AccessToken = fields["accessToken"].GetString();
             _credentials.RefreshToken = fields["refreshToken"].GetString();
-            return new Subject(fields["userId"].GetInt64(), fields["name"].GetString() ?? string.Empty, _credentials.RefreshToken);
+            return new Subject(fields["userId"].GetInt64(), fields["name"].GetString() ?? string.Empty, _credentials.RefreshToken,
+                fields.TryGetValue("historyKey", out var key) ? key.GetString() : null);
         }
     }
 

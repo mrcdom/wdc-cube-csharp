@@ -24,7 +24,9 @@ public interface IAuthentication
 }
 
 /// <summary>Checks credentials against the user table, in this process.</summary>
-public sealed class LocalAuthentication(ShoppingRepositories repositories) : IAuthentication
+/// <param name="repositories">Where the users are.</param>
+/// <param name="historyKeyOf">The address key of a user (the host derives it from its master key); none: plain addresses.</param>
+public sealed class LocalAuthentication(ShoppingRepositories repositories, Func<long, string>? historyKeyOf = null) : IAuthentication
 {
     public async Task<Subject?> Login(string userName, string password, CancellationToken cancellationToken = default)
     {
@@ -39,7 +41,7 @@ public sealed class LocalAuthentication(ShoppingRepositories repositories) : IAu
         var user = (await repositories.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
 
         return user is { Id: { } id } && PasswordHash.Verify(password, user.Password)
-            ? new Subject(id, user.Name ?? userName)
+            ? new Subject(id, user.Name ?? userName, HistoryKey: historyKeyOf?.Invoke(id))
             : null;
     }
 

@@ -5,6 +5,7 @@
 @using Shopping.Presentation.Infra
 @inject ShoppingRepositories Repositories
 @inject ISessionStore Session
+@inject IAuthentication Authentication
 @inject TimeProvider Time
 @inject ILoggerFactory Loggers
 
@@ -18,5 +19,5 @@
     public string? Path { get; set; }
 
     private MainPresenter Create(CubeHostContext host) =>
-        new(host.History, Repositories, Session, host.Dispatcher, Time, Loggers.CreateLogger<MainPresenter>());
+        new(host.History, Repositories, Session, host.Dispatcher, Time, Loggers.CreateLogger<MainPresenter>(), Authentication);
 }

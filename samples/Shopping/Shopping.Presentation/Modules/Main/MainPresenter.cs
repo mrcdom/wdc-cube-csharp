@@ -42,6 +42,9 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     /// <summary>Starts from the address; an empty address (or the application itself) goes home.</summary>
     public Task Start() => InvokeAsync(async () =>
     {
+        // The session first: with it comes the key that opens a sealed address (F5 on one).
+        Subject = await ResumeSession();
+        InstallCodec(Subject);
         await KickStart(Places.Home);
         if (!HasNavigated)
         {
@@ -55,8 +58,6 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
         {
             Scope.OnDismissError = Action(() => Scope.ErrorMessage = null);
 
-            // The session is read before any screen exists: a reload (F5) comes back logged in.
-            Subject = await ResumeSession();
         }
 
         if (last)
@@ -79,6 +80,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     {
         ArgumentNullException.ThrowIfNull(subject);
         Subject = subject;
+        InstallCodec(subject);
         await Session.Set(SubjectSession.Key, SubjectSession.Write(subject));
     }
 
@@ -86,6 +88,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     {
         var leaving = Subject;
         Subject = null;
+        InstallCodec(null);
         await Session.Remove(SubjectSession.Key);
         if (leaving is not null)
         {
@@ -97,6 +100,28 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
             {
                 Logger.LogWarning(caught, "Logging out on the server failed; the session is closed here.");
             }
+        }
+    }
+
+    /// <summary>
+    /// Seals the addresses with the user's key (decision D-22), or stops sealing. Where the codec cannot run
+    /// (WebAssembly has no AES), the addresses stay plain.
+    /// </summary>
+    private void InstallCodec(Subject? subject)
+    {
+        if (subject?.HistoryKey is not { } key)
+        {
+            History.Codec = null;
+            return;
+        }
+
+        try
+        {
+            History.Codec = new Wdc.Cube.Codec.AesHistoryCodec(Wdc.Cube.Codec.Base64Url.Decode(key));
+        }
+        catch (PlatformNotSupportedException)
+        {
+            History.Codec = null;
         }
     }
 

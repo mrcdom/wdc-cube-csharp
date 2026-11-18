@@ -240,6 +240,14 @@ public static class ShoppingApi
         ArgumentNullException.ThrowIfNull(environment);
         var section = configuration.GetSection("Shopping:Jwt");
         var options = new ShoppingAuthOptions { Issuer = section["Issuer"] ?? "wdc-shopping" };
+        if (configuration["Shopping:History:Key"] is { Length: > 0 } historyKey)
+        {
+            options.HistoryMasterKey = Convert.FromBase64String(historyKey);
+        }
+        else if (!environment.IsDevelopment())
+        {
+            throw new InvalidOperationException("Shopping:History:Key is missing (Base64, 32 bytes).");
+        }
         if (section["Key"] is { Length: > 0 } key)
         {
             options.Key = Convert.FromBase64String(key);

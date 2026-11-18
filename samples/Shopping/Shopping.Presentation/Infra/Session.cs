@@ -7,7 +7,8 @@ namespace Shopping.Presentation.Infra;
 /// <param name="NickName">How the screens greet them.</param>
 /// <param name="Credential">What takes the session back after a reload, when the authentication needs one (a refresh
 /// token through HTTP); opaque to the presentation.</param>
-public sealed record Subject(long Id, string NickName, string? Credential = null);
+/// <param name="HistoryKey">The user's address key (Base64url, decision D-22): with it the addresses are sealed.</param>
+public sealed record Subject(long Id, string NickName, string? Credential = null, string? HistoryKey = null);
 
 /// <summary>
 /// What survives a reload of the page (F5) for this browser tab. The host installs it: browser session storage in

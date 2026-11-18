@@ -43,8 +43,11 @@ public class ShoppingDatabaseFixture : IAsyncLifetime
     }
 
     /// <summary>What a new application instance gets: the repositories and the login (local here).</summary>
+    /// <summary>The master key of the users' address keys (decision D-22), one per fixture.</summary>
+    public byte[] HistoryMaster { get; } = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+
     public virtual (ShoppingRepositories Repositories, IAuthentication Authentication) Connect() =>
-        (Store!.Repositories, new LocalAuthentication(Store.Repositories));
+        (Store!.Repositories, new LocalAuthentication(Store.Repositories, id => Domain.Users.HistoryKeys.Derive(HistoryMaster, id)));
 
     protected virtual Task OnReady() => Task.CompletedTask;
 

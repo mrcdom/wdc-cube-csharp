@@ -19,6 +19,15 @@ builder.Services.AddSingleton(store);
 builder.Services.AddSingleton(store.Repositories);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ISessionStore, BrowserSessionStore>(); // one per circuit, like the application
+
+// Each user's address key derives from this master key (decision D-22); in Development a random one is enough.
+var historyMaster = builder.Configuration["Shopping:History:Key"] is { Length: > 0 } historyKey
+    ? Convert.FromBase64String(historyKey)
+    : builder.Environment.IsDevelopment()
+        ? System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)
+        : throw new InvalidOperationException("Shopping:History:Key is missing (Base64, 32 bytes).");
+builder.Services.AddSingleton<IAuthentication>(new LocalAuthentication(store.Repositories,
+    id => Shopping.Domain.Users.HistoryKeys.Derive(historyMaster, id)));
 builder.Services.AddCubeViews(ViewCatalog.Register);
 
 var app = builder.Build();
