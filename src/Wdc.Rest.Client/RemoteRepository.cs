@@ -115,7 +115,8 @@ public class RemoteRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, T
         var any = false;
         foreach (var field in Model.Fields)
         {
-            if (field.IsKey || field.Kind == FieldKind.Collection || !field.HasValue(marks))
+            // A collection only when the projection marks it (it is then its full state, decision D-23).
+            if (field.IsKey || !field.HasValue(marks) || (field.Kind == FieldKind.Collection && projection is null))
             {
                 continue;
             }

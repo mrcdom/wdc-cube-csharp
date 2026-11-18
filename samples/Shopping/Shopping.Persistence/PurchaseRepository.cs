@@ -4,8 +4,11 @@ using Wdc.Persistence;
 
 namespace Shopping.Persistence;
 
-/// <summary>A purchase is written with its items, in one transaction (the caller's, or one of its own).</summary>
-public sealed class PurchaseRepository(Database database, PurchaseItemRepository items)
+/// <summary>
+/// A purchase is written with its items in one transaction, by the framework's cascade (decision D-23): its items
+/// belong to it — they are inserted with it, synchronised on update when the projection marks them, and deleted with it.
+/// </summary>
+public sealed class PurchaseRepository(Database database)
     : SqlRepository<Purchase, PurchaseCriteria, long>(database, Mapping), IPurchaseRepository
 {
     /// <summary>
@@ -16,7 +19,7 @@ public sealed class PurchaseRepository(Database database, PurchaseItemRepository
         .Key("id", generated: true)
         .Column("buyDate", "buy_date")
         .Reference("user", "user_id", () => UserRepository.Mapping)
-        .Collection("items", "purchase_id", () => PurchaseItemRepository.Mapping) // mutual reference: resolved lazily
+        .Collection("items", "purchase_id", () => PurchaseItemRepository.Mapping, cascadeDelete: true) // resolved lazily
         .Conditions<PurchaseCriteria>(Conditions)
         .Ordering<PurchaseOrderBy>(o => o switch
         {
@@ -26,49 +29,6 @@ public sealed class PurchaseRepository(Database database, PurchaseItemRepository
             _ => [SortSpec.Asc("id")],
         })
         .Build();
-
-    public override Task<bool> Insert(Purchase bean, Purchase? projection = null, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(bean);
-        return Database.Required(async _ =>
-        {
-            if (!await base.Insert(bean, projection, cancellationToken))
-            {
-                return false;
-            }
-
-            foreach (var item in bean.Items ?? [])
-            {
-                item.Purchase = bean;
-                await items.Insert(item, cancellationToken: cancellationToken);
-            }
-
-            return true;
-        }, cancellationToken);
-    }
-
-    public override async Task<int> Delete(PurchaseCriteria criteria, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(criteria);
-        if (!criteria.HasFilter)
-        {
-            throw new InvalidRequestException("delete of purchases without a filter is refused");
-        }
-
-        // Children first, in the same transaction.
-        return await Database.Required(async _ =>
-        {
-            var ids = (await Fetch(criteria.WithProjection(Purchase.Model.KeyProjection()), cancellationToken: cancellationToken))
-                .Select(p => p.Id).ToList();
-            if (ids.Count == 0)
-            {
-                return 0;
-            }
-
-            await items.Delete(new PurchaseItemCriteria().PurchaseId.In(ids), cancellationToken);
-            return await base.Delete(new PurchaseCriteria().PurchaseId.In(ids), cancellationToken);
-        }, cancellationToken);
-    }
 
     /// <summary>The purchase's criteria on its table.</summary>
     private static ISqlFragment? Conditions(PurchaseCriteria criteria, FilterContext t) => Sql.And([

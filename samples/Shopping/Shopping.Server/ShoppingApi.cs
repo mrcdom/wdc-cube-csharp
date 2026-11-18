@@ -108,17 +108,15 @@ public static class ShoppingApi
             RestrictToId = (criteria, id) => criteria.PurchaseId.Restrict(id),
             SanitizeProjection = (_, p) => DropPassword(p.User),
             SanitizeOutput = (_, p) => DropPassword(p.User),
-            BeforeInsert = async (c, purchase) =>
+            BeforeInsert = (c, purchase) =>
             {
                 if (Permissions.ReachOf(c.User) is { } owner)
                 {
                     purchase.User = new User { Id = owner }; // bought by whoever is logged in, whatever was sent
                 }
 
-                foreach (var item in purchase.Items ?? [])
-                {
-                    item.Price = await PriceOf(repositories, item.Product?.Id, c.RequestAborted);
-                }
+                // The items, inserted in cascade, go through the purchase-item rules below (price from the product).
+                return ValueTask.CompletedTask;
             },
             BeforeUpdate = (c, _, sent) => sent.User is not null && Permissions.ReachOf(c.User) is not null
                 ? throw new AccessDeniedException("A purchase cannot change hands.")

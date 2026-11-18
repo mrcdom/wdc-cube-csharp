@@ -65,6 +65,26 @@ public sealed class EntityModel<TEntity> : IEntityModel
         return projection;
     }
 
+    /// <summary>
+    /// The projection to send for a write (decision D-23): what <paramref name="projection"/> marks, with the key at
+    /// every level — a referenced entity marked beyond its key and the shape of a marked collection carry their keys,
+    /// which is how the other side tells a child to update from one to insert.
+    /// </summary>
+    public TEntity WriteProjection(TEntity projection)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        var marks = KeyProjection();
+        foreach (var field in Fields)
+        {
+            if (!field.IsKey && field.HasValue(projection))
+            {
+                field.CopyForWrite(projection, marks);
+            }
+        }
+
+        return marks;
+    }
+
     /// <summary>Whether <paramref name="projection"/> asks for nothing beyond the key.</summary>
     public bool IsKeyOnly(TEntity projection)
     {

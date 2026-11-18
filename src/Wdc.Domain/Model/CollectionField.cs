@@ -88,17 +88,30 @@ public sealed class CollectionField<TEntity, TChild> : FieldModel<TEntity>
         writer.WriteEndArray();
     }
 
+    internal override void CopyForWrite(TEntity from, TEntity to)
+    {
+        var list = Get(from);
+        var shape = (list as ProjectionList<TChild>)?.Shape ?? (list is { Count: > 0 } ? list[0] : Model.OwnFieldsProjection());
+        Set(to, new ProjectionList<TChild>(Model.WriteProjection(shape)));
+    }
+
     internal override void ReadJson(ref Utf8JsonReader reader, TEntity entity, TEntity? presence)
     {
         switch (reader.TokenType)
         {
             case JsonTokenType.StartArray:
                 var items = new List<TChild>();
+                var shape = presence is null ? null : Model.KeyProjection(); // what the children carried, together
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
                     if (reader.TokenType == JsonTokenType.StartObject)
                     {
-                        items.Add(EntityJson.ReadObject(ref reader, Model, null));
+                        var childPresence = presence is null ? null : Model.New();
+                        items.Add(EntityJson.ReadObject(ref reader, Model, childPresence));
+                        if (childPresence is not null)
+                        {
+                            Union(shape!, childPresence);
+                        }
                     }
                     else
                     {
@@ -107,6 +120,13 @@ public sealed class CollectionField<TEntity, TChild> : FieldModel<TEntity>
                 }
 
                 Set(entity, items);
+                if (presence is not null)
+                {
+                    // For a write, the projection of a list is the union of the fields its children carried.
+                    Set(presence, new ProjectionList<TChild>(shape!));
+                    return;
+                }
+
                 break;
             case JsonTokenType.StartObject:
                 Set(entity, ReadEnvelope(ref reader));
@@ -120,6 +140,17 @@ public sealed class CollectionField<TEntity, TChild> : FieldModel<TEntity>
         if (presence is not null)
         {
             MarkOwnFields(presence);
+        }
+    }
+
+    private void Union(TChild shape, TChild more)
+    {
+        foreach (var field in Model.Fields)
+        {
+            if (field.HasValue(more) && !field.HasValue(shape))
+            {
+                field.Copy(more, shape);
+            }
         }
     }
 

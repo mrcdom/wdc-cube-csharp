@@ -9,7 +9,7 @@ public sealed class PurchaseRepository(Database database) : SqlRepository<Purcha
         .Key("id", generated: true)
         .Column("buyDate", "buy_date")
         .Reference("user", "user_id", () => UserRepository.Mapping)
-        .Collection("items", "purchase_id", () => PurchaseItemRepository.Mapping)
+        .Collection("items", "purchase_id", () => PurchaseItemRepository.Mapping, cascadeDelete: true)
         .Conditions<PurchaseCriteria>(Conditions)
         .Ordering<PurchaseOrderBy>(o => [SortSpec.Desc("buy_date")])
         .Build();

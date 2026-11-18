@@ -61,6 +61,19 @@ public sealed class EntityCodecTests
     }
 
     [Fact]
+    public void ReadForUpdate_ACollectionsPresenceIsTheUnionOfWhatItsChildrenCarried()
+    {
+        var (purchase, presence) = s_purchases.ReadForUpdate("""{"id":1,"items":[{"id":5,"amount":2},{"price":3}]}""");
+
+        Assert.Equal(2, purchase.Items!.Count);
+        var shape = Assert.IsType<ProjectionList<PurchaseItem>>(presence.Items).Shape;
+        Assert.NotNull(shape.Id);
+        Assert.NotNull(shape.Amount);
+        Assert.NotNull(shape.Price);
+        Assert.Null(shape.Product); // not sent: not written
+    }
+
+    [Fact]
     public void ProjectionEnvelope_CarriesTheChildFilterAndSlice()
     {
         var projection = new Purchase

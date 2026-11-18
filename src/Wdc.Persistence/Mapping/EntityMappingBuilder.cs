@@ -50,13 +50,18 @@ public sealed class EntityMappingBuilder<TEntity>
         return this;
     }
 
-    /// <summary>A collection whose children point at this entity's key through their own foreign-key column.</summary>
-    public EntityMappingBuilder<TEntity> Collection<TChild>(string field, string childForeignKeyColumn, Func<EntityMapping<TChild>> child)
+    /// <summary>
+    /// A collection whose children point at this entity's key through their own foreign-key column. With
+    /// <paramref name="cascadeDelete"/>, deleting this entity deletes its children first (they belong to it); without
+    /// it the collection is a view (the sales of a product) and a delete leaves it alone (decision D-23).
+    /// </summary>
+    public EntityMappingBuilder<TEntity> Collection<TChild>(string field, string childForeignKeyColumn, Func<EntityMapping<TChild>> child,
+        bool cascadeDelete = false)
         where TChild : class
     {
         ArgumentNullException.ThrowIfNull(child);
         var model = (CollectionField<TEntity, TChild>)Field(field, FieldKind.Collection);
-        _bindings.Add(new CollectionBinding<TEntity, TChild>(model, childForeignKeyColumn, child));
+        _bindings.Add(new CollectionBinding<TEntity, TChild>(model, childForeignKeyColumn, child, cascadeDelete));
         return this;
     }
 

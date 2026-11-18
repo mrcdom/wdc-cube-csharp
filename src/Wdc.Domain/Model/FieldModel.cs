@@ -45,6 +45,9 @@ public abstract class FieldModel<TEntity>
     /// <summary>The value kind of a scalar field; <see langword="null"/> for references and collections.</summary>
     public virtual IValueKind? ScalarKind => null;
 
+    /// <summary>Copies this field's mark into a write projection (nested shapes get their keys: see <see cref="EntityModel{TEntity}.WriteProjection"/>).</summary>
+    internal virtual void CopyForWrite(TEntity from, TEntity to) => Copy(from, to);
+
     internal abstract void WriteJson(Utf8JsonWriter writer, TEntity entity, TEntity? projection, HashSet<object> visited);
 
     internal abstract void ReadJson(ref Utf8JsonReader reader, TEntity entity, TEntity? presence);

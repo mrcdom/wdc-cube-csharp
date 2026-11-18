@@ -25,6 +25,7 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 {
     private readonly Func<CancellationToken, ValueTask<DbConnection>> _open;
     private readonly AsyncLocal<Frame?> _current = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<object, object> _stores = new(ReferenceEqualityComparer.Instance);
     private readonly ILogger _logger;
 
     /// <summary>Creates the database.</summary>
@@ -87,6 +88,18 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 
         return RunAfterCommit([task]);
     }
+
+    // :: Repositories by mapping (D-23: a cascade writes each child through its own repository)
+
+    internal void Register<TEntity>(EntityMapping<TEntity> mapping, IEntityStore<TEntity> store)
+        where TEntity : class => _stores[mapping] = store;
+
+    internal IEntityStore<TEntity> StoreOf<TEntity>(EntityMapping<TEntity> mapping)
+        where TEntity : class =>
+        _stores.TryGetValue(mapping, out var store)
+            ? (IEntityStore<TEntity>)store
+            : throw new InvalidOperationException(
+                $"No repository of {mapping.Model.Name} exists on this database: create it before writing {mapping.Model.Name} in cascade.");
 
     // :: Detached transactions (D-17)
 

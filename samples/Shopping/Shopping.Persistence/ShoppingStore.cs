@@ -25,7 +25,7 @@ public sealed class ShoppingStore : IAsyncDisposable
         Repositories = new ShoppingRepositories(
             new UserRepository(database),
             new ProductRepository(database),
-            new PurchaseRepository(database, items),
+            new PurchaseRepository(database),
             items,
             database);
     }

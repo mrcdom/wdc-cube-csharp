@@ -55,6 +55,12 @@ public sealed class ReferenceField<TEntity, TChild> : FieldModel<TEntity>
         }
     }
 
+    internal override void CopyForWrite(TEntity from, TEntity to)
+    {
+        var shape = Get(from);
+        Set(to, shape is null || Model.IsKeyOnly(shape) ? Model.KeyProjection() : Model.WriteProjection(shape));
+    }
+
     internal override void ReadJson(ref Utf8JsonReader reader, TEntity entity, TEntity? presence)
     {
         if (reader.TokenType != JsonTokenType.StartObject)

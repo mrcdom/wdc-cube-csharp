@@ -5,13 +5,18 @@ namespace Wdc.Persistence;
 
 /// <summary>
 /// A repository built from an <see cref="EntityMapping{TEntity}"/>: every operation of the contract, with no SQL
-/// written per entity. Subclass it to add what is particular (a cascade, a guard) or to compose operations.
+/// written per entity. Subclass it to add what is particular (a validation, a guard) or to compose operations.
 /// </summary>
 /// <remarks>
-/// Each fetch is a single statement whose rows are JSON objects shaped by the projection, read back by the same
-/// <see cref="JsonEntityCodec{TEntity}"/> the REST layer uses.
+/// <para>Each fetch is a single statement whose rows are JSON objects shaped by the projection, read back by the
+/// same <see cref="JsonEntityCodec{TEntity}"/> the REST layer uses.</para>
+/// <para><b>Writes cascade as the projection asks</b> (decision D-23), in one transaction: a referenced entity marked
+/// beyond its key is inserted or updated; a marked collection is inserted with its parent, and on update it is the
+/// full state (new children inserted, known ones updated, missing ones deleted). A collection declared
+/// <c>cascadeDelete</c> goes with its parent on delete. Each child is written by its own repository, which must exist
+/// on the same <see cref="Persistence.Database"/>.</para>
 /// </remarks>
-public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCriteria, TKey>
+public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCriteria, TKey>, IEntityStore<TEntity>
     where TEntity : class
     where TCriteria : ICriteria
 {
@@ -24,6 +29,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         Database = database;
         TableMapping = mapping;
         Codec = new JsonEntityCodec<TEntity>(mapping.Model);
+        database.Register(mapping, this); // the repository a cascade writes this entity through
     }
 
     protected Database Database { get; }
@@ -117,6 +123,32 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     public virtual Task<bool> Insert(TEntity bean, TEntity? projection = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(bean);
+        return Database.Required(async _ =>
+        {
+            if (projection is not null)
+            {
+                foreach (var binding in TableMapping.Bindings)
+                {
+                    await binding.BeforeWrite(Database, bean, projection, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (!await InsertOwnRow(bean, projection, cancellationToken).ConfigureAwait(false))
+            {
+                return false;
+            }
+
+            foreach (var binding in TableMapping.Bindings)
+            {
+                await binding.AfterInsert(Database, bean, projection, cancellationToken).ConfigureAwait(false);
+            }
+
+            return true;
+        }, cancellationToken);
+    }
+
+    private Task<bool> InsertOwnRow(TEntity bean, TEntity? projection, CancellationToken cancellationToken)
+    {
         var written = new List<(Binding<TEntity> Binding, object? Value)>();
         foreach (var binding in TableMapping.Bindings)
         {
@@ -170,8 +202,36 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(newBean);
-        var key = Model.Key!.ScalarKind!.ToDatabaseObject(Model.KeyOf(newBean))
-                  ?? throw new InvalidRequestException($"update of {Model.Name} without its key");
+        var keyValue = Model.KeyOf(newBean) ?? throw new InvalidRequestException($"update of {Model.Name} without its key");
+        return Database.Required(async _ =>
+        {
+            var changed = false;
+            if (projection is not null)
+            {
+                foreach (var binding in TableMapping.Bindings)
+                {
+                    changed |= await binding.BeforeWrite(Database, newBean, projection, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            changed |= await UpdateOwnRow(newBean, oldBean, projection, cancellationToken).ConfigureAwait(false);
+
+            if (projection is not null)
+            {
+                var key = Model.Key!.ScalarKind!.ToDatabaseObject(keyValue)!;
+                foreach (var binding in TableMapping.Bindings)
+                {
+                    changed |= await binding.AfterUpdate(Database, newBean, projection, key, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return changed;
+        }, cancellationToken);
+    }
+
+    private Task<bool> UpdateOwnRow(TEntity newBean, TEntity? oldBean, TEntity? projection, CancellationToken cancellationToken)
+    {
+        var key = Model.Key!.ScalarKind!.ToDatabaseObject(Model.KeyOf(newBean));
         var marks = projection ?? (oldBean is null ? OwnFieldsProjection() : Model.ChangedFields(newBean, oldBean));
 
         var sets = new List<(string Column, object? Value)>();
@@ -216,14 +276,86 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
             throw new InvalidRequestException($"delete of {Model.Name} without a filter is refused");
         }
 
-        var w = Database.NewWriter();
-        w.Dialect.WriteDeleteFrom(w, TableMapping.Table, Alias);
-        WriteWhere(w, TableMapping.Conditions(criteria, Alias));
-        var statement = w.ToStatement();
-        return Database.Write(async (connection, transaction) =>
+        if (!TableMapping.Bindings.Any(b => b.CascadesDelete))
         {
+            var w = Database.NewWriter();
+            w.Dialect.WriteDeleteFrom(w, TableMapping.Table, Alias);
+            WriteWhere(w, TableMapping.Conditions(criteria, Alias));
+            var statement = w.ToStatement();
+            return Database.Write(async (connection, transaction) =>
+            {
+                await using var command = Database.Command(connection, transaction, statement);
+                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }, cancellationToken);
+        }
+
+        // The keys first (the criteria may depend on the children, which go before the parents), then the cascade.
+        return Database.Required(async _ =>
+        {
+            var keys = await SelectKeys(TableMapping.Conditions(criteria, Alias), cancellationToken).ConfigureAwait(false);
+            if (keys.Count > 0)
+            {
+                await DeleteByKeys(keys, cancellationToken).ConfigureAwait(false);
+            }
+
+            return keys.Count;
+        }, cancellationToken);
+    }
+
+    // :: The child side of a cascade (IEntityStore)
+
+    Task<bool> IEntityStore<TEntity>.InsertRow(TEntity bean, TEntity? projection, CancellationToken cancellationToken) =>
+        Insert(bean, projection, cancellationToken);
+
+    Task<bool> IEntityStore<TEntity>.UpdateRow(TEntity bean, TEntity projection, CancellationToken cancellationToken) =>
+        Update(bean, null, projection, cancellationToken);
+
+    Task IEntityStore<TEntity>.DeleteByKeys(IReadOnlyList<object> keys, CancellationToken cancellationToken) =>
+        DeleteByKeys(keys, cancellationToken);
+
+    Task<IReadOnlyList<object>> IEntityStore<TEntity>.KeysWhere(string column, IReadOnlyList<object> values,
+        CancellationToken cancellationToken) =>
+        SelectKeys(Sql.In(Sql.Column(Alias, column), values), cancellationToken);
+
+    private Task DeleteByKeys(IReadOnlyList<object> keys, CancellationToken cancellationToken) =>
+        Database.Required(async _ =>
+        {
+            foreach (var binding in TableMapping.Bindings)
+            {
+                await binding.BeforeDelete(Database, keys, cancellationToken).ConfigureAwait(false);
+            }
+
+            var kind = Model.Key!.ScalarKind!;
+            var w = Database.NewWriter();
+            w.Dialect.WriteDeleteFrom(w, TableMapping.Table, Alias);
+            WriteWhere(w, Sql.In(Sql.Column(Alias, TableMapping.KeyColumn), [.. keys.Select(k => kind.ToDatabaseObject(k))]));
+            var statement = w.ToStatement();
+            return await Database.Write(async (connection, transaction) =>
+            {
+                await using var command = Database.Command(connection, transaction, statement);
+                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
+        }, cancellationToken);
+
+    /// <summary>The keys (model form) of the rows matching <paramref name="where"/>.</summary>
+    private Task<IReadOnlyList<object>> SelectKeys(ISqlFragment? where, CancellationToken cancellationToken)
+    {
+        var w = Database.NewWriter();
+        w.Append("SELECT ").Column(Alias, TableMapping.KeyColumn).Append(" FROM ").Table(TableMapping.Table).Append(' ').Identifier(Alias);
+        WriteWhere(w, where);
+        var statement = w.ToStatement();
+        var kind = Model.Key!.ScalarKind!;
+        return Database.Read(async (connection, transaction) =>
+        {
+            var keys = new List<object>();
             await using var command = Database.Command(connection, transaction, statement);
-            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                keys.Add(kind.FromDatabaseObject(reader.GetValue(0))!);
+            }
+
+            return (IReadOnlyList<object>)keys;
         }, cancellationToken);
     }
 

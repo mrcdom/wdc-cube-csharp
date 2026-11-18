@@ -130,6 +130,26 @@ internal abstract class Binding<TEntity>(FieldModel<TEntity> field)
     public EntityMapping<TEntity> Owner { get; set; } = null!;
 
     public abstract void AddJsonEntry(List<JsonEntry> entries, string alias, TEntity projection);
+
+    // :: Cascade (decision D-23). Each returns whether it wrote something.
+
+    /// <summary>Before the row is written: a referenced row the projection marks beyond its key.</summary>
+    public virtual Task<bool> BeforeWrite(Database database, TEntity bean, TEntity projection, CancellationToken cancellationToken) =>
+        Task.FromResult(false);
+
+    /// <summary>After the row is inserted: the children of a collection.</summary>
+    public virtual Task<bool> AfterInsert(Database database, TEntity bean, TEntity? projection, CancellationToken cancellationToken) =>
+        Task.FromResult(false);
+
+    /// <summary>After the row is updated: a marked collection, as its full state.</summary>
+    public virtual Task<bool> AfterUpdate(Database database, TEntity bean, TEntity projection, object parentKey,
+        CancellationToken cancellationToken) => Task.FromResult(false);
+
+    /// <summary>Before rows are deleted: the children of a collection declared as cascade delete.</summary>
+    public virtual Task BeforeDelete(Database database, IReadOnlyList<object> keys, CancellationToken cancellationToken) =>
+        Task.CompletedTask;
+
+    public virtual bool CascadesDelete => false;
 }
 
 internal sealed class ScalarBinding<TEntity>(FieldModel<TEntity> field, string column) : Binding<TEntity>(field)
@@ -174,6 +194,37 @@ internal sealed class ReferenceBinding<TEntity, TChild>(
 
     public ReferenceField<TEntity, TChild> Reference { get; } = field;
 
+    /// <summary>
+    /// A projection that marks the referenced entity beyond its key writes it too: inserted when it has no key (the
+    /// foreign key then points at it), updated in the marked fields otherwise. Key only: just the foreign key.
+    /// </summary>
+    public override async Task<bool> BeforeWrite(Database database, TEntity bean, TEntity projection, CancellationToken cancellationToken)
+    {
+        if (Reference.Get(projection) is not { } shape || Child.Model.IsKeyOnly(shape) || Reference.Get(bean) is not { } child)
+        {
+            return false;
+        }
+
+        var store = database.StoreOf(Child);
+        var guard = Wdc.Domain.CascadeGuard.Current;
+        if (Child.Model.KeyOf(child) is null)
+        {
+            if (guard is not null)
+            {
+                await guard.BeforeInsert(typeof(TChild), child, cancellationToken).ConfigureAwait(false);
+            }
+
+            return await store.InsertRow(child, null, cancellationToken).ConfigureAwait(false); // a new row: every field that holds a value
+        }
+
+        if (guard is not null)
+        {
+            await guard.BeforeUpdate(typeof(TChild), child, shape, cancellationToken).ConfigureAwait(false);
+        }
+
+        return await store.UpdateRow(child, shape, cancellationToken).ConfigureAwait(false);
+    }
+
     public override void AddJsonEntry(List<JsonEntry> entries, string alias, TEntity projection)
     {
         var childProjection = Reference.Get(projection) ?? Child.Model.KeyProjection();
@@ -200,12 +251,146 @@ internal sealed class ReferenceBinding<TEntity, TChild>(
 }
 
 internal sealed class CollectionBinding<TEntity, TChild>(
-    CollectionField<TEntity, TChild> field, string childForeignKeyColumn, Func<EntityMapping<TChild>> child)
+    CollectionField<TEntity, TChild> field, string childForeignKeyColumn, Func<EntityMapping<TChild>> child, bool cascadeDelete)
     : Binding<TEntity>(field)
     where TEntity : class
     where TChild : class
 {
     private readonly Lazy<EntityMapping<TChild>> _child = new(child);
+
+    public override bool CascadesDelete { get; } = cascadeDelete;
+
+    /// <summary>The child's reference to the parent, mapped on the same column: how a child is pointed at its parent.</summary>
+    private ReferenceBinding<TChild, TEntity> Back =>
+        Child.Bindings.OfType<ReferenceBinding<TChild, TEntity>>().FirstOrDefault(r => r.ForeignKeyColumn == ChildForeignKeyColumn)
+        ?? throw new InvalidOperationException(
+            $"To write {Owner.Model.Name}.{Field.Name} in cascade, {Child.Model.Name} must map a reference to " +
+            $"{Owner.Model.Name} on '{ChildForeignKeyColumn}'.");
+
+    /// <summary>What to write of each child: the shape of the projection's list, plus the reference to the parent.</summary>
+    private TChild ChildProjection(TEntity projection)
+    {
+        var list = Collection.Get(projection);
+        var shape = (list as ProjectionList<TChild>)?.Shape ?? (list is { Count: > 0 } ? list[0] : Child.Model.OwnFieldsProjection());
+        var marks = Child.Model.New();
+        foreach (var f in Child.Model.Fields)
+        {
+            f.Copy(shape, marks);
+        }
+
+        Back.Reference.Set(marks, Owner.Model.KeyProjection());
+        return marks;
+    }
+
+    /// <summary>Inserts the children: the marked collection, or (without a projection) the collection that holds a value.</summary>
+    public override async Task<bool> AfterInsert(Database database, TEntity bean, TEntity? projection, CancellationToken cancellationToken)
+    {
+        if ((projection is not null && Collection.Get(projection) is null) || Collection.Get(bean) is not { Count: > 0 } children)
+        {
+            return false;
+        }
+
+        var store = database.StoreOf(Child);
+        var guard = Wdc.Domain.CascadeGuard.Current;
+        var back = Back.Reference;
+        foreach (var item in children)
+        {
+            back.Set(item, bean);
+            if (guard is not null)
+            {
+                await guard.BeforeInsert(typeof(TChild), item, cancellationToken).ConfigureAwait(false);
+            }
+
+            // A new row writes every field that holds a value (as the Kotlin cascade does), the parent's key and what the
+            // child's rules filled in included; the projection's shape says what to update in the children that exist.
+            await store.InsertRow(item, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The list is the full state of the collection: children without a key are inserted, children with one are
+    /// updated in the marked fields, and children of this parent that did not come are deleted (orphans).
+    /// </summary>
+    public override async Task<bool> AfterUpdate(Database database, TEntity bean, TEntity projection, object parentKey,
+        CancellationToken cancellationToken)
+    {
+        if (Collection.Get(projection) is null)
+        {
+            return false;
+        }
+
+        var store = database.StoreOf(Child);
+        var guard = Wdc.Domain.CascadeGuard.Current;
+        var childProjection = ChildProjection(projection);
+        var back = Back.Reference;
+        var existing = await store.KeysWhere(ChildForeignKeyColumn, [parentKey], cancellationToken).ConfigureAwait(false);
+        var kept = new HashSet<object>();
+        var changed = false;
+        foreach (var item in Collection.Get(bean) ?? [])
+        {
+            back.Set(item, bean);
+            if (Child.Model.KeyOf(item) is { } key)
+            {
+                kept.Add(key);
+                if (guard is not null)
+                {
+                    await guard.BeforeUpdate(typeof(TChild), item, childProjection, cancellationToken).ConfigureAwait(false);
+                }
+
+                changed |= await store.UpdateRow(item, childProjection, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                if (guard is not null)
+                {
+                    await guard.BeforeInsert(typeof(TChild), item, cancellationToken).ConfigureAwait(false);
+                }
+
+                changed |= await store.InsertRow(item, null, cancellationToken).ConfigureAwait(false); // a new row: every valued field
+            }
+        }
+
+        var orphans = existing.Where(k => !kept.Contains(k)).ToList();
+        if (orphans.Count > 0)
+        {
+            if (guard is not null)
+            {
+                await guard.BeforeDelete(typeof(TChild), orphans, cancellationToken).ConfigureAwait(false);
+            }
+
+            await store.DeleteByKeys(orphans, cancellationToken).ConfigureAwait(false);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /// <summary>Deletes the children of the parents about to be deleted, when the collection is declared as cascade delete.</summary>
+    public override async Task BeforeDelete(Database database, IReadOnlyList<object> keys, CancellationToken cancellationToken)
+    {
+        if (!CascadesDelete)
+        {
+            return;
+        }
+
+        var store = database.StoreOf(Child);
+        var parentKind = Owner.Model.Key!.ScalarKind!;
+        var children = await store.KeysWhere(ChildForeignKeyColumn, [.. keys.Select(k => parentKind.ToDatabaseObject(k)!)],
+            cancellationToken).ConfigureAwait(false);
+        if (children.Count == 0)
+        {
+            return;
+        }
+
+        if (Wdc.Domain.CascadeGuard.Current is { } guard)
+        {
+            await guard.BeforeDelete(typeof(TChild), children, cancellationToken).ConfigureAwait(false);
+        }
+
+        await store.DeleteByKeys(children, cancellationToken).ConfigureAwait(false);
+    }
 
     public string ChildForeignKeyColumn { get; } = childForeignKeyColumn;
 

@@ -341,22 +341,11 @@ public sealed class RepositoryWire<TEntity, TCriteria>
     // :: Internals
 
     /// <summary>
-    /// The projection to write an entity for a write: the key, and each marked field with its own marker — a reference
-    /// with its key, whatever shape the caller's projection gave it (the database stores the key either way).
+    /// The projection to write an entity for a write: the key at every level, scalars as marked; a reference with its
+    /// key alone, or with its marked fields when the projection asks for them (decision D-23); a marked collection
+    /// with the shape of its children.
     /// </summary>
-    private TEntity ForWriting(TEntity projection)
-    {
-        var marks = Model.New();
-        foreach (var field in Model.Fields)
-        {
-            if (field.IsKey || (field.Kind != FieldKind.Collection && field.HasValue(projection)))
-            {
-                field.MarkOwnFields(marks);
-            }
-        }
-
-        return marks;
-    }
+    private TEntity ForWriting(TEntity projection) => Model.WriteProjection(projection);
 
     private static void WriteKey(Utf8JsonWriter writer, FieldModel<TEntity> keyField, object key)
     {

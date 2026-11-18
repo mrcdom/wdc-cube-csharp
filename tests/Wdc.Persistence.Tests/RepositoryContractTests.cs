@@ -243,6 +243,117 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.Equal([2], stored[purchases[3].Id!.Value]);
     }
 
+    // :: Writes in cascade, as the projection asks (decision D-23)
+
+    private static readonly PurchaseItem s_itemWrite = new() { Amount = Mark.Int32, Price = Mark.Decimal, Product = new Product() };
+
+    private async Task<int[]> AmountsOf(long purchaseId) =>
+        [.. (await Db.Items.Fetch(new PurchaseItemCriteria().PurchaseId.Eq(purchaseId).WithOrderBy(PurchaseItemOrderBy.OldestFirst),
+            cancellationToken: Ct)).Select(i => i.Amount!.Value)];
+
+    [Fact]
+    public async Task Cascade_Insert_WritesTheMarkedCollection_PointingAtTheParent()
+    {
+        var ana = await NewUser("ana", "Ana");
+        var bola = await NewProduct("Bola", 10m);
+        var purchase = new Purchase
+        {
+            User = ana,
+            BuyDate = DateTimeOffset.UtcNow,
+            Items =
+            [
+                new PurchaseItem { Product = bola, Amount = 2, Price = 10m },
+                new PurchaseItem { Product = bola, Amount = 3, Price = 10m },
+            ],
+        };
+
+        Assert.True(await Db.Purchases.Insert(purchase,
+            new Purchase { User = new User(), BuyDate = Mark.Instant, Items = Mark.List(s_itemWrite) }, Ct));
+
+        Assert.Equal(new[] { 2, 3 }, await AmountsOf(purchase.Id!.Value));
+    }
+
+    [Fact]
+    public async Task Cascade_Update_TheMarkedCollectionIsItsFullState()
+    {
+        var ana = await NewUser("ana", "Ana");
+        var bola = await NewProduct("Bola", 10m);
+        var purchase = await NewPurchase(ana, (bola, 1), (bola, 2), (bola, 3));
+        var stored = await Db.Items.Fetch(new PurchaseItemCriteria().PurchaseId.Eq(purchase.Id).WithOrderBy(PurchaseItemOrderBy.OldestFirst),
+            cancellationToken: Ct);
+        var (a, c) = (stored[0], stored[2]);
+
+        // Untouched when the projection does not mark the collection.
+        await Db.Purchases.Update(new Purchase { Id = purchase.Id, BuyDate = DateTimeOffset.UtcNow, Items = [] },
+            projection: new Purchase { BuyDate = Mark.Instant }, cancellationToken: Ct);
+        Assert.Equal(new[] { 1, 2, 3 }, await AmountsOf(purchase.Id!.Value));
+
+        // Marked: A changes, B is left out (deleted), C stays, D is new (inserted).
+        var changed = await Db.Purchases.Update(new Purchase
+        {
+            Id = purchase.Id,
+            Items =
+            [
+                new PurchaseItem { Id = a.Id, Amount = 10, Price = 10m, Product = bola },
+                new PurchaseItem { Id = c.Id, Amount = 3, Price = 10m, Product = bola },
+                new PurchaseItem { Amount = 7, Price = 10m, Product = bola },
+            ],
+        }, projection: new Purchase { Items = Mark.List(s_itemWrite) }, cancellationToken: Ct);
+
+        Assert.True(changed);
+        Assert.Equal(new[] { 10, 3, 7 }, await AmountsOf(purchase.Id!.Value));
+
+        // An empty list is the state "no items".
+        await Db.Purchases.Update(new Purchase { Id = purchase.Id, Items = [] }, projection: new Purchase { Items = Mark.List(s_itemWrite) },
+            cancellationToken: Ct);
+        Assert.Empty(await AmountsOf(purchase.Id!.Value));
+    }
+
+    [Fact]
+    public async Task Cascade_AReferenceMarkedBeyondItsKey_WritesTheReferencedRow_OrInsertsIt()
+    {
+        var ana = await NewUser("ana", "Ana");
+        var bola = await NewProduct("Bola", 10m);
+        var purchase = await NewPurchase(ana, (bola, 1));
+
+        // Key only: just the foreign key (nothing of the user is written).
+        await Db.Purchases.Update(new Purchase { Id = purchase.Id, User = new User { Id = ana.Id, Name = "ignored" } },
+            projection: new Purchase { User = new User() }, cancellationToken: Ct);
+        Assert.Equal("Ana", (await Db.Users.FetchById(ana.Id!.Value, cancellationToken: Ct))!.Name);
+
+        // Marked beyond the key: the user's row is updated too.
+        await Db.Purchases.Update(new Purchase { Id = purchase.Id, User = new User { Id = ana.Id, Name = "Ana Maria" } },
+            projection: new Purchase { User = new User { Name = Mark.String } }, cancellationToken: Ct);
+        Assert.Equal("Ana Maria", (await Db.Users.FetchById(ana.Id!.Value, cancellationToken: Ct))!.Name);
+
+        // Without a key: inserted first, and the purchase points at it.
+        var bia = new User { UserName = "bia", Name = "Bia", Password = "x" };
+        await Db.Purchases.Update(new Purchase { Id = purchase.Id, User = bia },
+            projection: new Purchase { User = new User { UserName = Mark.String, Name = Mark.String, Password = Mark.String } },
+            cancellationToken: Ct);
+        var now = await Db.Purchases.FetchById(purchase.Id!.Value, new Purchase { User = new User { Name = Mark.String } }, Ct);
+        Assert.Equal("Bia", now!.User!.Name);
+        Assert.NotEqual(ana.Id, now.User.Id);
+    }
+
+    [Fact]
+    public async Task Cascade_Delete_TakesTheDeclaredCollection_ButNeverAView()
+    {
+        var ana = await NewUser("ana", "Ana");
+        var bola = await NewProduct("Bola", 10m);
+        var purchase = await NewPurchase(ana, (bola, 1), (bola, 2));
+        var other = await NewPurchase(ana, (bola, 5));
+
+        Assert.Equal(1, await Db.Purchases.Delete(new PurchaseCriteria().PurchaseId.Eq(purchase.Id), Ct));
+
+        Assert.Empty(await AmountsOf(purchase.Id!.Value)); // its items went with it
+        Assert.Equal(new[] { 5 }, await AmountsOf(other.Id!.Value)); // another purchase's did not
+
+        // The items of a product are a view (no cascade): a sold product cannot be deleted from under its sales.
+        await Assert.ThrowsAnyAsync<Exception>(() => Db.Products.Delete(new ProductCriteria().ProductId.Eq(bola.Id), Ct));
+        Assert.Equal(new[] { 5 }, await AmountsOf(other.Id!.Value));
+    }
+
     [Fact]
     public async Task Fetch_ValuesRoundTrip_BytesInstantsDecimalsEnums()
     {

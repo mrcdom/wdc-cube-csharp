@@ -17,7 +17,7 @@ namespace Wdc.Rest.Server;
 /// <para><see cref="Scope"/> must narrow with <c>Restrict</c> (<c>c.UserId.Restrict(owner)</c>): a restriction is
 /// combined with AND outside whatever the client asked on the same field, so <c>"or": true</c> cannot widen it.</para>
 /// </remarks>
-public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
+public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
     where TEntity : class
     where TCriteria : Criteria<TCriteria, TEntity>
 {
@@ -68,6 +68,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
     public RouteGroupBuilder Map(IEndpointRouteBuilder routes)
     {
         ArgumentNullException.ThrowIfNull(routes);
+        (routes.ServiceProvider.GetService(typeof(RpcRegistry)) as RpcRegistry)?.Add(typeof(TEntity), this);
         var group = routes.MapGroup(BasePath);
         group.MapPost(RestNames.Count, c => Handle(c, RpcOperation.Count, false, Count));
         group.MapPost(RestNames.Fetch, c => Handle(c, RpcOperation.Fetch, false, Fetch));
@@ -95,7 +96,16 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
             }
 
             var body = HttpMethods.IsGet(context.Request.Method) ? [] : await RestHttp.ReadBody(context);
-            return await RestTransactions.Run(context, write, () => handler(context, body));
+            if (!write)
+            {
+                return await RestTransactions.Run(context, write, () => handler(context, body));
+            }
+
+            // Children written in cascade answer to their own routes' rules (decision D-23). Without the registry
+            // (AddCubeRest not called) the guard knows no routes and refuses every cascade.
+            var registry = context.RequestServices.GetService(typeof(RpcRegistry)) as RpcRegistry ?? new RpcRegistry();
+            var guard = new RpcCascadeGuard(context, registry);
+            return await RestTransactions.Run(context, write, () => CascadeGuard.Run(guard, () => handler(context, body)));
         });
 
     // :: Reads
@@ -207,15 +217,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
             throw new InvalidRequestException($"update of {Wire.Model.Name} without its key");
         }
 
-        if (Scope is { } scope)
-        {
-            var criteria = KeyCriteria((TKey)key);
-            scope(context, criteria);
-            if (await Repository(context).Count(criteria, context.RequestAborted) == 0)
-            {
-                throw new KeyNotFoundException($"No {Wire.Model.Name} {key} within reach.");
-            }
-        }
+        await RequireWithinReach(context, (TKey)key);
 
         if (BeforeUpdate is { } before)
         {
@@ -237,6 +239,67 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
 
         Scope?.Invoke(context, criteria);
         return RepositoryWire<TEntity, TCriteria>.WriteCount(await Writable(context).Delete(criteria, context.RequestAborted));
+    }
+
+    // :: Rules for a child written in cascade (decision D-23)
+
+    async Task ICascadeRules.CheckInsert(HttpContext context, object entity)
+    {
+        if (Authorize is { } authorize)
+        {
+            await authorize(context, RpcOperation.Insert);
+        }
+
+        if (BeforeInsert is { } before)
+        {
+            await before(context, (TEntity)entity);
+        }
+    }
+
+    async Task ICascadeRules.CheckUpdate(HttpContext context, object entity, object projection)
+    {
+        if (Authorize is { } authorize)
+        {
+            await authorize(context, RpcOperation.Update);
+        }
+
+        if (Wire.Model.KeyOf((TEntity)entity) is { } key)
+        {
+            await RequireWithinReach(context, (TKey)key);
+        }
+
+        if (BeforeUpdate is { } before)
+        {
+            await before(context, (TEntity)entity, (TEntity)projection);
+        }
+    }
+
+    async Task ICascadeRules.CheckDelete(HttpContext context, IReadOnlyList<object> keys)
+    {
+        if (Authorize is { } authorize)
+        {
+            await authorize(context, RpcOperation.Delete);
+        }
+
+        foreach (var key in keys)
+        {
+            await RequireWithinReach(context, (TKey)key);
+        }
+    }
+
+    private async Task RequireWithinReach(HttpContext context, TKey key)
+    {
+        if (Scope is not { } scope)
+        {
+            return;
+        }
+
+        var criteria = KeyCriteria(key);
+        scope(context, criteria);
+        if (await Repository(context).Count(criteria, context.RequestAborted) == 0)
+        {
+            throw new KeyNotFoundException($"No {Wire.Model.Name} {key} within reach.");
+        }
     }
 
     // :: Internals
