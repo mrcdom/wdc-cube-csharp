@@ -67,17 +67,19 @@ public sealed class EntityCodecTests
         {
             Id = Mark.Int64,
             Items = Mark.List(new PurchaseItem { Id = Mark.Int64, Price = Mark.Decimal },
-                new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst), limit: 3),
+                new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst), limit: 3, offset: 6),
         };
 
         var json = s_purchases.ToJson(projection);
         Assert.Equal(
-            """{"id":1,"items":{"shape":{"id":1,"price":1},"where":{"amount":{"p":[{"o":"GE","v":[2]}]},"orderBy":"MOST_EXPENSIVE_FIRST"},"limit":3}}""",
+            """{"id":1,"items":{"shape":{"id":1,"price":1},"where":{"amount":{"p":[{"o":"GE","v":[2]}]},"orderBy":"MOST_EXPENSIVE_FIRST"},"limit":3,"offset":6}}""",
             json);
 
         var read = s_purchases.FromJson(json);
         var items = Assert.IsType<ProjectionList<PurchaseItem>>(read.Items);
         Assert.Equal(3, items.Limit);
+        Assert.Equal(6, items.Offset);
+        Assert.Equal(2, Assert.Single(Assert.Single(((PurchaseItemCriteria)items.Criteria!).Amount.Predicates).Values));
         var where = Assert.IsType<PurchaseItemCriteria>(items.Criteria);
         Assert.Equal(PurchaseItemOrderBy.MostExpensiveFirst, where.OrderBy);
         Assert.NotNull(items.Shape.Price);

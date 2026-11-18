@@ -10,6 +10,7 @@ public sealed class Product : IKeyedEntity
         .Field(ValueKinds.Decimal, "price", p => p.Price, (p, v) => p.Price = v)
         .Field(ValueKinds.String, "description", p => p.Description, (p, v) => p.Description = v)
         .Field(ValueKinds.Bytes, "image", p => p.Image, (p, v) => p.Image = v, inDefaultProjection: false)
+        .Collection("items", p => p.Items, (p, v) => p.Items = v, () => PurchaseItem.Model, () => new PurchaseItemCriteria())
         .Build();
 
     public long? Id { get; set; }
@@ -21,6 +22,9 @@ public sealed class Product : IKeyedEntity
     public string? Description { get; set; }
 
     public byte[]? Image { get; set; }
+
+    /// <summary>Where the product was sold: the purchase items that carry it (a multivalued field).</summary>
+    public List<PurchaseItem>? Items { get; set; }
 
     object? IKeyedEntity.Key => Id;
 }

@@ -156,6 +156,93 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst), limit: 1)));
     }
 
+    // :: Projection of a multivalued field (ProjectionList): criteria, order and range on the children, per parent
+
+    /// <summary>
+    /// Bola sold in four purchases (amounts 1, 3, 4, 2) and Fita in three (5, 2, 1); Rede never sold. Returns the
+    /// products and the purchases, in that order of creation.
+    /// </summary>
+    private async Task<(Product Bola, Product Fita, Product Rede, Purchase[] Purchases)> Sales()
+    {
+        var ana = await NewUser("ana", "Ana");
+        var bola = await NewProduct("Bola", 10m);
+        var fita = await NewProduct("Fita", 2m);
+        var rede = await NewProduct("Rede", 50m);
+        Purchase[] purchases =
+        [
+            await NewPurchase(ana, (bola, 1), (fita, 5)),
+            await NewPurchase(ana, (bola, 3), (fita, 2)),
+            await NewPurchase(ana, (bola, 4), (fita, 1)),
+            await NewPurchase(ana, (bola, 2)),
+        ];
+        return (bola, fita, rede, purchases);
+    }
+
+    private static readonly PurchaseItem s_amountOnly = new() { Amount = Mark.Int32 };
+
+    private async Task<Dictionary<string, int[]>> ItemsOfEachProduct(ProjectionList<PurchaseItem> items)
+    {
+        var products = await Db.Products.Fetch(
+            new ProductCriteria().WithProjection(new Product { Name = Mark.String, Items = items }).WithOrderBy(ProductOrderBy.NameAToZ),
+            cancellationToken: Ct);
+        return products.ToDictionary(p => p.Name!, p => p.Items!.Select(i => i.Amount!.Value).ToArray());
+    }
+
+    [Fact]
+    public async Task MultivaluedField_AProductBringsOnlyTheItemsAsked_Ordered_WithinTheRange()
+    {
+        await Sales();
+
+        // Items of amount >= 2, largest first, skipping 1 and taking 2 — for each product on its own.
+        var items = await ItemsOfEachProduct(Mark.List(s_amountOnly,
+            new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.LargestQuantityFirst), limit: 2, offset: 1));
+
+        Assert.Equal([3, 2], items["Bola"]); // 3, 4, 2 → 4, 3, 2 → [3, 2]
+        Assert.Equal([2], items["Fita"]); // 5, 2 → 5, 2 → [2]
+        Assert.Empty(items["Rede"]); // never sold: an empty list, not a missing product
+    }
+
+    [Fact]
+    public async Task MultivaluedField_TheOrderAlone_AndTheCriteriaAlone()
+    {
+        await Sales();
+
+        var ordered = await ItemsOfEachProduct(Mark.List(s_amountOnly,
+            new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.LargestQuantityFirst)));
+        Assert.Equal([4, 3, 2, 1], ordered["Bola"]);
+        Assert.Equal([5, 2, 1], ordered["Fita"]);
+
+        var filtered = await ItemsOfEachProduct(Mark.List(s_amountOnly, new PurchaseItemCriteria().Amount.Le(2))); // key order
+        Assert.Equal([1, 2], filtered["Bola"]);
+        Assert.Equal([2, 1], filtered["Fita"]);
+
+        var rangeOnly = await ItemsOfEachProduct(Mark.List(s_amountOnly,
+            new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.OldestFirst), limit: 2, offset: 2));
+        Assert.Equal([4, 2], rangeOnly["Bola"]); // 1, 3, 4, 2 → skip 2 → [4, 2]
+        Assert.Equal([1], rangeOnly["Fita"]); // 5, 2, 1 → skip 2 → [1]
+    }
+
+    [Fact]
+    public async Task MultivaluedField_TheRangeIsPerParent_NotOverAllTheChildren()
+    {
+        var (_, _, _, purchases) = await Sales();
+
+        var projection = new Purchase
+        {
+            Id = Mark.Int64,
+            Items = Mark.List(s_amountOnly,
+                new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.LargestQuantityFirst), limit: 1),
+        };
+        var stored = (await Db.Purchases.Fetch(new PurchaseCriteria().WithProjection(projection), cancellationToken: Ct))
+            .ToDictionary(p => p.Id!.Value, p => p.Items!.Select(i => i.Amount!.Value).ToArray());
+
+        // One item per purchase (the largest of amount >= 2), never one item for the whole result.
+        Assert.Equal([5], stored[purchases[0].Id!.Value]);
+        Assert.Equal([3], stored[purchases[1].Id!.Value]);
+        Assert.Equal([4], stored[purchases[2].Id!.Value]);
+        Assert.Equal([2], stored[purchases[3].Id!.Value]);
+    }
+
     [Fact]
     public async Task Fetch_ValuesRoundTrip_BytesInstantsDecimalsEnums()
     {

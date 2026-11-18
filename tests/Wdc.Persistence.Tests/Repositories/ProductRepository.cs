@@ -11,6 +11,7 @@ public sealed class ProductRepository(Database database) : SqlRepository<Product
         .Column("price")
         .Column("description")
         .Column("image")
+        .Collection("items", "product_id", () => PurchaseItemRepository.Mapping) // where it was sold
         .Conditions<ProductCriteria>(Conditions)
         .Ordering<ProductOrderBy>(o => o switch
         {
