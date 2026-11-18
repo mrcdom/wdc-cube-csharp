@@ -5,18 +5,6 @@ using Wdc.Domain;
 
 namespace Wdc.Rest.Server;
 
-/// <summary>An operation of the repository routes, for authorization.</summary>
-public enum RpcOperation
-{
-    Insert,
-    Update,
-    Delete,
-    Count,
-    Fetch,
-    FetchPage,
-    FetchById,
-}
-
 /// <summary>
 /// Serves a repository as the routes of the Kotlin version (decision D-18): <c>POST {base}/insert</c>, <c>update</c>,
 /// <c>delete</c>, <c>count</c>, <c>fetch</c>, <c>fetch-page</c>, <c>fetch-by-id</c> and <c>GET {base}/{id}</c>.

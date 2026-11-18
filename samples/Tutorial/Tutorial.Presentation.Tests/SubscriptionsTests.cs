@@ -1,4 +1,3 @@
-using Tutorial.Presentation.Modules.Main;
 using Tutorial.Presentation.Modules.Subscriptions;
 using Tutorial.Presentation.Services;
 using Wdc.Cube.Testing;

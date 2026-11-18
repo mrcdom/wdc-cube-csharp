@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Shopping.Domain;
 using Shopping.Presentation.Infra;
-using Home = Shopping.Presentation.Modules.Home;
 using Wdc.Cube;
+using Home = Shopping.Presentation.Modules.Home;
 
 namespace Shopping.Presentation.Modules.Main;
 

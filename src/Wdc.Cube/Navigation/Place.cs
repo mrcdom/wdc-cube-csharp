@@ -1,11 +1,6 @@
 namespace Wdc.Cube;
 
 /// <summary>
-/// Creates the presenter that owns a <see cref="Place"/>, for a given application.
-/// </summary>
-public delegate ICubePresenter PresenterFactory(CubeApplication app);
-
-/// <summary>
 /// A node of the cube: one of the positions a presenter can occupy. Places form a tree, and the path from the
 /// root to a place names a face of the cube (a composition of presenters).
 /// </summary>

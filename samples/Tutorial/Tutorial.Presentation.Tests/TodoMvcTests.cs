@@ -1,5 +1,4 @@
 using Tutorial.Presentation.Modules.TodoMvc;
-using Wdc.Cube;
 using Wdc.Cube.Testing;
 
 namespace Tutorial.Presentation.Tests;

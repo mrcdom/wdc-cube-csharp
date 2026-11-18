@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Shopping.Presentation.Modules.Home;
 using Wdc.Cube.Avalonia;

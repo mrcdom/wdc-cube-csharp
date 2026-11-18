@@ -3,13 +3,6 @@ using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.TodoMvc;
 
-public enum ShowingOptions
-{
-    All = 0,
-    Active = 1,
-    Completed = 2,
-}
-
 public sealed class TodoMvcKeys : MainKeys
 {
     public new const string Prefix = "tm";

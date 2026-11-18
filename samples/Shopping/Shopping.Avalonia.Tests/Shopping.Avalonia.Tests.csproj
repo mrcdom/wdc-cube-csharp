@@ -19,8 +19,8 @@
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../Shopping.Presentation.Tests/Harness.cs" Link="Harness.cs" />
-    <Compile Include="../Shopping.Presentation.Tests/HttpHarness.cs" Link="HttpHarness.cs" />
+    <Compile Include="../Shopping.Presentation.Tests/Harness/*.cs" Link="Harness/%(Filename)%(Extension)" />
+    <Compile Include="../Shopping.Presentation.Tests/HttpHarness/*.cs" Link="HttpHarness/%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

@@ -444,24 +444,3 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Tx.Never(_ => Task.FromResult(1), Ct)), Ct);
     }
 }
-
-/// <summary>A criteria with a field the user mapping does not know.</summary>
-public sealed class UserCriteriaWithUnmappedField : Criteria<UserCriteriaWithUnmappedField, User>
-{
-    public UserCriteriaWithUnmappedField() => Nickname = Text("nickname");
-
-    public TextCriterion<UserCriteriaWithUnmappedField> Nickname { get; }
-}
-
-public sealed class PostgreSqlRepositoryTests(PostgreSqlFixture fixture)
-    : RepositoryContractTests(fixture), IClassFixture<PostgreSqlFixture>;
-
-public sealed class SqlServerRepositoryTests(SqlServerFixture fixture)
-    : RepositoryContractTests(fixture), IClassFixture<SqlServerFixture>;
-
-/// <summary>The same contract through the REST routes (decision D-17/D-18): remote repositories and transactions.</summary>
-public sealed class PostgreSqlHttpRepositoryTests(PostgreSqlHttpFixture fixture)
-    : RepositoryContractTests(fixture), IClassFixture<PostgreSqlHttpFixture>;
-
-public sealed class SqlServerHttpRepositoryTests(SqlServerHttpFixture fixture)
-    : RepositoryContractTests(fixture), IClassFixture<SqlServerHttpFixture>;

@@ -1,0 +1,70 @@
+using Shopping.Presentation.Infra;
+using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Login;
+
+namespace Shopping.Presentation.Tests;
+
+/// <summary>Login, guard and session (F5).</summary>
+public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
+{
+    [Fact]
+    public async Task WithoutASession_EveryRestrictedAddressLandsOnLogin()
+    {
+        foreach (var address in new[] { "", "home", "home/cart", "home/product?pr-id=1", "home/receipt?rc-id=1" })
+        {
+            var shop = await Shop.Start(db, address);
+
+            Assert.NotNull(shop.Maybe<LoginPresenter>(Places.Login));
+            Assert.Null(shop.Maybe<HomePresenter>(Places.Home));
+            Assert.Equal("login", shop.History.Token);
+        }
+    }
+
+    [Fact]
+    public async Task WrongCredentials_StayOnLoginWithTheMessage()
+    {
+        var shop = await Shop.Start(db);
+
+        await shop.Login("admin", "wrong");
+
+        var login = shop.PresenterOf<LoginPresenter>(Places.Login);
+        Assert.Equal(LoginPresenter.NotRecognized, login.Scope.ErrorMessage);
+        Assert.False(login.Scope.Loading);
+        Assert.Null(shop.App.Subject);
+    }
+
+    [Fact]
+    public async Task RightCredentials_OpenTheSessionAndGoHome()
+    {
+        var shop = await Shop.Start(db);
+
+        await shop.Login("admin", "admin");
+
+        var home = shop.PresenterOf<HomePresenter>(Places.Home);
+        Assert.Equal("Olá, João da Silva", home.Scope.Greeting);
+        Assert.Equal("home", shop.History.Token);
+        Assert.NotNull(await shop.Session.Get(SubjectSession.Key));
+    }
+
+    [Fact]
+    public async Task Reload_ComesBackLoggedIn_AtTheSameAddress()
+    {
+        var first = await Shop.LoggedIn(db, "fulano");
+
+        var reloaded = await Shop.Start(db, "home", first.Session); // F5: same tab, same session storage
+
+        Assert.Equal("Olá, Fulano de Tal", reloaded.PresenterOf<HomePresenter>(Places.Home).Scope.Greeting);
+    }
+
+    [Fact]
+    public async Task Exit_ClosesTheSessionAndGoesToLogin()
+    {
+        var shop = await Shop.LoggedIn(db, "beotrano");
+
+        await shop.Do(shop.PresenterOf<HomePresenter>(Places.Home).Scope.OnExit);
+
+        Assert.Null(shop.App.Subject);
+        Assert.Null(await shop.Session.Get(SubjectSession.Key));
+        Assert.Equal("login", shop.History.Token);
+    }
+}

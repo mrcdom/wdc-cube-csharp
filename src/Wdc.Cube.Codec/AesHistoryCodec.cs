@@ -3,15 +3,6 @@ using System.Text;
 
 namespace Wdc.Cube.Codec;
 
-/// <summary>One key and the envelope byte that selects it.</summary>
-/// <param name="Version">1 to 255, stable for the life of the key it names.</param>
-/// <param name="Key">32 bytes.</param>
-public sealed record HistoryKeyVersion(int Version, byte[] Key)
-{
-    /// <summary>A key as the 43 Base64url characters that usually carry it (a server hands it over as text).</summary>
-    public static HistoryKeyVersion FromText(int version, string key) => new(version, Base64Url.Decode(key));
-}
-
 /// <summary>
 /// The reference <see cref="IHistoryCodec"/> (decision D-20): AES-SIV over the query, Base64url on the wire, the
 /// envelope of the TypeScript version, so an address sealed by one opens in the other with the same key.
@@ -146,19 +137,5 @@ public sealed class AesHistoryCodec : IHistoryCodec
         using var output = new MemoryStream();
         inflate.CopyTo(output);
         return output.ToArray();
-    }
-}
-
-/// <summary>Base64url without padding (RFC 4648 §5).</summary>
-public static class Base64Url
-{
-    public static string Encode(ReadOnlySpan<byte> bytes) =>
-        Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-    public static byte[] Decode(string text)
-    {
-        ArgumentNullException.ThrowIfNull(text);
-        var standard = text.Replace('-', '+').Replace('_', '/');
-        return Convert.FromBase64String(standard.PadRight(standard.Length + ((4 - (standard.Length % 4)) % 4), '='));
     }
 }

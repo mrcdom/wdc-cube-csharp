@@ -1,26 +1,6 @@
 using System.Text;
-using Wdc.Domain;
 
 namespace Wdc.Persistence;
-
-/// <summary>
-/// A null that knows the type of its column. Some databases (SQL Server) refuse an untyped null where the column is
-/// binary, for example.
-/// </summary>
-public sealed record TypedNull(Type ClrType)
-{
-    public static object Of(IValueKind kind)
-    {
-        ArgumentNullException.ThrowIfNull(kind);
-        return new TypedNull(Nullable.GetUnderlyingType(kind.ClrType) ?? kind.ClrType);
-    }
-}
-
-/// <summary>A statement ready to run: text with <c>@pN</c> placeholders and their values, in order.</summary>
-public sealed record SqlStatement(string Text, IReadOnlyList<object?> Parameters)
-{
-    public override string ToString() => Text;
-}
 
 /// <summary>
 /// Builds a statement. Values always go as parameters, never into the text. Aliases are numbered per statement, so

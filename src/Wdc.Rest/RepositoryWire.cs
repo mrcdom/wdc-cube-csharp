@@ -3,9 +3,6 @@ using Wdc.Domain;
 
 namespace Wdc.Rest;
 
-/// <summary>The cut of a listing: <see cref="Offset"/>/<see cref="Limit"/> for <c>fetch</c>, <see cref="Page"/>/<see cref="PageSize"/> for <c>fetch-page</c>.</summary>
-public readonly record struct Slice(int Offset = 0, int Limit = 0, int Page = 0, int PageSize = 0);
-
 /// <summary>
 /// The bodies of the repository routes (decision D-18, the Kotlin wire): written by the client, read by the server and
 /// the other way round, from the same entity model.
@@ -457,4 +454,3 @@ public sealed class RepositoryWire<TEntity, TCriteria>
 
     private delegate T ValueReader<out T>(ref Utf8JsonReader reader);
 }
-

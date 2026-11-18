@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Wdc.Cube.Blazor;
 
@@ -38,41 +36,5 @@ public sealed class ViewRegistry
         }
 
         return null;
-    }
-}
-
-/// <summary>A registered view component.</summary>
-public sealed class ViewEntry([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
-{
-    /// <summary>The component type.</summary>
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-    public Type ComponentType { get; } = componentType;
-}
-
-/// <summary>Registration helpers.</summary>
-public static class CubeBlazorServiceCollectionExtensions
-{
-    /// <summary>Registers the <see cref="ViewRegistry"/> filled by <paramref name="register"/>.</summary>
-    public static IServiceCollection AddCubeViews(this IServiceCollection services, Action<ViewRegistry> register)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(register);
-        var registry = new ViewRegistry();
-        register(registry);
-        return services.AddSingleton(registry);
-    }
-}
-
-/// <summary>Builds a <see cref="PresentationDispatcher"/> over Blazor's renderer dispatcher.</summary>
-public static class BlazorPresentation
-{
-    /// <summary>
-    /// The presentation runs on the renderer's own serial context (the circuit in Blazor Server, the single thread
-    /// in WebAssembly), so scope changes, flushes and renders never cross threads.
-    /// </summary>
-    public static PresentationDispatcher CreateDispatcher(Dispatcher dispatcher)
-    {
-        ArgumentNullException.ThrowIfNull(dispatcher);
-        return PresentationDispatcher.FromHost(action => _ = dispatcher.InvokeAsync(action), dispatcher.CheckAccess);
     }
 }

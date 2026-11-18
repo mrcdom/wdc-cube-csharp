@@ -113,12 +113,3 @@ public abstract class HistoryManager
         return Uri.UnescapeDataString(queryString[prefix.Length..]);
     }
 }
-
-/// <summary>A history that keeps nothing: for applications with no address.</summary>
-public sealed class NoopHistoryManager : HistoryManager
-{
-    /// <inheritdoc/>
-    public override void Update(CubeApplication app, Place place)
-    {
-    }
-}

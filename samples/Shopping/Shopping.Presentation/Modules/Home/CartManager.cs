@@ -4,20 +4,6 @@ using Shopping.Presentation.Infra;
 
 namespace Shopping.Presentation.Modules.Home;
 
-/// <summary>One line of the cart: the product and the unit price when it was added.</summary>
-public sealed class CartLine(long productId, string name, decimal price, int quantity)
-{
-    public long ProductId { get; } = productId;
-
-    public string Name { get; } = name;
-
-    public decimal Price { get; } = price;
-
-    public int Quantity { get; internal set; } = quantity;
-
-    public decimal Total => Price * Quantity;
-}
-
 /// <summary>
 /// The cart, in memory while Home lives (logging out or leaving the restricted area empties it). Every change raises
 /// <see cref="Changed"/>; a purchase raises <see cref="Committed"/>.
@@ -129,12 +115,4 @@ public sealed class CartManager(ShoppingRepositories repositories, TimeProvider 
         Committed?.Invoke(id);
         return id;
     }
-}
-
-public static class CartMessages
-{
-    public const string Empty = "O carrinho está vazio: adicione produtos antes de comprar.";
-    public const string QuantityBelowOne = "A quantidade de itens no carrinho deve ser maior ou igual a 1 (um).";
-    public const string ProductNotInCart = "Produto não localizado no carrinho.";
-    public const string Unavailable = "Não foi possível registrar a compra agora. Aguarde alguns instantes e tente novamente.";
 }

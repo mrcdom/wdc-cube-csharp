@@ -1,9 +1,7 @@
-using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Wdc.Domain;
 
 namespace Wdc.Rest.Server;
@@ -69,54 +67,5 @@ public static class RemoteTransactionRoutes
     {
         var id = context.Request.Headers[RestNames.TransactionHeader].ToString();
         return id.Length > 0 ? id : throw new InvalidRequestException($"The {RestNames.TransactionHeader} header is required.");
-    }
-}
-
-/// <summary>Runs <see cref="RemoteTransactionCoordinator.Reap"/> every <see cref="RemoteTransactionOptions.ReapInterval"/>.</summary>
-public sealed class RemoteTransactionReaper(RemoteTransactionCoordinator coordinator, TimeProvider? time = null) : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var timer = new PeriodicTimer(coordinator.Options.ReapInterval, time ?? TimeProvider.System);
-        try
-        {
-            while (await timer.WaitForNextTickAsync(stoppingToken))
-            {
-                await coordinator.Reap(stoppingToken);
-            }
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-        }
-    }
-}
-
-/// <summary>Registration.</summary>
-public static class RestServerServiceCollectionExtensions
-{
-    /// <summary>
-    /// Registers the REST server options and, when <paramref name="remoteTransactions"/>, the coordinator and its reaper
-    /// (it needs an <see cref="IDetachedTransactionSource"/> in the container: the database).
-    /// </summary>
-    public static IServiceCollection AddCubeRest(this IServiceCollection services, Action<RestServerOptions>? configure = null,
-        bool remoteTransactions = true, Action<RemoteTransactionOptions>? configureTransactions = null)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        var options = new RestServerOptions();
-        configure?.Invoke(options);
-        services.AddSingleton(options);
-        if (remoteTransactions)
-        {
-            var txOptions = new RemoteTransactionOptions();
-            configureTransactions?.Invoke(txOptions);
-            services.AddSingleton(txOptions);
-            services.AddSingleton(sp => new RemoteTransactionCoordinator(
-                sp.GetRequiredService<IDetachedTransactionSource>(), txOptions, sp.GetService<TimeProvider>(),
-                sp.GetService<Microsoft.Extensions.Logging.ILogger<RemoteTransactionCoordinator>>()));
-            services.AddHostedService(sp => new RemoteTransactionReaper(
-                sp.GetRequiredService<RemoteTransactionCoordinator>(), sp.GetService<TimeProvider>()));
-        }
-
-        return services;
     }
 }

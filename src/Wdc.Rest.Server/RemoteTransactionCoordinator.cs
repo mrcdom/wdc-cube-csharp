@@ -5,40 +5,6 @@ using Wdc.Domain;
 
 namespace Wdc.Rest.Server;
 
-/// <summary>Limits and timeouts of remote transactions (decision D-17; the Kotlin defaults).</summary>
-public sealed class RemoteTransactionOptions
-{
-    /// <summary>Open at once, in total. Each one holds a connection.</summary>
-    public int MaxOpen { get; set; } = 128;
-
-    /// <summary>Open at once by one owner (one user on one client).</summary>
-    public int MaxOpenPerOwner { get; set; } = 16;
-
-    /// <summary>Rolled back after this long without a request.</summary>
-    public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(60);
-
-    /// <summary>Rolled back after this long, used or not.</summary>
-    public TimeSpan MaxLifetime { get; set; } = TimeSpan.FromMinutes(10);
-
-    /// <summary>How long the outcome of a finished transaction is remembered (a repeated commit, a status query).</summary>
-    public TimeSpan OutcomeRetention { get; set; } = TimeSpan.FromMinutes(5);
-
-    /// <summary>How often the reaper looks.</summary>
-    public TimeSpan ReapInterval { get; set; } = TimeSpan.FromSeconds(5);
-}
-
-/// <summary>Where a remote transaction is.</summary>
-public enum RemoteTransactionStatus
-{
-    Unknown,
-    Open,
-    Committed,
-    RolledBack,
-}
-
-/// <summary>Counters of the coordinator.</summary>
-public readonly record struct RemoteTransactionStats(int OpenNow, long Begun, long Committed, long RolledBack, long Reaped, long RejectedByLimit);
-
 /// <summary>
 /// Holds the transactions remote clients open (decision D-17): each one keeps a connection between requests, is used by
 /// one request at a time, belongs to an owner, and is rolled back by the reaper when idle or too old.

@@ -1,4 +1,3 @@
-using Wdc.Cube.Testing;
 using Wdc.Cube.Tests.Navigation;
 
 namespace Wdc.Cube.Tests.Dispatching;
