@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Wdc.Cube;
 
@@ -12,7 +14,7 @@ namespace Wdc.Cube;
 /// the same sequence of instances, changes nothing: reuse row scopes across loads so the view keeps what is on
 /// screen (reconcile by <see cref="Scope.Identity"/>).
 /// </remarks>
-public sealed class ScopeList<T> : IReadOnlyList<T>
+public sealed class ScopeList<T> : IReadOnlyList<T>, IList, INotifyCollectionChanged
 {
     private readonly Scope _owner;
     private readonly string? _propertyName;
@@ -26,6 +28,26 @@ public sealed class ScopeList<T> : IReadOnlyList<T>
         ArgumentNullException.ThrowIfNull(owner);
         _owner = owner;
         _propertyName = propertyName;
+        if (propertyName is not null)
+        {
+            // Delivered with the owner's PropertyChanged, that is, at the flush: binding renderers see the list change
+            // in the same batch as everything else.
+            owner.PropertyChanged += OnOwnerChanged;
+        }
+    }
+
+    /// <summary>
+    /// Raised at the flush after the list changed, as a reset (binding renderers redraw the items; a renderer that
+    /// diffs by identity, like Blazor's, does not need it). Needs the property name given to the constructor.
+    /// </summary>
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+    private void OnOwnerChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == _propertyName && CollectionChanged is { } handler)
+        {
+            handler(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
     }
 
     /// <inheritdoc/>
@@ -171,4 +193,40 @@ public sealed class ScopeList<T> : IReadOnlyList<T>
 
         return a is string text ? string.Equals(text, b as string, StringComparison.Ordinal) : ReferenceEquals(a, b);
     }
+
+    // :: IList, read-only: what binding renderers (Avalonia, WPF) need to follow CollectionChanged. The presenter writes
+    // through the typed methods above.
+
+    bool IList.IsReadOnly => true;
+
+    bool IList.IsFixedSize => false;
+
+    bool ICollection.IsSynchronized => false;
+
+    object ICollection.SyncRoot => this;
+
+    object? IList.this[int index]
+    {
+        get => _items[index];
+        set => throw ReadOnly();
+    }
+
+    int IList.Add(object? value) => throw ReadOnly();
+
+    void IList.Clear() => throw ReadOnly();
+
+    bool IList.Contains(object? value) => value is T item && _items.Exists(i => Same(i, item));
+
+    int IList.IndexOf(object? value) => value is T item ? _items.FindIndex(i => Same(i, item)) : -1;
+
+    void IList.Insert(int index, object? value) => throw ReadOnly();
+
+    void IList.Remove(object? value) => throw ReadOnly();
+
+    void IList.RemoveAt(int index) => throw ReadOnly();
+
+    void ICollection.CopyTo(Array array, int index) => ((ICollection)_items).CopyTo(array, index);
+
+    private static NotSupportedException ReadOnly() =>
+        new("A view does not change a scope list: the presenter does, through its typed methods.");
 }

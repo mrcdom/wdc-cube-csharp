@@ -1,0 +1,38 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Home.Receipt"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.ReceiptView"
+                x:DataType="m:ReceiptScope">
+  <Border Classes="card">
+    <StackPanel Spacing="12">
+      <TextBlock Classes="success" Text="Compra realizada com sucesso!" IsVisible="{Binding NotifySuccess}" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Classes="title" Text="🧾 Recibo" />
+        <TextBlock Classes="muted" Text="{Binding DateLabel}" VerticalAlignment="Center" />
+      </StackPanel>
+      <Grid ColumnDefinitions="*,80,120">
+        <TextBlock Text="Item" FontWeight="SemiBold" />
+        <TextBlock Grid.Column="1" Text="Qtd" FontWeight="SemiBold" TextAlignment="Right" />
+        <TextBlock Grid.Column="2" Text="Valor" FontWeight="SemiBold" TextAlignment="Right" />
+      </Grid>
+      <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="m:ReceiptLine">
+            <Grid ColumnDefinitions="*,80,120" Margin="0,2">
+              <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+              <TextBlock Grid.Column="1" Text="{Binding Quantity}" TextAlignment="Right" />
+              <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" TextAlignment="Right" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Text="Total: " />
+        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontWeight="Bold" />
+      </StackPanel>
+      <Button Classes="primary" Content="Continuar Comprando" HorizontalAlignment="Right" Click="OnContinue" />
+    </StackPanel>
+  </Border>
+</cube:ScopeView>

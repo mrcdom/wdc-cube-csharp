@@ -62,6 +62,7 @@ public static class ShoppingApi
         app.MapShoppingAuth();
         app.MapRemoteTransactions();
         app.MapGet("/api/repo/product/{productId:long}/image", ProductImage);
+        app.MapGet("/image/product/{productId:long}.png", ProductImage); // the address the presentation hands out
         MapRepositories(app);
         return app;
     }

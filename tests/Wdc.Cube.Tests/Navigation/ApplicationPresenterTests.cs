@@ -148,6 +148,34 @@ public sealed class ApplicationPresenterTests
     }
 
     [Fact]
+    public async Task MemoryHistory_BackAndForward_FlipToTheStoredAddresses()
+    {
+        var history = new MemoryHistoryManager();
+        var app = new MainApp(history);
+        await app.KickStart(MainPlaces.Home);
+        await app.Flip(MainPlaces.Home);
+        await app.Flip(MainPlaces.Orders, i => i.SetParameter("oid", 1L));
+        await app.Flip(MainPlaces.Detail, i => i.SetParameter("oid", 2L));
+        Assert.Equal("orders/detail?oid=2", history.Location);
+
+        Assert.True(history.GoBack());
+        await app.Settle();
+        Assert.Equal("orders?oid=1", history.Location);
+        Assert.Same(MainPlaces.Orders, app.LastPlace);
+        Assert.True(history.CanGoForward);
+
+        Assert.True(history.GoForward());
+        await app.Settle();
+        Assert.Same(MainPlaces.Detail, app.LastPlace);
+
+        history.GoBack();
+        await app.Settle();
+        await app.Flip(MainPlaces.Home); // a new path drops what was ahead
+        Assert.False(history.CanGoForward);
+        Assert.Equal("home", history.Location);
+    }
+
+    [Fact]
     public async Task Codec_SwappedAtRunTime_RepublishesTheForm()
     {
         var history = new TestHistoryManager();
@@ -183,13 +211,13 @@ internal sealed class MainScope : Scope
 
 internal sealed class MainApp : ApplicationPresenter<MainScope>
 {
-    public MainApp(TestHistoryManager history)
+    public MainApp(HistoryManager history)
         : base(new MainScope(), history, MainPlaces.All)
     {
         Scope.OnToggleTheme = Action(() => Theme = Theme == "dark" ? null : "dark");
     }
 
-    public new TestHistoryManager History => (TestHistoryManager)base.History;
+    public new TestHistoryManager History => (TestHistoryManager)base.History; // only for apps built on one
 
     public List<(string Path, bool Initialization, bool Last)> Applied { get; } = [];
 

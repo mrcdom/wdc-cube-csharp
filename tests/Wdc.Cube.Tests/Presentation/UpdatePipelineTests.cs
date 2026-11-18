@@ -269,6 +269,35 @@ public sealed class UpdatePipelineTests
     }
 
     [Fact]
+    public void ScopeList_CollectionChanged_ComesAtTheFlush_AsAReadOnlyList()
+    {
+        var scope = new OrderScope();
+        Own(scope);
+        var resets = 0;
+        ((System.Collections.Specialized.INotifyCollectionChanged)scope.Rows).CollectionChanged += (_, e) =>
+        {
+            Assert.Equal(System.Collections.Specialized.NotifyCollectionChangedAction.Reset, e.Action);
+            resets++;
+        };
+
+        On(() =>
+        {
+            scope.Rows.Add(new RowScope());
+            scope.Rows.Add(new RowScope());
+        });
+        Assert.Equal(0, resets); // not by the mutation...
+
+        Tick();
+        Assert.Equal(1, resets); // ...once, with the batch
+
+        var asList = (System.Collections.IList)scope.Rows; // what binding renderers read
+        Assert.True(asList.IsReadOnly);
+        Assert.Equal(2, asList.Count);
+        Assert.Same(scope.Rows[1], asList[1]);
+        Assert.Throws<NotSupportedException>(() => asList.Add(new RowScope()));
+    }
+
+    [Fact]
     public void PropertyChanged_IsRaisedAtTheFlush_NotByTheSetter()
     {
         var scope = new OrderScope();

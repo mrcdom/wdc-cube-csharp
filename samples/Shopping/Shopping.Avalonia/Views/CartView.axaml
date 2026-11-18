@@ -1,0 +1,34 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Home.Cart"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.CartView"
+                x:DataType="m:CartScope">
+  <Border Classes="card">
+    <StackPanel Spacing="12">
+      <TextBlock Classes="title" Text="Carrinho de Compras" />
+      <TextBlock Classes="error" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <StackPanel IsVisible="{Binding Lines, Converter={x:Static v:Is.Empty}}" HorizontalAlignment="Center" Spacing="4">
+        <TextBlock Text="🛒" FontSize="36" HorizontalAlignment="Center" />
+        <TextBlock Text="Seu carrinho está vazio" HorizontalAlignment="Center" />
+        <TextBlock Classes="muted" Text="Adicione produtos para continuar" HorizontalAlignment="Center" />
+      </StackPanel>
+      <ItemsControl x:Name="LinesList" ItemsSource="{Binding Lines}" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="{Binding Lines, Converter={x:Static v:Is.NotEmpty}}">
+        <TextBlock Text="Total: " />
+        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontWeight="Bold" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Content="Continuar Comprando" Click="OnContinue" />
+        <Button x:Name="BuyButton" Classes="primary" IsEnabled="{Binding !Buying}" Click="OnBuy"
+                IsVisible="{Binding Lines, Converter={x:Static v:Is.NotEmpty}}">
+          <Panel>
+            <TextBlock Text="Comprar" IsVisible="{Binding !Buying}" />
+            <TextBlock Text="Comprando…" IsVisible="{Binding Buying}" />
+          </Panel>
+        </Button>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</cube:ScopeView>

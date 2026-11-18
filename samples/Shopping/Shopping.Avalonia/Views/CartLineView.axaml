@@ -1,0 +1,21 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Home.Cart"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.CartLineView"
+                x:DataType="m:CartLineScope">
+  <Grid ColumnDefinitions="Auto,12,*,Auto,12,Auto" Margin="0,0,0,8">
+    <Image Width="56" Height="56" Stretch="Uniform" v:RemoteImage.Url="{Binding ImageUrl}" />
+    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+      <TextBlock Classes="muted" Text="{Binding PriceLabel}" />
+    </StackPanel>
+    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+      <Button Content="−" Click="OnMinus" />
+      <TextBlock x:Name="Quantity" Text="{Binding Quantity}" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
+      <Button Content="+" Click="OnPlus" />
+    </StackPanel>
+    <Button Grid.Column="5" Content="✕" ToolTip.Tip="Remover" Click="OnRemove" VerticalAlignment="Center" />
+  </Grid>
+</cube:ScopeView>

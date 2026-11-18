@@ -1,0 +1,15 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Main"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.MainView"
+                x:DataType="m:MainScope">
+  <Panel>
+    <ContentControl Content="{Binding Body}" />
+    <Border Classes="toast" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+            PointerPressed="OnDismiss">
+      <TextBlock x:Name="Toast" Text="{Binding ErrorMessage}" Foreground="White" TextWrapping="Wrap" MaxWidth="520" />
+    </Border>
+  </Panel>
+</cube:ScopeView>

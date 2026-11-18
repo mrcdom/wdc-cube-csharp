@@ -1,0 +1,26 @@
+using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Home.Cart;
+using Shopping.Presentation.Modules.Home.ProductDetail;
+using Shopping.Presentation.Modules.Home.Products;
+using Shopping.Presentation.Modules.Home.Purchases;
+using Shopping.Presentation.Modules.Home.Receipt;
+using Shopping.Presentation.Modules.Login;
+using Shopping.Presentation.Modules.Main;
+using Wdc.Cube.Avalonia;
+
+namespace Shopping.Avalonia.Views;
+
+/// <summary>Which control draws each scope (the same list as the Blazor catalog, plus the panels and cart lines).</summary>
+public static class ViewCatalog
+{
+    public static ScopeViewLocator Create() => new ScopeViewLocator()
+        .Register<MainScope>(() => new MainView())
+        .Register<LoginScope>(() => new LoginView())
+        .Register<HomeScope>(() => new HomeView())
+        .Register<ProductsPanelScope>(() => new ProductsPanelView())
+        .Register<PurchasesPanelScope>(() => new PurchasesPanelView())
+        .Register<ProductScope>(() => new ProductView())
+        .Register<CartScope>(() => new CartView())
+        .Register<CartLineScope>(() => new CartLineView())
+        .Register<ReceiptScope>(() => new ReceiptView());
+}

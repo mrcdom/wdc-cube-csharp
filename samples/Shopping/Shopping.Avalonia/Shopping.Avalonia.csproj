@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Shopping demo as a desktop app (phase 5, decision D-16): the same presentation, drawn by Avalonia, with the
+       repositories and the login through the Shopping server. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>net11.0</TargetFramework>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Client/Shopping.Client.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube.Avalonia/Wdc.Cube.Avalonia.csproj" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Shopping.Avalonia.Tests" />
+  </ItemGroup>
+</Project>

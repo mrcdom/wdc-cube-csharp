@@ -9,6 +9,7 @@
     <Project Path="src/Wdc.Cube/Wdc.Cube.csproj" />
     <Project Path="src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
     <Project Path="src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+    <Project Path="src/Wdc.Cube.Avalonia/Wdc.Cube.Avalonia.csproj" />
     <Project Path="src/Wdc.Domain/Wdc.Domain.csproj" />
     <Project Path="src/Wdc.Persistence/Wdc.Persistence.csproj" />
     <Project Path="src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
@@ -33,6 +34,8 @@
     <Project Path="samples/Shopping/Shopping.Blazor.Tests/Shopping.Blazor.Tests.csproj" />
     <Project Path="samples/Shopping/Shopping.Server/Shopping.Server.csproj" />
     <Project Path="samples/Shopping/Shopping.Client/Shopping.Client.csproj" />
+    <Project Path="samples/Shopping/Shopping.Avalonia/Shopping.Avalonia.csproj" />
+    <Project Path="samples/Shopping/Shopping.Avalonia.Tests/Shopping.Avalonia.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />

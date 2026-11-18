@@ -1,0 +1,36 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Home.Purchases"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.PurchasesPanelView"
+                x:DataType="m:PurchasesPanelScope">
+  <Border Classes="card">
+    <StackPanel Spacing="10">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Classes="title" Text="Compras" />
+        <TextBlock Classes="muted" Text="{Binding CountLabel}" VerticalAlignment="Center" />
+      </StackPanel>
+      <TextBlock Classes="muted" Text="Nenhuma compra realizada"
+                 IsVisible="{Binding Purchases, Converter={x:Static v:Is.Empty}}" />
+      <ItemsControl ItemsSource="{Binding Purchases}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="m:PurchaseCard">
+            <Button Classes="purchase-card" HorizontalAlignment="Stretch" Margin="0,0,0,6" Click="OnOpen">
+              <StackPanel>
+                <TextBlock Text="{Binding DateLabel}" FontWeight="SemiBold" />
+                <TextBlock Classes="muted" Text="{Binding ItemsLabel}" TextWrapping="Wrap" />
+                <TextBlock Classes="price" Text="{Binding TotalLabel}" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <DockPanel>
+        <Button DockPanel.Dock="Left" Content="◀ Anterior" IsEnabled="{Binding HasPrevious}" Click="OnPrevious" />
+        <Button DockPanel.Dock="Right" Content="Próxima ▶" IsEnabled="{Binding HasNext}" Click="OnNext" />
+        <TextBlock x:Name="PageLabel" Text="{Binding PageLabel}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </DockPanel>
+    </StackPanel>
+  </Border>
+</cube:ScopeView>
