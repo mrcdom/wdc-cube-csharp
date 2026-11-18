@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shopping domain: entities, their models and criteria, repository contracts. Shared by server and clients. -->
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Wdc.Domain/Wdc.Domain.csproj" />
+  </ItemGroup>
+</Project>

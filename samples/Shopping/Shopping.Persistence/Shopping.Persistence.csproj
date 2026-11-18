@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shopping persistence: mappings, SQL repositories, schema and demo data for PostgreSQL and SQL Server. -->
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Domain/Shopping.Domain.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Persistence.SqlServer/Wdc.Persistence.SqlServer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images/*.png" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shopping presentation: places, keys, presenters, scopes. No view technology, no database. -->
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Domain/Shopping.Domain.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Shopping.Presentation.Tests" />
+  </ItemGroup>
+</Project>

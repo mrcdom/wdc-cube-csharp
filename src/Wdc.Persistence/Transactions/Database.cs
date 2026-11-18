@@ -90,6 +90,32 @@ public sealed class Database : ITransactionService
 
     // :: Statements
 
+    /// <summary>
+    /// Runs a statement that changes data or schema (DDL, a bulk update), inside the open transaction or one of its
+    /// own. Returns the number of rows affected.
+    /// </summary>
+    public Task<int> Execute(SqlStatement statement, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(statement);
+        return Write(async (connection, transaction) =>
+        {
+            await using var command = Command(connection, transaction, statement);
+            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }, cancellationToken);
+    }
+
+    /// <summary>Runs a query and returns the first column of the first row, or <see langword="null"/>.</summary>
+    public Task<object?> Scalar(SqlStatement statement, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(statement);
+        return Read(async (connection, transaction) =>
+        {
+            await using var command = Command(connection, transaction, statement);
+            var value = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            return value is DBNull ? null : value;
+        }, cancellationToken);
+    }
+
     /// <summary>Runs <paramref name="work"/> on the transaction's connection, or on a connection of its own.</summary>
     internal async Task<T> Read<T>(Func<DbConnection, DbTransaction?, Task<T>> work, CancellationToken cancellationToken)
     {
