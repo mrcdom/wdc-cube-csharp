@@ -1,0 +1,15 @@
+@inherits ScopeView<CartLineScope>
+
+<div class="cart-line">
+    <img src="@Scope.ImageUrl" alt="" />
+    <div class="what">
+        <span class="name">@Scope.Name</span>
+        <span class="muted">@Scope.PriceLabel</span>
+    </div>
+    <div class="quantity">
+        <button class="minus" @onclick="() => Scope.OnChangeQuantity(Scope.Quantity - 1)">−</button>
+        <span class="value">@Scope.Quantity</span>
+        <button class="plus" @onclick="() => Scope.OnChangeQuantity(Scope.Quantity + 1)">+</button>
+    </div>
+    <button class="remove" @onclick="Scope.OnRemove" aria-label="Remover">✕</button>
+</div>

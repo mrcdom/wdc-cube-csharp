@@ -1,0 +1,37 @@
+@inherits ScopeView<LoginScope>
+
+<div class="login-page">
+    <form class="login-card" @onsubmit="Submit" @onsubmit:preventDefault>
+        <div class="avatar">🛍</div>
+        <h1>Shopping</h1>
+        <p class="subtitle">Entre com suas credenciais para continuar</p>
+
+        <label>Usuário<input class="user" autocomplete="username" value="@_userName" disabled="@Scope.Loading"
+                             @oninput="e => _userName = e.Value?.ToString() ?? string.Empty" /></label>
+        <label>Senha<input class="password" type="password" autocomplete="current-password" value="@_password"
+                           disabled="@Scope.Loading" @oninput="e => _password = e.Value?.ToString() ?? string.Empty" /></label>
+
+        @if (Scope.ErrorMessage is { } error)
+        {
+            <p class="error">@error</p>
+        }
+
+        <button class="primary enter" type="submit" disabled="@Scope.Loading">
+            @(Scope.Loading ? "Entrando…" : "Entrar")
+        </button>
+    </form>
+</div>
+
+@code {
+    // What is being typed: view plumbing. The presenter receives it on submit; the password never goes to the scope.
+    private string _userName = string.Empty;
+    private string _password = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _userName = Scope.UserName ?? _userName;
+    }
+
+    private Task Submit() => Scope.OnEnter(_userName, _password);
+}

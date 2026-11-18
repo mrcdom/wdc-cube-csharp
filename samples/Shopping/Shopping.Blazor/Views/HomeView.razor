@@ -1,0 +1,36 @@
+@inherits ScopeView<HomeScope>
+
+<div class="home">
+    <header class="app-header">
+        <button class="logo" @onclick="Scope.OnHome">🛍 Shopping</button>
+        <span class="greeting">@Scope.Greeting</span>
+        <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="Carrinho">
+            🛒
+            @if (Scope.CartCount > 0)
+            {
+                <span class="badge">@Scope.CartCount</span>
+            }
+        </button>
+        <button class="exit" @onclick="Scope.OnExit">Sair</button>
+    </header>
+
+    <main class="home-body">
+        @if (Scope.Content is { } content)
+        {
+            <ViewSlot Scope="content" />
+        }
+        else
+        {
+            <div class="panels">
+                @if (Scope.Products is { } products)
+                {
+                    <ProductsPanelView Scope="products" />
+                }
+                @if (Scope.Purchases is { } purchases)
+                {
+                    <PurchasesPanelView Scope="purchases" />
+                }
+            </div>
+        }
+    </main>
+</div>

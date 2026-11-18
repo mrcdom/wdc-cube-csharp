@@ -1,0 +1,22 @@
+@inherits ScopeView<PurchasesPanelScope>
+
+<section class="card purchases-panel">
+    <h2>Compras <span class="chip">@Scope.CountLabel</span></h2>
+    @if (!Scope.Loading && Scope.Purchases.Count == 0)
+    {
+        <p class="muted">Nenhuma compra realizada</p>
+    }
+    @foreach (var purchase in Scope.Purchases)
+    {
+        <button @key="purchase.Id" class="purchase-card" @onclick="() => Scope.OnOpenReceipt(purchase.Id)">
+            <span class="date">@purchase.DateLabel</span>
+            <span class="items">@purchase.ItemsLabel</span>
+            <span class="price">@purchase.TotalLabel</span>
+        </button>
+    }
+    <nav class="pager">
+        <button class="previous" disabled="@(!Scope.HasPrevious)" @onclick="Scope.OnPrevious">◀ Anterior</button>
+        <span class="page">@Scope.PageLabel</span>
+        <button class="next" disabled="@(!Scope.HasNext)" @onclick="Scope.OnNext">Próxima ▶</button>
+    </nav>
+</section>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- The Shopping demo drawn with Blazor (interactive server: presenters run on the server, one application per
+       circuit). The presentation is untouched. -->
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>net11.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Presentation/Shopping.Presentation.csproj" />
+    <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+  </ItemGroup>
+</Project>

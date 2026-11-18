@@ -1,0 +1,23 @@
+@inherits ScopeView<ProductsPanelScope>
+
+<section class="card products-panel">
+    <h2>Produtos <span class="chip">@Scope.CountLabel</span></h2>
+    @if (Scope.Loading && Scope.Products.Count == 0)
+    {
+        <p class="muted">Carregando…</p>
+    }
+    else if (Scope.Products.Count == 0)
+    {
+        <p class="muted">Nenhum produto disponível</p>
+    }
+    <div class="product-grid">
+        @foreach (var product in Scope.Products)
+        {
+            <button @key="product.Id" class="product-card" @onclick="() => Scope.OnOpenProduct(product.Id)">
+                <img src="@product.ImageUrl" alt="" loading="lazy" />
+                <span class="name">@product.Name</span>
+                <span class="price">@product.PriceLabel</span>
+            </button>
+        }
+    </div>
+</section>

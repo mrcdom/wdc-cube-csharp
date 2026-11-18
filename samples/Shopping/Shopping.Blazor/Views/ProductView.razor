@@ -1,0 +1,43 @@
+@inherits ScopeView<ProductScope>
+
+<section class="card product-page">
+    @if (Scope.ErrorMessage is { } error)
+    {
+        <p class="error">@error</p>
+    }
+    <div class="product-detail">
+        <img src="@Scope.ImageUrl" alt="" />
+        <div>
+            <h2>@Scope.Name</h2>
+            <ul class="description">
+                @foreach (var item in Scope.DescriptionItems)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+            <span class="price">@Scope.PriceLabel</span>
+            <div class="quantity">
+                Qtd:
+                <button class="minus" @onclick="() => ChangeQuantity(-1)">−</button>
+                <span class="value">@_quantity</span>
+                <button class="plus" @onclick="() => ChangeQuantity(+1)">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="outlined back" @onclick="Scope.OnBack">Voltar</button>
+        <button class="primary add" @onclick="() => Scope.OnAddToCart(_quantity)">🛒 Adicionar</button>
+    </div>
+</section>
+
+@code {
+    // The quantity being chosen: view plumbing, sent to the presenter on "Adicionar".
+    private int _quantity = 1;
+
+    // The −/+ buttons change only this view, so it renders for them itself: events do not render a ScopeView.
+    private void ChangeQuantity(int delta)
+    {
+        _quantity = Math.Max(1, _quantity + delta);
+        StateHasChanged();
+    }
+}

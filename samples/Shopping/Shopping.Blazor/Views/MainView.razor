@@ -1,0 +1,10 @@
+@inherits ScopeView<MainScope>
+
+<div class="root">
+    <ViewSlot Scope="Scope.Body" />
+
+    @if (Scope.ErrorMessage is { } message)
+    {
+        <div class="toast" role="alert" @onclick="Scope.OnDismissError">@message</div>
+    }
+</div>

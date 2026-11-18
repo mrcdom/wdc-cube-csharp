@@ -1,0 +1,22 @@
+@page "/"
+@page "/{*path}"
+@using Microsoft.Extensions.Logging
+@using Shopping.Domain
+@using Shopping.Presentation.Infra
+@inject ShoppingRepositories Repositories
+@inject ISessionStore Session
+@inject TimeProvider Time
+@inject ILoggerFactory Loggers
+
+@* Every path is the same page: the address belongs to Cube. One application per circuit. *@
+<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.Start()">
+    <ViewSlot Scope="context.Scope" />
+</CubeHost>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    private MainPresenter Create(CubeHostContext host) =>
+        new(host.History, Repositories, Session, host.Dispatcher, Time, Loggers.CreateLogger<MainPresenter>());
+}

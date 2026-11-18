@@ -1,0 +1,32 @@
+@inherits ScopeView<CartScope>
+
+<section class="card cart-page">
+    <h2>Carrinho de Compras</h2>
+    @if (Scope.ErrorMessage is { } error)
+    {
+        <p class="error">@error</p>
+    }
+    @if (Scope.Lines.Count == 0)
+    {
+        <div class="empty">
+            <p class="big">🛒</p>
+            <p>Seu carrinho está vazio</p>
+            <p class="muted">Adicione produtos para continuar</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var line in Scope.Lines)
+        {
+            <CartLineView @key="line.Identity" Scope="line" />
+        }
+        <p class="total">Total: <strong>@Scope.TotalLabel</strong></p>
+    }
+    <div class="actions">
+        <button class="outlined continue" @onclick="Scope.OnContinue">Continuar Comprando</button>
+        @if (Scope.Lines.Count > 0)
+        {
+            <button class="buy" disabled="@Scope.Buying" @onclick="Scope.OnBuy">@(Scope.Buying ? "Comprando…" : "Comprar")</button>
+        }
+    </div>
+</section>

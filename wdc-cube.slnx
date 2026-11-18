@@ -26,6 +26,8 @@
     <Project Path="samples/Shopping/Shopping.Persistence/Shopping.Persistence.csproj" />
     <Project Path="samples/Shopping/Shopping.Presentation/Shopping.Presentation.csproj" />
     <Project Path="samples/Shopping/Shopping.Presentation.Tests/Shopping.Presentation.Tests.csproj" />
+    <Project Path="samples/Shopping/Shopping.Blazor/Shopping.Blazor.csproj" />
+    <Project Path="samples/Shopping/Shopping.Blazor.Tests/Shopping.Blazor.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />

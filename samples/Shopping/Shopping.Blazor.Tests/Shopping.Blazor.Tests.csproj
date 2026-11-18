@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>net11.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Blazor/Shopping.Blazor.csproj" />
+    <PackageReference Include="bunit" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shopping.Presentation.Tests/Harness.cs" Link="Harness.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>
