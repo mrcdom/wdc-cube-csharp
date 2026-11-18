@@ -16,7 +16,7 @@
       <ItemsControl ItemsSource="{Binding Purchases}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="m:PurchaseCard">
-            <Button Classes="purchase-card" HorizontalAlignment="Stretch" Margin="0,0,0,6" Click="OnOpen">
+            <Button Classes="purchase-card" HorizontalAlignment="Stretch" Margin="0,0,0,6" Background="#F9FAFB" Click="OnOpen">
               <StackPanel>
                 <TextBlock Text="{Binding DateLabel}" FontWeight="SemiBold" />
                 <TextBlock Classes="muted" Text="{Binding ItemsLabel}" TextWrapping="Wrap" />
