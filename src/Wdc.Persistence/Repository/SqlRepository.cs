@@ -22,17 +22,17 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         ArgumentNullException.ThrowIfNull(database);
         ArgumentNullException.ThrowIfNull(mapping);
         Database = database;
-        Mapping = mapping;
+        TableMapping = mapping;
         Codec = new JsonEntityCodec<TEntity>(mapping.Model);
     }
 
     protected Database Database { get; }
 
-    protected EntityMapping<TEntity> Mapping { get; }
+    protected EntityMapping<TEntity> TableMapping { get; }
 
     protected JsonEntityCodec<TEntity> Codec { get; }
 
-    protected EntityModel<TEntity> Model => Mapping.Model;
+    protected EntityModel<TEntity> Model => TableMapping.Model;
 
     public virtual TEntity OwnFieldsProjection() => Model.OwnFieldsProjection();
 
@@ -41,8 +41,8 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     public virtual Task<int> Count(TCriteria criteria, CancellationToken cancellationToken = default)
     {
         var w = Database.NewWriter();
-        w.Append("SELECT COUNT(*) FROM ").Table(Mapping.Table).Append(' ').Identifier(Alias);
-        WriteWhere(w, Mapping.Conditions(criteria, Alias));
+        w.Append("SELECT COUNT(*) FROM ").Table(TableMapping.Table).Append(' ').Identifier(Alias);
+        WriteWhere(w, TableMapping.Conditions(criteria, Alias));
         var statement = w.ToStatement();
         return Database.Read(async (connection, transaction) =>
         {
@@ -58,7 +58,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
         ArgumentOutOfRangeException.ThrowIfNegative(limit);
         var projection = ProjectionOf(criteria);
-        return Select(projection, Mapping.Conditions(criteria, Alias), criteria, limit == 0 ? null : limit,
+        return Select(projection, TableMapping.Conditions(criteria, Alias), criteria, limit == 0 ? null : limit,
             offset == 0 ? null : offset, cancellationToken);
     }
 
@@ -76,7 +76,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     {
         var key = Model.Key!.ScalarKind!.ToDatabaseObject(id);
         var rows = await Select(projection ?? OwnFieldsProjection(),
-            Sql.Compare(Sql.Column(Alias, Mapping.KeyColumn), "=", key), default, 1, null, cancellationToken)
+            Sql.Compare(Sql.Column(Alias, TableMapping.KeyColumn), "=", key), default, 1, null, cancellationToken)
             .ConfigureAwait(false);
         return rows.Count == 0 ? null : rows[0];
     }
@@ -87,11 +87,11 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     {
         var w = Database.NewWriter();
         w.Append("SELECT ");
-        w.Dialect.WriteJsonAsText(w, json => Mapping.WriteJson(json, Alias, projection));
-        w.Append(" FROM ").Table(Mapping.Table).Append(' ').Identifier(Alias);
+        w.Dialect.WriteJsonAsText(w, json => TableMapping.WriteJson(json, Alias, projection));
+        w.Append(" FROM ").Table(TableMapping.Table).Append(' ').Identifier(Alias);
         WriteWhere(w, where);
         w.Append(" ORDER BY ");
-        Mapping.WriteOrderBy(w, Alias, ordering);
+        TableMapping.WriteOrderBy(w, Alias, ordering);
         if (limit is not null || offset is not null)
         {
             w.Dialect.WriteSlice(w, limit, offset);
@@ -118,10 +118,10 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     {
         ArgumentNullException.ThrowIfNull(bean);
         var written = new List<(Binding<TEntity> Binding, object? Value)>();
-        foreach (var binding in Mapping.Bindings)
+        foreach (var binding in TableMapping.Bindings)
         {
             var field = binding.Field;
-            if (field.Kind == FieldKind.Collection || (field.IsKey && Mapping.KeyGenerated))
+            if (field.Kind == FieldKind.Collection || (field.IsKey && TableMapping.KeyGenerated))
             {
                 continue;
             }
@@ -136,8 +136,8 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         return Database.Write(async (connection, transaction) =>
         {
             var w = Database.NewWriter();
-            w.Dialect.WriteInsertReturningKey(w, Mapping.Table,
-                [.. written.Select(x => (ColumnOf(x.Binding), x.Value))], Mapping.KeyColumn);
+            w.Dialect.WriteInsertReturningKey(w, TableMapping.Table,
+                [.. written.Select(x => (ColumnOf(x.Binding), x.Value))], TableMapping.KeyColumn);
             object? key;
             await using (var command = Database.Command(connection, transaction, w.ToStatement()))
             {
@@ -154,7 +154,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
                 return false;
             }
 
-            foreach (var binding in Mapping.Bindings)
+            foreach (var binding in TableMapping.Bindings)
             {
                 if (binding.Field.Kind != FieldKind.Collection && !written.Exists(x => ReferenceEquals(x.Binding, binding)))
                 {
@@ -175,7 +175,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         var marks = projection ?? (oldBean is null ? OwnFieldsProjection() : Model.ChangedFields(newBean, oldBean));
 
         var sets = new List<(string Column, object? Value)>();
-        foreach (var binding in Mapping.Bindings)
+        foreach (var binding in TableMapping.Bindings)
         {
             var field = binding.Field;
             if (field.IsKey || field.Kind == FieldKind.Collection || !field.HasValue(marks))
@@ -197,9 +197,9 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         }
 
         var w = Database.NewWriter();
-        w.Append("UPDATE ").Table(Mapping.Table).Append(" SET ")
+        w.Append("UPDATE ").Table(TableMapping.Table).Append(" SET ")
             .Join(", ", sets, (ww, s) => ww.Identifier(s.Column).Append(" = ").Parameter(s.Value))
-            .Append(" WHERE ").Identifier(Mapping.KeyColumn).Append(" = ").Parameter(key);
+            .Append(" WHERE ").Identifier(TableMapping.KeyColumn).Append(" = ").Parameter(key);
         var statement = w.ToStatement();
         return Database.Write(async (connection, transaction) =>
         {
@@ -217,8 +217,8 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         }
 
         var w = Database.NewWriter();
-        w.Dialect.WriteDeleteFrom(w, Mapping.Table, Alias);
-        WriteWhere(w, Mapping.Conditions(criteria, Alias));
+        w.Dialect.WriteDeleteFrom(w, TableMapping.Table, Alias);
+        WriteWhere(w, TableMapping.Conditions(criteria, Alias));
         var statement = w.ToStatement();
         return Database.Write(async (connection, transaction) =>
         {
@@ -248,9 +248,9 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
         var projection = OwnFieldsProjection();
         var w = Database.NewWriter();
         w.Append("SELECT ");
-        w.Dialect.WriteJsonAsText(w, json => Mapping.WriteJson(json, Alias, projection));
-        w.Append(" FROM ").Table(Mapping.Table).Append(' ').Identifier(Alias).Append(" WHERE ")
-            .Column(Alias, Mapping.KeyColumn).Append(" = ").Parameter(Model.Key!.ScalarKind!.ToDatabaseObject(key));
+        w.Dialect.WriteJsonAsText(w, json => TableMapping.WriteJson(json, Alias, projection));
+        w.Append(" FROM ").Table(TableMapping.Table).Append(' ').Identifier(Alias).Append(" WHERE ")
+            .Column(Alias, TableMapping.KeyColumn).Append(" = ").Parameter(Model.Key!.ScalarKind!.ToDatabaseObject(key));
         await using var command = Database.Command(connection, transaction, w.ToStatement());
         var json = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false) as string;
         return json is null ? null : Codec.FromJson(json);

@@ -10,7 +10,7 @@ public sealed class EntityMappingBuilder<TEntity>
     private readonly string _table;
     private readonly string _alias;
     private readonly List<Binding<TEntity>> _bindings = [];
-    private readonly Dictionary<string, Func<Criterion, FilterContext, ISqlFragment?>> _filters = new(StringComparer.Ordinal);
+    private Func<ICriteria, FilterContext, ISqlFragment?>? _conditions;
     private Func<string?, IReadOnlyList<SortSpec>> _ordering = static _ => [];
     private string? _keyColumn;
     private bool _keyGenerated;
@@ -60,15 +60,19 @@ public sealed class EntityMappingBuilder<TEntity>
         return this;
     }
 
-    /// <summary>A criterion that filters a column other than the field of the same name.</summary>
-    public EntityMappingBuilder<TEntity> Filter(string criterion, string column) =>
-        Filter(criterion, (c, ctx) => Sql.Translate(ctx.Column(column), c));
-
-    /// <summary>A criterion with its own translation (a virtual field: <c>EXISTS</c> on another table...).</summary>
-    public EntityMappingBuilder<TEntity> Filter(string criterion, Func<Criterion, FilterContext, ISqlFragment?> translate)
+    /// <summary>
+    /// How the repository translates its criteria (decision of the Kotlin version: each repository owns it). Every
+    /// relation that reaches this entity reuses it on the relation's subquery.
+    /// </summary>
+    public EntityMappingBuilder<TEntity> Conditions<TCriteria>(Func<TCriteria, FilterContext, ISqlFragment?> conditions)
+        where TCriteria : ICriteria
     {
-        ArgumentNullException.ThrowIfNull(translate);
-        _filters[criterion] = translate;
+        ArgumentNullException.ThrowIfNull(conditions);
+        var name = _model.Name;
+        _conditions = (criteria, context) => criteria is TCriteria typed
+            ? conditions(typed, context)
+            : throw new InvalidOperationException(
+                $"The conditions of {name} read {typeof(TCriteria).Name}, not {criteria.GetType().Name}.");
         return this;
     }
 
@@ -84,7 +88,7 @@ public sealed class EntityMappingBuilder<TEntity>
 
     public EntityMapping<TEntity> Build() =>
         new(_model, _table, _alias, _keyColumn ?? throw new InvalidOperationException($"Map the key of {_model.Name}."),
-            _keyGenerated, [.. _bindings], new(_filters, StringComparer.Ordinal), _ordering);
+            _keyGenerated, [.. _bindings], _conditions, _ordering);
 
     private FieldModel<TEntity> Field(string name, FieldKind kind)
     {

@@ -4,18 +4,18 @@ namespace Wdc.Persistence;
 
 /// <summary>
 /// Binds an <see cref="EntityModel{TEntity}"/> to a table, once: which column holds each field, how references and
-/// collections relate, how each criterion filters and how each named ordering sorts. From it the repository builds
+/// collections relate, how each named ordering sorts, and the repository's translation of its criteria. From it the repository builds
 /// a single statement that returns each row as one JSON object, nested references and collections included, as
 /// correlated subqueries: no N+1, no join explosion, only the projected columns.
 /// </summary>
 public sealed class EntityMapping<TEntity>
     where TEntity : class
 {
-    private readonly Dictionary<string, Func<Criterion, FilterContext, ISqlFragment?>> _filters;
+    private readonly Func<ICriteria, FilterContext, ISqlFragment?>? _conditions;
     private readonly Func<string?, IReadOnlyList<SortSpec>> _ordering;
 
     internal EntityMapping(EntityModel<TEntity> model, string table, string aliasPrefix, string keyColumn, bool keyGenerated,
-        IReadOnlyList<Binding<TEntity>> bindings, Dictionary<string, Func<Criterion, FilterContext, ISqlFragment?>> filters,
+        IReadOnlyList<Binding<TEntity>> bindings, Func<ICriteria, FilterContext, ISqlFragment?>? conditions,
         Func<string?, IReadOnlyList<SortSpec>> ordering)
     {
         Model = model;
@@ -24,7 +24,7 @@ public sealed class EntityMapping<TEntity>
         KeyColumn = keyColumn;
         KeyGenerated = keyGenerated;
         Bindings = bindings;
-        _filters = filters;
+        _conditions = conditions;
         _ordering = ordering;
         foreach (var binding in bindings)
         {
@@ -62,39 +62,34 @@ public sealed class EntityMapping<TEntity>
         writer.Dialect.WriteJsonObject(writer, entries);
     }
 
-    /// <summary>The WHERE condition of <paramref name="criteria"/> on <paramref name="alias"/>; <see langword="null"/> when nothing filters.</summary>
+    /// <summary>
+    /// The WHERE condition of <paramref name="criteria"/> on <paramref name="alias"/>, translated by the repository's
+    /// <c>Conditions</c> (the same translation serves its own queries and every relation that reaches it);
+    /// <see langword="null"/> when nothing filters.
+    /// </summary>
     internal ISqlFragment? Conditions(ICriteria? criteria, string alias)
     {
-        if (criteria is null)
+        if (criteria is null || !criteria.HasFilter)
         {
             return null;
         }
 
-        var context = new FilterContext(alias);
-        var parts = new List<ISqlFragment?>();
-        foreach (var criterion in criteria.Criterions)
+        var conditions = _conditions
+            ?? throw new InvalidOperationException($"The mapping of {Model.Name} declares no Conditions: it cannot filter.");
+        return Sql.Raw(w =>
         {
-            if (!criterion.IsSet && !criterion.IsRestricted)
-            {
-                continue;
-            }
-
-            if (_filters.TryGetValue(criterion.Name, out var filter))
-            {
-                parts.Add(filter(criterion, context));
-            }
-            else if (Bindings.OfType<ScalarBinding<TEntity>>().FirstOrDefault(b => b.Field.Name == criterion.Name) is { } scalar)
-            {
-                parts.Add(Sql.Translate(Sql.Column(alias, scalar.Column), criterion));
-            }
-            else
+            var context = new FilterContext(alias, w);
+            var fragment = conditions(criteria, context);
+            var uncovered = context.Uncovered(criteria).Select(c => c.Name).ToList();
+            if (uncovered.Count > 0)
             {
                 throw new InvalidOperationException(
-                    $"The mapping of {Model.Name} does not know how to filter by '{criterion.Name}': declare a Filter for it.");
+                    $"The conditions of {Model.Name} do not translate {string.Join(", ", uncovered.Select(n => $"'{n}'"))}: " +
+                    "add them to its repository's Conditions.");
             }
-        }
 
-        return Sql.And(parts);
+            (fragment ?? Sql.True).Render(w);
+        });
     }
 
     /// <summary>The ORDER BY columns of the criteria's named ordering, with the key as tie-breaker.</summary>

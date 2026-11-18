@@ -8,13 +8,13 @@ public sealed class Shopping(Database database) : IShoppingSide
 {
     public Database Database { get; } = database;
 
-    public SqlRepository<Product, ProductCriteria, long> Products { get; } = new(database, ShoppingMappings.Product);
+    public ProductRepository Products { get; } = new(database);
 
-    public SqlRepository<User, UserCriteria, long> Users { get; } = new(database, ShoppingMappings.User);
+    public UserRepository Users { get; } = new(database);
 
-    public SqlRepository<Purchase, PurchaseCriteria, long> Purchases { get; } = new(database, ShoppingMappings.Purchase);
+    public PurchaseRepository Purchases { get; } = new(database);
 
-    public SqlRepository<PurchaseItem, PurchaseItemCriteria, long> Items { get; } = new(database, ShoppingMappings.PurchaseItem);
+    public PurchaseItemRepository Items { get; } = new(database);
 
     ITransactionService IShoppingSide.Tx => Database;
 

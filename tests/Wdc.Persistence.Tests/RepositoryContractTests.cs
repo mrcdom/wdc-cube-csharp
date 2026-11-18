@@ -132,6 +132,31 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     }
 
     [Fact]
+    public async Task Relation_TheChildRepositorysConditionsFilterTheCollection_WithAndWithoutASlice()
+    {
+        var user = await NewUser("eva", "Eva");
+        var cheap = await NewProduct("Fita", 2m);
+        var mid = await NewProduct("Bola", 10m);
+        var dear = await NewProduct("Raquete", 99.9m);
+        await NewPurchase(user, (cheap, 5), (mid, 2), (dear, 1));
+
+        async Task<string[]> Names(ProjectionList<PurchaseItem> items)
+        {
+            var projection = new Purchase { Id = Mark.Int64, Items = items };
+            var stored = (await Db.Purchases.Fetch(new PurchaseCriteria().WithProjection(projection), cancellationToken: Ct)).Single();
+            return [.. stored.Items!.Select(i => i.Product!.Name!)];
+        }
+
+        var shape = new PurchaseItem { Product = new Product { Name = Mark.String } };
+
+        // amount >= 2, translated by the item repository's conditions inside the purchase's query
+        Assert.Equal(["Bola", "Fita"], await Names(Mark.List(shape,
+            new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst))));
+        Assert.Equal(["Bola"], await Names(Mark.List(shape,
+            new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst), limit: 1)));
+    }
+
+    [Fact]
     public async Task Fetch_ValuesRoundTrip_BytesInstantsDecimalsEnums()
     {
         var product = await NewProduct("Imagem", 1234567.89m);
@@ -234,13 +259,25 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     }
 
     [Fact]
-    public async Task Criteria_WithoutAFilterInTheMapping_IsAConfigurationError()
+    public async Task Criteria_TheRepositoryDoesNotTranslate_IsAConfigurationError_NotIgnored()
     {
         Assert.SkipWhen(fixture.IsRemote, "a mapping matter of the SQL side");
-        var users = new SqlRepository<User, UserCriteriaWithUnmappedField, long>(fixture.Shopping!.Database, ShoppingMappings.User);
+        var database = fixture.Shopping!.Database;
 
+        // Another criteria type than the one the repository translates.
+        var users = new SqlRepository<User, UserCriteriaWithUnmappedField, long>(database, UserRepository.Mapping);
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             users.Fetch(new UserCriteriaWithUnmappedField().Nickname.Eq("x"), cancellationToken: Ct));
+
+        // A field the conditions leave out: an error naming it, never a filter silently dropped (or a restriction).
+        var partial = EntityMapping.For(User.Model, "user_account", "u")
+            .Key("id", generated: true)
+            .Column("userName", "user_name")
+            .Conditions<UserCriteria>((c, t) => t.Translate("user_name", c.UserName))
+            .Build();
+        var caught = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new SqlRepository<User, UserCriteria, long>(database, partial).Count(new UserCriteria().Role.Restrict(Role.Admin), Ct));
+        Assert.Contains("'role'", caught.Message, StringComparison.Ordinal);
     }
 
     // :: Update and delete
