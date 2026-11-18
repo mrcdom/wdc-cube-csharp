@@ -10,8 +10,8 @@
       <TextBlock Text="🛍" FontSize="36" HorizontalAlignment="Center" />
       <TextBlock Classes="title" Text="Shopping" HorizontalAlignment="Center" />
       <TextBlock Classes="muted" Text="Entre com suas credenciais para continuar" HorizontalAlignment="Center" />
-      <TextBox x:Name="UserBox" Watermark="Usuário" IsEnabled="{Binding !Loading}" />
-      <TextBox x:Name="PasswordBox" Watermark="Senha" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
+      <TextBox x:Name="UserBox" PlaceholderText="Usuário" IsEnabled="{Binding !Loading}" />
+      <TextBox x:Name="PasswordBox" PlaceholderText="Senha" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
       <TextBlock Classes="error" Text="{Binding ErrorMessage}" TextWrapping="Wrap"
                  IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <Button x:Name="EnterButton" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- The Shopping views in Blazor, shared by the two hosts (decision D-21): interactive server (Shopping.Blazor) and
+       WebAssembly (Shopping.Wasm). The host brings the services: repositories, login, session storage. -->
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shopping.Presentation/Shopping.Presentation.csproj" />
+    <ProjectReference Include="../../../src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+  </ItemGroup>
+</Project>

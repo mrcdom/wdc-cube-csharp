@@ -59,7 +59,9 @@ app.MapGet("/image/product/{productId:long}.png", async (long productId, Shoppin
     }
 });
 
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddAdditionalAssemblies(typeof(Shopping.Blazor.Views.Pages.Shell).Assembly); // the pages live with the shared views
 
 await app.RunAsync();
 await store.DisposeAsync();

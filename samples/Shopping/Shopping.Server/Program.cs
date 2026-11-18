@@ -21,7 +21,11 @@ if (await store.EnsureCreated())
     app.Logger.LogInformation("Shopping schema and demo data created ({Provider}).", store.Provider);
 }
 
+// The WebAssembly app (decision D-21): its files, and index.html for any address that is not the API's.
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 app.MapShoppingApi();
+app.MapFallbackToFile("index.html");
 
 await app.RunAsync();
 await store.DisposeAsync();

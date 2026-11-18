@@ -6,8 +6,7 @@
     <TargetFramework>net11.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Shopping.Presentation/Shopping.Presentation.csproj" />
+    <ProjectReference Include="../Shopping.Blazor.Views/Shopping.Blazor.Views.csproj" />
     <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
-    <ProjectReference Include="../../../src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
   </ItemGroup>
 </Project>

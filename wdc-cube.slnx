@@ -31,9 +31,11 @@
     <Project Path="samples/Shopping/Shopping.Persistence/Shopping.Persistence.csproj" />
     <Project Path="samples/Shopping/Shopping.Presentation/Shopping.Presentation.csproj" />
     <Project Path="samples/Shopping/Shopping.Presentation.Tests/Shopping.Presentation.Tests.csproj" />
+    <Project Path="samples/Shopping/Shopping.Blazor.Views/Shopping.Blazor.Views.csproj" />
     <Project Path="samples/Shopping/Shopping.Blazor/Shopping.Blazor.csproj" />
     <Project Path="samples/Shopping/Shopping.Blazor.Tests/Shopping.Blazor.Tests.csproj" />
     <Project Path="samples/Shopping/Shopping.Server/Shopping.Server.csproj" />
+    <Project Path="samples/Shopping/Shopping.Wasm/Shopping.Wasm.csproj" />
     <Project Path="samples/Shopping/Shopping.Client/Shopping.Client.csproj" />
     <Project Path="samples/Shopping/Shopping.Avalonia/Shopping.Avalonia.csproj" />
     <Project Path="samples/Shopping/Shopping.Avalonia.Tests/Shopping.Avalonia.Tests.csproj" />

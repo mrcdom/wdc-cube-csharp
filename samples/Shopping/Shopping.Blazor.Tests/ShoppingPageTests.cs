@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Shopping.Blazor.Components.Pages;
+using Shopping.Blazor.Views.Pages;
 using Shopping.Blazor.Views;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Tests;
@@ -141,5 +141,12 @@ public sealed class ImageEndpointTests(ShoppingDatabaseFixture db) : IClassFixtu
         Assert.Equal(HttpStatusCode.OK, image.StatusCode);
         Assert.Equal("image/png", image.Content.Headers.ContentType?.MediaType);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+
+        // The pages come from the shared views library: the host must route to them, at any address.
+        foreach (var address in new[] { "/", "/home/cart", "/_content/Shopping.Blazor.Views/app.css" })
+        {
+            var page = await client.GetAsync(new Uri(address, UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
+            Assert.True(page.StatusCode == HttpStatusCode.OK, $"{address}: {page.StatusCode}");
+        }
     }
 }

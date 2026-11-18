@@ -9,7 +9,9 @@ history, product, cart, purchase and receipt. Choices and differences: `.claude/
 | `Shopping.Persistence` | Mappings, SQL repositories, DDL for PostgreSQL and SQL Server, demo data (with product images). |
 | `Shopping.Presentation` | Places, keys, presenters, scopes. No view, no database. |
 | `Shopping.Presentation.Tests` | The presentation without UI, against a real database in a throwaway schema. |
-| `Shopping.Blazor` | The views and the host (interactive server: one application per circuit), image endpoint. |
+| `Shopping.Blazor.Views` | The Blazor views, pages and CSS, shared by the two Blazor hosts. |
+| `Shopping.Blazor` | The interactive-server host (one application per circuit), image endpoint, sealed addresses. |
+| `Shopping.Wasm` | The WebAssembly host: the presentation in the browser, data and login through `Shopping.Server`. |
 | `Shopping.Blazor.Tests` | The whole page on Blazor's renderer (bUnit) and the host in memory. |
 | `Shopping.Server` | The backend over HTTP (phase 5): repositories as REST routes, remote transactions, JWT login, images. |
 | `Shopping.Client` | The repositories and the login through HTTP, for clients that run the presentation themselves. |
@@ -26,6 +28,21 @@ dotnet run        # Development, http://localhost:5190
 The database comes from `appsettings.json` (`Shopping:Database`: `Provider` = `PostgreSql` or `SqlServer`,
 `ConnectionString`, `Schema`). On the first start the schema and the demo data are created. Users: `admin`/`admin`,
 `fulano`/`fulano`, `beotrano`/`beotrano`.
+
+### WebAssembly
+
+```bash
+cd samples/Shopping/Shopping.Server
+dotnet run -f net11.0          # serves the WebAssembly app at http://localhost:5200 and the API under /api
+```
+
+Addresses stay plain there: WebAssembly has no AES, so the sealed-address codec (decision D-22) is off.
+
+### Sealed addresses
+
+After login, the Blazor Server app seals the addresses with a key per user (`home/product?_e=…`), derived from
+`Shopping:History:Key` (Base64, 32 bytes; random in Development, so links die with the process). The same setting
+exists on `Shopping.Server`, which hands each user's key out at login.
 
 ### Desktop (Avalonia) over the server
 
