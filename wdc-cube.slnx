@@ -9,6 +9,7 @@
     <Project Path="src/Wdc.Cube/Wdc.Cube.csproj" />
     <Project Path="src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
     <Project Path="src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
+    <Project Path="src/Wdc.Domain/Wdc.Domain.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/Tutorial/">
@@ -20,5 +21,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />
     <Project Path="tests/Wdc.Cube.Blazor.Tests/Wdc.Cube.Blazor.Tests.csproj" />
+    <Project Path="tests/Wdc.Domain.Tests/Wdc.Domain.Tests.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain contracts shared by client and server: entity models, criteria, projection, JSON codecs,
+       repository and transaction contracts. No database here. -->
+  <PropertyGroup>
+    <Description>Cube domain contracts: entity models, criteria, projection by example, codecs, repositories.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wdc.Persistence" />
+    <InternalsVisibleTo Include="Wdc.Domain.Tests" />
+  </ItemGroup>
+</Project>

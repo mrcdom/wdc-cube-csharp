@@ -1,0 +1,318 @@
+using System.Text.Json;
+
+namespace Wdc.Domain;
+
+/// <summary>One comparison request: an operator and its values.</summary>
+public interface IPredicate
+{
+    Operator Operator { get; }
+
+    /// <summary>The values, boxed.</summary>
+    IReadOnlyList<object?> Values { get; }
+}
+
+/// <summary>A filter on one field: the requests made on it, combined by AND, or by OR after <c>Or()</c>.</summary>
+public abstract class Criterion
+{
+    protected Criterion(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        Name = name;
+    }
+
+    /// <summary>The field's name (in JSON and for the repository's translation).</summary>
+    public string Name { get; }
+
+    /// <summary>Whether the requests on this field combine with OR.</summary>
+    public bool Disjunctive { get; protected set; }
+
+    /// <summary>Whether anything was asked; an empty criterion does not filter.</summary>
+    public abstract bool IsSet { get; }
+
+    public abstract IReadOnlyList<IPredicate> Predicates { get; }
+
+    public abstract IValueKind ValueKind { get; }
+
+    internal abstract void WriteJson(Utf8JsonWriter writer);
+
+    internal abstract void ReadJson(ref Utf8JsonReader reader);
+
+    public override string ToString() =>
+        !IsSet
+            ? $"{Name} (not set)"
+            : $"{Name} {(Disjunctive ? "any of" : "all of")} [{string.Join(", ", Predicates.Select(p => p.Values.Count == 0 ? p.Operator.WireName() : $"{p.Operator.WireName()} [{string.Join(", ", p.Values)}]"))}]";
+}
+
+/// <summary>
+/// A filter on a field compared only for identity (an enum, a flag, a foreign key): equal, not equal, in, null.
+/// </summary>
+/// <typeparam name="TOwner">The criteria object it belongs to; fluent calls return it.</typeparam>
+/// <typeparam name="T">The nullable value type (<c>long?</c>, <c>string?</c>...).</typeparam>
+public class Criterion<TOwner, T> : Criterion
+    where TOwner : class
+{
+    private readonly TOwner _owner;
+    private readonly ValueKind<T> _kind;
+    private readonly List<Predicate> _requests = [];
+
+    public Criterion(TOwner owner, string name, ValueKind<T> kind)
+        : base(name)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        ArgumentNullException.ThrowIfNull(kind);
+        _owner = owner;
+        _kind = kind;
+    }
+
+    public override bool IsSet => _requests.Count > 0;
+
+    public override IReadOnlyList<IPredicate> Predicates => _requests;
+
+    public override IValueKind ValueKind => _kind;
+
+    /// <summary>The kind of the values.</summary>
+    public ValueKind<T> Kind => _kind;
+
+    /// <summary>The criteria object this criterion belongs to.</summary>
+    protected TOwner Owner => _owner;
+
+    /// <summary>The following requests on this field combine with OR.</summary>
+    public virtual Criterion<TOwner, T> Or()
+    {
+        Disjunctive = true;
+        return this;
+    }
+
+    /// <summary>The requests on this field combine with AND (the default).</summary>
+    public virtual Criterion<TOwner, T> And()
+    {
+        Disjunctive = false;
+        return this;
+    }
+
+    /// <summary>Removes every request.</summary>
+    public TOwner Clear()
+    {
+        _requests.Clear();
+        return _owner;
+    }
+
+    /// <summary>Equal to <paramref name="value"/>; a null value asks nothing (an empty screen field does not filter).</summary>
+    public TOwner Eq(T value) => ValueKind<T>.IsNull(value) ? _owner : Add(Operator.Eq, value);
+
+    /// <summary>Different from <paramref name="value"/>; a null value asks nothing.</summary>
+    public TOwner Ne(T value) => ValueKind<T>.IsNull(value) ? _owner : Add(Operator.Ne, value);
+
+    /// <summary>
+    /// One of <paramref name="values"/>. <see langword="null"/> asks nothing ("not informed"); an empty list matches
+    /// nothing (a search finds no row and a delete removes nothing).
+    /// </summary>
+    public TOwner In(IEnumerable<T>? values)
+    {
+        if (values is null)
+        {
+            return _owner;
+        }
+
+        _requests.Add(new Predicate(Operator.In, [.. values]));
+        return _owner;
+    }
+
+    /// <summary>One of <paramref name="values"/>.</summary>
+    public TOwner In(params T[] values) => In((IEnumerable<T>)values);
+
+    public TOwner IsNull() => Add(Operator.IsNull);
+
+    public TOwner IsNotNull() => Add(Operator.IsNotNull);
+
+    /// <summary>
+    /// Puts back a request read from the wire, as it was: unlike the fluent methods, it keeps an explicit null.
+    /// </summary>
+    public void Restore(Operator op, IReadOnlyList<T>? values) => _requests.Add(new Predicate(op, [.. values ?? []]));
+
+    /// <summary>Puts back the combination read from the wire.</summary>
+    public void RestoreDisjunctive(bool value) => Disjunctive = value;
+
+    /// <summary>The typed requests.</summary>
+    public IEnumerable<(Operator Operator, IReadOnlyList<T> Values)> TypedPredicates =>
+        _requests.Select(p => (p.Operator, (IReadOnlyList<T>)p.TypedValues));
+
+    protected TOwner Add(Operator op, params T[] values)
+    {
+        _requests.Add(new Predicate(op, values));
+        return _owner;
+    }
+
+    internal override void WriteJson(Utf8JsonWriter writer)
+    {
+        writer.WriteStartObject(Name);
+        if (Disjunctive)
+        {
+            writer.WriteBoolean("or", true);
+        }
+
+        writer.WriteStartArray("p");
+        foreach (var predicate in _requests)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("o", predicate.Operator.WireName());
+            if (predicate.TypedValues.Length > 0)
+            {
+                writer.WriteStartArray("v");
+                foreach (var value in predicate.TypedValues)
+                {
+                    if (ValueKind<T>.IsNull(value))
+                    {
+                        writer.WriteNullValue();
+                    }
+                    else
+                    {
+                        _kind.Write(writer, value);
+                    }
+                }
+
+                writer.WriteEndArray();
+            }
+
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    // At the value token. A loose value is equality; a loose null asks nothing.
+    internal override void ReadJson(ref Utf8JsonReader reader)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            var loose = reader.TokenType == JsonTokenType.Null ? default! : _kind.Read(ref reader);
+            if (!ValueKind<T>.IsNull(loose))
+            {
+                Restore(Operator.Eq, [loose]);
+            }
+
+            SkipIfContainer(ref reader);
+            return;
+        }
+
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+        {
+            var property = reader.GetString();
+            reader.Read();
+            switch (property)
+            {
+                case "or":
+                    RestoreDisjunctive(reader.TokenType == JsonTokenType.True);
+                    break;
+                case "p" when reader.TokenType == JsonTokenType.StartArray:
+                    ReadPredicates(ref reader);
+                    break;
+                default:
+                    reader.Skip();
+                    break;
+            }
+        }
+    }
+
+    private void ReadPredicates(ref Utf8JsonReader reader)
+    {
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                reader.Skip();
+                continue;
+            }
+
+            Operator? op = null;
+            var values = new List<T>(2);
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                var property = reader.GetString();
+                reader.Read();
+                switch (property)
+                {
+                    case "o":
+                        op = Operators.TryParseWireName(reader.TokenType == JsonTokenType.String ? reader.GetString() : null,
+                            out var parsed)
+                            ? parsed
+                            : null;
+                        break;
+                    case "v" when reader.TokenType == JsonTokenType.StartArray:
+                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                        {
+                            values.Add(reader.TokenType == JsonTokenType.Null ? default! : _kind.Read(ref reader));
+                            SkipIfContainer(ref reader);
+                        }
+
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
+                }
+            }
+
+            if (op is { } known)
+            {
+                Restore(known, values); // unknown operator: discarded (a looser filter, never a different one)
+            }
+        }
+    }
+
+    private static void SkipIfContainer(ref Utf8JsonReader reader)
+    {
+        if (reader.TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray)
+        {
+            reader.Skip();
+        }
+    }
+
+    private sealed class Predicate(Operator op, T[] values) : IPredicate
+    {
+        public Operator Operator { get; } = op;
+
+        public T[] TypedValues { get; } = values;
+
+        public IReadOnlyList<object?> Values { get; } = [.. values.Select(v => (object?)v)];
+    }
+}
+
+/// <summary>A filter on an ordered field: adds greater/less than and between.</summary>
+public class ComparableCriterion<TOwner, T> : Criterion<TOwner, T>
+    where TOwner : class
+{
+    public ComparableCriterion(TOwner owner, string name, ValueKind<T> kind)
+        : base(owner, name, kind)
+    {
+    }
+
+    public override ComparableCriterion<TOwner, T> Or()
+    {
+        base.Or();
+        return this;
+    }
+
+    public override ComparableCriterion<TOwner, T> And()
+    {
+        base.And();
+        return this;
+    }
+
+    public TOwner Gt(T value) => ValueKind<T>.IsNull(value) ? Owner : Add(Operator.Gt, value);
+
+    public TOwner Ge(T value) => ValueKind<T>.IsNull(value) ? Owner : Add(Operator.Ge, value);
+
+    public TOwner Lt(T value) => ValueKind<T>.IsNull(value) ? Owner : Add(Operator.Lt, value);
+
+    public TOwner Le(T value) => ValueKind<T>.IsNull(value) ? Owner : Add(Operator.Le, value);
+
+    /// <summary>Between, inclusive. An open end becomes GE or LE; both open asks nothing.</summary>
+    public TOwner Between(T start, T end) => (ValueKind<T>.IsNull(start), ValueKind<T>.IsNull(end)) switch
+    {
+        (true, true) => Owner,
+        (true, false) => Le(end),
+        (false, true) => Ge(start),
+        _ => Add(Operator.Between, start, end),
+    };
+}
