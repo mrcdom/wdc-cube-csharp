@@ -96,8 +96,24 @@ public static class ShoppingMappings
         .Build();
 }
 
+/// <summary>What the repository contract talks to: four repositories and the transactions, on one side or the other.</summary>
+public interface IShoppingSide
+{
+    ITransactionService Tx { get; }
+
+    bool InTransaction { get; }
+
+    IRepository<Product, ProductCriteria, long> Products { get; }
+
+    IRepository<User, UserCriteria, long> Users { get; }
+
+    IRepository<Purchase, PurchaseCriteria, long> Purchases { get; }
+
+    IRepository<PurchaseItem, PurchaseItemCriteria, long> Items { get; }
+}
+
 /// <summary>The four repositories over one database.</summary>
-public sealed class Shopping(Database database)
+public sealed class Shopping(Database database) : IShoppingSide
 {
     public Database Database { get; } = database;
 
@@ -108,4 +124,16 @@ public sealed class Shopping(Database database)
     public SqlRepository<Purchase, PurchaseCriteria, long> Purchases { get; } = new(database, ShoppingMappings.Purchase);
 
     public SqlRepository<PurchaseItem, PurchaseItemCriteria, long> Items { get; } = new(database, ShoppingMappings.PurchaseItem);
+
+    ITransactionService IShoppingSide.Tx => Database;
+
+    bool IShoppingSide.InTransaction => Database.InTransaction;
+
+    IRepository<Product, ProductCriteria, long> IShoppingSide.Products => Products;
+
+    IRepository<User, UserCriteria, long> IShoppingSide.Users => Users;
+
+    IRepository<Purchase, PurchaseCriteria, long> IShoppingSide.Purchases => Purchases;
+
+    IRepository<PurchaseItem, PurchaseItemCriteria, long> IShoppingSide.Items => Items;
 }

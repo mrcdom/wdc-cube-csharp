@@ -21,7 +21,7 @@ namespace Wdc.Persistence;
 /// One transaction is one connection: run the statements of a unit of work one after the other, not in parallel.
 /// </para>
 /// </remarks>
-public sealed class Database : ITransactionService
+public sealed class Database : ITransactionService, IDetachedTransactionSource
 {
     private readonly Func<CancellationToken, ValueTask<DbConnection>> _open;
     private readonly AsyncLocal<Frame?> _current = new();
@@ -86,6 +86,14 @@ public sealed class Database : ITransactionService
         }
 
         return RunAfterCommit([task]);
+    }
+
+    // :: Detached transactions (D-17)
+
+    public async Task<IDetachedTransaction> BeginDetached(CancellationToken cancellationToken = default)
+    {
+        var (connection, transaction) = await Open(cancellationToken).ConfigureAwait(false);
+        return new Detached(this, new Frame(connection, transaction));
     }
 
     // :: Statements
@@ -178,10 +186,9 @@ public sealed class Database : ITransactionService
 
     // :: Internals
 
-    private async Task<T> RunNew<T>(Func<ITransactionContext, Task<T>> work, CancellationToken cancellationToken)
+    private async Task<(DbConnection Connection, DbTransaction Transaction)> Open(CancellationToken cancellationToken)
     {
         DbConnection connection;
-        DbTransaction transaction;
         try
         {
             connection = await _open(cancellationToken).ConfigureAwait(false);
@@ -193,7 +200,7 @@ public sealed class Database : ITransactionService
 
         try
         {
-            transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+            return (connection, await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false));
         }
         catch (Exception caught)
         {
@@ -202,7 +209,11 @@ public sealed class Database : ITransactionService
                 ? caught
                 : new TransactionSystemException("Could not begin the transaction.", caught);
         }
+    }
 
+    private async Task<T> RunNew<T>(Func<ITransactionContext, Task<T>> work, CancellationToken cancellationToken)
+    {
+        var (connection, transaction) = await Open(cancellationToken).ConfigureAwait(false);
         var frame = new Frame(connection, transaction);
         _current.Value = frame; // scoped to this async flow: the caller's value is back when we return
         T result;
@@ -283,6 +294,104 @@ public sealed class Database : ITransactionService
         catch (Exception caught)
         {
             _logger.LogError(caught, "Rolling back failed.");
+        }
+    }
+
+    private sealed class Detached(Database database, Frame frame) : IDetachedTransaction
+    {
+        private int _finished;
+
+        public bool IsRollbackOnly => frame.RollbackOnly;
+
+        public void SetRollbackOnly() => frame.RollbackOnly = true;
+
+        public async Task<T> Run<T>(Func<Task<T>> work)
+        {
+            ArgumentNullException.ThrowIfNull(work);
+            if (!frame.Active)
+            {
+                throw new TransactionConflictException("The transaction is already finished.");
+            }
+
+            database._current.Value = frame; // this flow only: the caller's value is back when we return
+            return await work().ConfigureAwait(false);
+        }
+
+        public async Task<bool> Commit(CancellationToken cancellationToken = default)
+        {
+            if (!Finish())
+            {
+                throw new TransactionConflictException("The transaction is already finished.");
+            }
+
+            var committed = false;
+            try
+            {
+                if (frame.RollbackOnly)
+                {
+                    await database.SafeRollback(frame.Transaction!).ConfigureAwait(false);
+                }
+                else
+                {
+                    try
+                    {
+                        await frame.Transaction!.CommitAsync(CancellationToken.None).ConfigureAwait(false);
+                        committed = true;
+                    }
+                    catch (Exception caught)
+                    {
+                        await database.SafeRollback(frame.Transaction!).ConfigureAwait(false);
+                        throw new TransactionSystemException("Could not commit the transaction.", caught);
+                    }
+                }
+            }
+            finally
+            {
+                await Release().ConfigureAwait(false);
+            }
+
+            if (committed && frame.AfterCommit.Count > 0)
+            {
+                await database.RunAfterCommit(frame.AfterCommit).ConfigureAwait(false);
+            }
+
+            return committed;
+        }
+
+        public async Task Rollback(CancellationToken cancellationToken = default)
+        {
+            if (!Finish())
+            {
+                return;
+            }
+
+            try
+            {
+                await database.SafeRollback(frame.Transaction!).ConfigureAwait(false);
+            }
+            finally
+            {
+                await Release().ConfigureAwait(false);
+            }
+        }
+
+        public ValueTask DisposeAsync() => new(Rollback());
+
+        private bool Finish()
+        {
+            if (Interlocked.Exchange(ref _finished, 1) != 0)
+            {
+                return false;
+            }
+
+            frame.Active = false;
+            return true;
+        }
+
+        private async Task Release()
+        {
+            await frame.Transaction!.DisposeAsync().ConfigureAwait(false);
+            await frame.Connection.DisposeAsync().ConfigureAwait(false);
         }
     }
 

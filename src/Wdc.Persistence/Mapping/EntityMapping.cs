@@ -91,7 +91,7 @@ public sealed class EntityMapping<TEntity>
         var parts = new List<ISqlFragment?>();
         foreach (var criterion in criteria.Criterions)
         {
-            if (!criterion.IsSet)
+            if (!criterion.IsSet && !criterion.IsRestricted)
             {
                 continue;
             }

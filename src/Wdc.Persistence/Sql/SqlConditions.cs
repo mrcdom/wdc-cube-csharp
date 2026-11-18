@@ -95,21 +95,41 @@ public static class Sql
     public static ISqlFragment? Or(IEnumerable<ISqlFragment?> conditions) => Combine(" OR ", conditions);
 
     /// <summary>
-    /// Translates one criterion on one column. Requests combine with AND, or OR when disjunctive. A request whose
-    /// value count does not fit its operator is ignored; EQ/NE with a null value become IS NULL / IS NOT NULL.
+    /// Translates one criterion on one column. Requests combine with AND, or OR when disjunctive; the server's
+    /// restrictions then combine with AND outside that group. A request whose value count does not fit its operator
+    /// is ignored; EQ/NE with a null value become IS NULL / IS NOT NULL.
     /// </summary>
     public static ISqlFragment? Translate(ISqlFragment column, Criterion criterion)
     {
         ArgumentNullException.ThrowIfNull(column);
         ArgumentNullException.ThrowIfNull(criterion);
-        if (!criterion.IsSet)
+        if (!criterion.IsSet && !criterion.IsRestricted)
         {
             return null;
         }
 
+        var requests = Parts(column, criterion, criterion.Predicates);
+        var asked = criterion.Disjunctive ? Or(requests) : And(requests);
+        if (!criterion.IsRestricted)
+        {
+            return asked;
+        }
+
+        var restrictions = Parts(column, criterion, criterion.Restrictions);
+        if (restrictions.Count == 0)
+        {
+            // A restriction that does not translate must not vanish into "no restriction".
+            throw new InvalidOperationException($"The restriction on '{criterion.Name}' could not be translated.");
+        }
+
+        return And([asked, .. restrictions]);
+    }
+
+    private static List<ISqlFragment> Parts(ISqlFragment column, Criterion criterion, IReadOnlyList<IPredicate> predicates)
+    {
         var kind = criterion.ValueKind;
         var parts = new List<ISqlFragment>();
-        foreach (var predicate in criterion.Predicates)
+        foreach (var predicate in predicates)
         {
             if (!predicate.Operator.Accepts(predicate.Values.Count))
             {
@@ -139,7 +159,7 @@ public static class Sql
             }
         }
 
-        return criterion.Disjunctive ? Or(parts) : And(parts);
+        return parts;
     }
 
     private static Fragment? Combine(string separator, IEnumerable<ISqlFragment?> conditions)

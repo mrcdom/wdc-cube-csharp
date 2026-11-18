@@ -42,6 +42,18 @@ public abstract class ValueKind<T> : IValueKind
     object? IValueKind.FromDatabaseObject(object? value) => FromDatabase(value);
 
     Type IValueKind.ClrType => typeof(T);
+
+    void IValueKind.WriteObject(Utf8JsonWriter writer, object? value)
+    {
+        if (value is null)
+        {
+            writer.WriteNullValue();
+        }
+        else
+        {
+            Write(writer, (T)value);
+        }
+    }
 }
 
 /// <summary>The untyped view of a <see cref="ValueKind{T}"/>, for code that only moves values around.</summary>
@@ -54,6 +66,9 @@ public interface IValueKind
     object? ToDatabaseObject(object? value);
 
     object? FromDatabaseObject(object? value);
+
+    /// <summary>Writes a value of this kind (or null) as a JSON value.</summary>
+    void WriteObject(Utf8JsonWriter writer, object? value);
 }
 
 /// <summary>The value kinds the framework knows.</summary>

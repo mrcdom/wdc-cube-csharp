@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The HTTP contract shared by server and client (decision D-18: compatible with the Kotlin version). No ASP.NET. -->
+  <PropertyGroup>
+    <Description>Cube REST contract: routes, headers, request and response bodies, error mapping.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Domain/Wdc.Domain.csproj" />
+  </ItemGroup>
+</Project>

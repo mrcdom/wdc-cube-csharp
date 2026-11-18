@@ -8,7 +8,7 @@ namespace Wdc.Persistence.Tests;
 /// </summary>
 public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncLifetime
 {
-    private Shopping Db => fixture.Shopping!;
+    private IShoppingSide Db => fixture.Side!;
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -41,7 +41,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     private async Task<Purchase> NewPurchase(User user, params (Product Product, int Amount)[] lines)
     {
         var purchase = new Purchase { User = user, BuyDate = DateTimeOffset.UtcNow };
-        await Db.Database.Required(async _ =>
+        await Db.Tx.Required(async _ =>
         {
             await Db.Purchases.Insert(purchase, cancellationToken: Ct);
             purchase.Items = [];
@@ -157,6 +157,29 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     // :: Criteria
 
     [Fact]
+    public async Task Restriction_HoldsEvenWhenTheRequestOnTheSameFieldIsDisjunctive()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "restrictions are set by the server: the REST scope tests cover them");
+        var ana = await NewUser("ana", "Ana");
+        var bia = await NewUser("bia", "Bia");
+        var product = await NewProduct("Bola", 10m);
+        var mine = await NewPurchase(ana, (product, 1));
+        await NewPurchase(bia, (product, 1));
+
+        // What a client may send: "userId": {"or": true, "p": [{"o": "IS_NOT_NULL"}]} — then the server restricts.
+        var criteria = new PurchaseCriteria();
+        criteria.UserId.Or();
+        criteria.UserId.IsNotNull();
+        criteria.UserId.Restrict(ana.Id);
+
+        var found = await Db.Purchases.Fetch(criteria, cancellationToken: Ct);
+
+        Assert.Equal([mine.Id], found.Select(p => p.Id));
+        Assert.Equal(1, await Db.Purchases.Count(criteria, Ct));
+        Assert.Equal(0, await Db.Purchases.Count(new PurchaseCriteria().UserId.Restrict(-1), Ct));
+    }
+
+    [Fact]
     public async Task Criteria_EveryOperatorFilters()
     {
         await NewProduct("Bola de vôlei", 10.5m);
@@ -213,7 +236,8 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Criteria_WithoutAFilterInTheMapping_IsAConfigurationError()
     {
-        var users = new SqlRepository<User, UserCriteriaWithUnmappedField, long>(Db.Database, ShoppingMappings.User);
+        Assert.SkipWhen(fixture.IsRemote, "a mapping matter of the SQL side");
+        var users = new SqlRepository<User, UserCriteriaWithUnmappedField, long>(fixture.Shopping!.Database, ShoppingMappings.User);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             users.Fetch(new UserCriteriaWithUnmappedField().Nickname.Eq("x"), cancellationToken: Ct));
@@ -279,7 +303,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     {
         var error = new InvalidOperationException("boom");
 
-        var caught = await Assert.ThrowsAsync<InvalidOperationException>(() => Db.Database.Required(async _ =>
+        var caught = await Assert.ThrowsAsync<InvalidOperationException>(() => Db.Tx.Required(async _ =>
         {
             await NewProduct("a", 1m);
             await NewProduct("b", 2m);
@@ -293,7 +317,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_RollbackOnly_UndoesWithoutThrowing()
     {
-        await Db.Database.Required(async tx =>
+        await Db.Tx.Required(async tx =>
         {
             await NewProduct("a", 1m);
             tx.SetRollbackOnly();
@@ -305,7 +329,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_WriteWithoutATransaction_RunsInOneOfItsOwn()
     {
-        Assert.False(Db.Database.InTransaction);
+        Assert.False(Db.InTransaction);
 
         await NewProduct("solo", 1m); // implicit REQUIRED: committed
 
@@ -315,6 +339,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_AWriteThatFailsHalfway_LeavesNothingBehind()
     {
+        Assert.SkipWhen(fixture.IsRemote, "a statement-level matter of the SQL side");
         // Insert is two statements (INSERT, then read the row back). Here the read-back hits a column that does not
         // exist: inside the implicit REQUIRED the INSERT is undone; in autocommit it would stay, orphaned.
         var broken = EntityMapping.For(Product.Model, "product", "p")
@@ -322,7 +347,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             .Column("name")
             .Column("description", "ghost_column")
             .Build();
-        var products = new SqlRepository<Product, ProductCriteria, long>(Db.Database, broken);
+        var products = new SqlRepository<Product, ProductCriteria, long>(fixture.Shopping!.Database, broken);
 
         await Assert.ThrowsAnyAsync<Exception>(() => products.Insert(new Product { Name = "half" }, cancellationToken: Ct));
 
@@ -336,12 +361,12 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.SkipUnless(await fixture.ReadsDoNotWaitForWriters(),
             "the database blocks readers on uncommitted rows (enable READ_COMMITTED_SNAPSHOT to run this test)");
 
-        await Db.Database.Required(async _ =>
+        await Db.Tx.Required(async _ =>
         {
             await NewProduct("pending", 1m);
 
             var inside = await Db.Products.Count(new ProductCriteria().Name.Eq("pending"), Ct);
-            var outside = await Db.Database.NotSupported(_ => Db.Products.Count(new ProductCriteria().Name.Eq("pending"), Ct), Ct);
+            var outside = await Db.Tx.NotSupported(_ => Db.Products.Count(new ProductCriteria().Name.Eq("pending"), Ct), Ct);
 
             Assert.Equal((1, 0), (inside, outside));
         }, Ct);
@@ -350,10 +375,10 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_RequiresNew_CommitsEvenWhenTheOuterOneRollsBack()
     {
-        await Db.Database.Required(async tx =>
+        await Db.Tx.Required(async tx =>
         {
             await NewProduct("outer", 1m);
-            await Db.Database.RequiresNew(_ => NewProduct("inner", 2m), Ct);
+            await Db.Tx.RequiresNew(_ => NewProduct("inner", 2m), Ct);
             tx.SetRollbackOnly();
         }, Ct);
 
@@ -363,10 +388,10 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_AParticipantJoins_AndItsRollbackOnlyUndoesTheWhole()
     {
-        await Db.Database.Required(async _ =>
+        await Db.Tx.Required(async _ =>
         {
             await NewProduct("one", 1m);
-            await Db.Database.Required(async inner =>
+            await Db.Tx.Required(async inner =>
             {
                 Assert.True(inner.IsActive);
                 await NewProduct("two", 2m);
@@ -382,9 +407,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     {
         var log = new List<string>();
 
-        await Db.Database.Required(async _ =>
+        await Db.Tx.Required(async _ =>
         {
-            await Db.Database.AfterCommit(() =>
+            await Db.Tx.AfterCommit(() =>
             {
                 log.Add("committed");
                 return Task.CompletedTask;
@@ -392,9 +417,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             log.Add("work");
         }, Ct);
 
-        await Db.Database.Required(async tx =>
+        await Db.Tx.Required(async tx =>
         {
-            await Db.Database.AfterCommit(() =>
+            await Db.Tx.AfterCommit(() =>
             {
                 log.Add("never");
                 return Task.CompletedTask;
@@ -402,7 +427,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             tx.SetRollbackOnly();
         }, Ct);
 
-        await Db.Database.AfterCommit(() =>
+        await Db.Tx.AfterCommit(() =>
         {
             log.Add("now");
             return Task.CompletedTask;
@@ -414,9 +439,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_MandatoryAndNever_EnforceWhatTheySay()
     {
-        await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Database.Mandatory(_ => Task.FromResult(1), Ct));
-        await Db.Database.Required(async _ =>
-            await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Database.Never(_ => Task.FromResult(1), Ct)), Ct);
+        await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Tx.Mandatory(_ => Task.FromResult(1), Ct));
+        await Db.Tx.Required(async _ =>
+            await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Tx.Never(_ => Task.FromResult(1), Ct)), Ct);
     }
 }
 
@@ -433,3 +458,10 @@ public sealed class PostgreSqlRepositoryTests(PostgreSqlFixture fixture)
 
 public sealed class SqlServerRepositoryTests(SqlServerFixture fixture)
     : RepositoryContractTests(fixture), IClassFixture<SqlServerFixture>;
+
+/// <summary>The same contract through the REST routes (decision D-17/D-18): remote repositories and transactions.</summary>
+public sealed class PostgreSqlHttpRepositoryTests(PostgreSqlHttpFixture fixture)
+    : RepositoryContractTests(fixture), IClassFixture<PostgreSqlHttpFixture>;
+
+public sealed class SqlServerHttpRepositoryTests(SqlServerHttpFixture fixture)
+    : RepositoryContractTests(fixture), IClassFixture<SqlServerHttpFixture>;

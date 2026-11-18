@@ -26,6 +26,12 @@ public abstract class DatabaseFixture : IAsyncLifetime
 
     public Shopping? Shopping { get; private set; }
 
+    /// <summary>What the contract talks to: the local repositories, or remote ones (HTTP fixtures).</summary>
+    public IShoppingSide? Side { get; protected set; }
+
+    /// <summary>Whether <see cref="Side"/> goes through HTTP.</summary>
+    public virtual bool IsRemote => false;
+
     public string SkipReason => $"{Variable} is not set (run: source scripts/test-env.sh)";
 
     /// <summary>
@@ -42,13 +48,22 @@ public abstract class DatabaseFixture : IAsyncLifetime
         }
 
         Shopping = new Shopping(await CreateDatabase());
+        Side = Shopping;
         await ExecuteScript(CreateSchemaScript());
+        await OnReady();
     }
+
+    /// <summary>After the schema exists.</summary>
+    protected virtual Task OnReady() => Task.CompletedTask;
+
+    /// <summary>Before the schema is dropped.</summary>
+    protected virtual Task OnDisposing() => Task.CompletedTask;
 
     public async ValueTask DisposeAsync()
     {
         if (ConnectionString is not null)
         {
+            await OnDisposing();
             await ExecuteScript(DropSchemaScript());
             await DisposeDatabase();
         }
@@ -84,7 +99,7 @@ public abstract class DatabaseFixture : IAsyncLifetime
     protected abstract string Qualified(string table);
 }
 
-public sealed class PostgreSqlFixture() : DatabaseFixture("WDC_TEST_POSTGRES")
+public class PostgreSqlFixture() : DatabaseFixture("WDC_TEST_POSTGRES")
 {
     private NpgsqlDataSource? _dataSource;
 
@@ -144,7 +159,7 @@ public sealed class PostgreSqlFixture() : DatabaseFixture("WDC_TEST_POSTGRES")
     protected override IEnumerable<string> DropSchemaScript() => [$"DROP SCHEMA \"{Schema}\" CASCADE"];
 }
 
-public sealed class SqlServerFixture() : DatabaseFixture("WDC_TEST_SQLSERVER")
+public class SqlServerFixture() : DatabaseFixture("WDC_TEST_SQLSERVER")
 {
     public override async Task<bool> ReadsDoNotWaitForWriters()
     {

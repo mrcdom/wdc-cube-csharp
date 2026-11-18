@@ -1,11 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!-- The repository contract, against each database, locally and through the REST routes. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../src/Wdc.Persistence/Wdc.Persistence.csproj" />
     <ProjectReference Include="../../src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
     <ProjectReference Include="../../src/Wdc.Persistence.SqlServer/Wdc.Persistence.SqlServer.csproj" />
+    <ProjectReference Include="../../src/Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
+    <ProjectReference Include="../../src/Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>

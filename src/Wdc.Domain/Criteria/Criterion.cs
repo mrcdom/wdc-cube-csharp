@@ -31,16 +31,31 @@ public abstract class Criterion
 
     public abstract IReadOnlyList<IPredicate> Predicates { get; }
 
+    /// <summary>
+    /// Requests set by the server (the reach of the caller: "only the purchases of user 7"). They never travel on the
+    /// wire and always combine with AND, outside the requests of <see cref="Predicates"/>: a client that marks the
+    /// field disjunctive (<c>"or": true</c>) widens only its own requests, never the restriction.
+    /// </summary>
+    public abstract IReadOnlyList<IPredicate> Restrictions { get; }
+
+    /// <summary>Whether the server restricted this field.</summary>
+    public bool IsRestricted => Restrictions.Count > 0;
+
     public abstract IValueKind ValueKind { get; }
 
     internal abstract void WriteJson(Utf8JsonWriter writer);
 
     internal abstract void ReadJson(ref Utf8JsonReader reader);
 
-    public override string ToString() =>
-        !IsSet
-            ? $"{Name} (not set)"
-            : $"{Name} {(Disjunctive ? "any of" : "all of")} [{string.Join(", ", Predicates.Select(p => p.Values.Count == 0 ? p.Operator.WireName() : $"{p.Operator.WireName()} [{string.Join(", ", p.Values)}]"))}]";
+    public override string ToString()
+    {
+        var text = !IsSet ? $"{Name} (not set)" : $"{Name} {(Disjunctive ? "any of" : "all of")} [{Describe(Predicates)}]";
+        return IsRestricted ? $"{text} restricted to [{Describe(Restrictions)}]" : text;
+    }
+
+    private static string Describe(IEnumerable<IPredicate> predicates) =>
+        string.Join(", ", predicates.Select(p =>
+            p.Values.Count == 0 ? p.Operator.WireName() : $"{p.Operator.WireName()} [{string.Join(", ", p.Values)}]"));
 }
 
 /// <summary>
@@ -54,6 +69,7 @@ public class Criterion<TOwner, T> : Criterion
     private readonly TOwner _owner;
     private readonly ValueKind<T> _kind;
     private readonly List<Predicate> _requests = [];
+    private readonly List<Predicate> _restrictions = [];
 
     public Criterion(TOwner owner, string name, ValueKind<T> kind)
         : base(name)
@@ -67,6 +83,8 @@ public class Criterion<TOwner, T> : Criterion
     public override bool IsSet => _requests.Count > 0;
 
     public override IReadOnlyList<IPredicate> Predicates => _requests;
+
+    public override IReadOnlyList<IPredicate> Restrictions => _restrictions;
 
     public override IValueKind ValueKind => _kind;
 
@@ -91,6 +109,29 @@ public class Criterion<TOwner, T> : Criterion
     }
 
     /// <summary>Removes every request.</summary>
+    /// <summary>
+    /// Restricts the field to <paramref name="value"/> whatever else was asked (see <see cref="Criterion.Restrictions"/>).
+    /// <see cref="Clear"/> does not remove it.
+    /// </summary>
+    public TOwner Restrict(T value)
+    {
+        if (ValueKind<T>.IsNull(value))
+        {
+            throw new ArgumentNullException(nameof(value), "A restriction needs a value: restricting to nothing is no restriction.");
+        }
+
+        _restrictions.Add(new Predicate(Operator.Eq, [value]));
+        return _owner;
+    }
+
+    /// <summary>Restricts the field to one of <paramref name="values"/>; an empty list matches nothing.</summary>
+    public TOwner RestrictIn(IEnumerable<T> values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        _restrictions.Add(new Predicate(Operator.In, [.. values]));
+        return _owner;
+    }
+
     public TOwner Clear()
     {
         _requests.Clear();

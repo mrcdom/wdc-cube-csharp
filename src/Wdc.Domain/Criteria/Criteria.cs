@@ -58,7 +58,7 @@ public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<T
 
     public IReadOnlyList<Criterion> Criterions => _criterions;
 
-    public bool HasFilter => _criterions.Exists(c => c.IsSet);
+    public bool HasFilter => _criterions.Exists(c => c.IsSet || c.IsRestricted);
 
     /// <summary>What to fetch (a bean filled with <see cref="Mark"/> values); the repository's default when null.</summary>
     public TEntity? Projection { get; set; }
@@ -86,7 +86,7 @@ public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<T
     public Criterion? Find(string name) => _criterions.Find(c => c.Name == name);
 
     public override string ToString() =>
-        $"{GetType().Name}({string.Join("; ", _criterions.Where(c => c.IsSet))}{(OrderByName is { } o ? $"; orderBy {o}" : "")})";
+        $"{GetType().Name}({string.Join("; ", _criterions.Where(c => c.IsSet || c.IsRestricted))}{(OrderByName is { } o ? $"; orderBy {o}" : "")})";
 
     /// <summary>A field compared for identity only.</summary>
     protected Criterion<TSelf, T> Equality<T>(ValueKind<T> kind, string name) => Register(new Criterion<TSelf, T>(Self, name, kind));

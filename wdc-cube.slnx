@@ -13,6 +13,9 @@
     <Project Path="src/Wdc.Persistence/Wdc.Persistence.csproj" />
     <Project Path="src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
     <Project Path="src/Wdc.Persistence.SqlServer/Wdc.Persistence.SqlServer.csproj" />
+    <Project Path="src/Wdc.Rest/Wdc.Rest.csproj" />
+    <Project Path="src/Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
+    <Project Path="src/Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/Tutorial/">

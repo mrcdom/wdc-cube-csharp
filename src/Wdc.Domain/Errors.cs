@@ -17,3 +17,39 @@ public class InvalidRequestException : Exception
     {
     }
 }
+
+/// <summary>The caller is not authenticated (no session, or it expired). REST maps it to 401.</summary>
+public class AuthenticationException : Exception
+{
+    public AuthenticationException()
+    {
+    }
+
+    public AuthenticationException(string message)
+        : base(message)
+    {
+    }
+
+    public AuthenticationException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
+/// <summary>The caller is authenticated but may not do this. REST maps it to 403.</summary>
+public class AccessDeniedException : Exception
+{
+    public AccessDeniedException()
+    {
+    }
+
+    public AccessDeniedException(string message)
+        : base(message)
+    {
+    }
+
+    public AccessDeniedException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}

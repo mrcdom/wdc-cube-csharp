@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- HttpClient side of the REST contract: the same repository and transaction interfaces as the local ones. -->
+  <PropertyGroup>
+    <Description>Cube REST client: remote repositories and remote transactions over HttpClient.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Rest/Wdc.Rest.csproj" />
+  </ItemGroup>
+</Project>
