@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Shopping.Domain;
 using Shopping.Presentation.Infra;
+using Home = Shopping.Presentation.Modules.Home;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Main;
@@ -102,12 +103,22 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
         }), null, ErrorToastDuration, Timeout.InfiniteTimeSpan);
     }
 
-    /// <summary>Errors nobody handled are logged and shown, with the detail when there is one.</summary>
+    public const string GenericError = "Ocorreu um erro inesperado. Tente novamente em instantes.";
+
+    /// <summary>
+    /// Errors nobody handled: the detail goes to the log, the user reads a message meant for them. Refusals the
+    /// application knows (a link to a product or receipt that is not there) say so; anything else is generic.
+    /// </summary>
     public override void Unexpected(string message, Exception error)
     {
         ArgumentNullException.ThrowIfNull(error);
         base.Unexpected(message, error);
-        ShowError(string.IsNullOrWhiteSpace(error.Message) ? message : $"{message}: {error.Message}");
+        ShowError(error switch
+        {
+            ProductNotFoundException => Home.HomePresenter.ProductNotFound,
+            PurchaseNotFoundException => Home.HomePresenter.ReceiptNotFound,
+            _ => GenericError,
+        });
     }
 
     public override void Release()

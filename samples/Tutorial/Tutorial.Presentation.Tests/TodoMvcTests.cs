@@ -137,6 +137,21 @@ public sealed class TodoMvcTests
     }
 
     [Fact]
+    public async Task Editing_EscapeDiscards_EvenWhenTheClosingBoxFiresBlur()
+    {
+        var h = await Harness.Start("todos");
+        var row = Rows(h)[0];
+        var title = row.Title;
+
+        await h.Do(row.OnEdit);
+        await h.Do(() => row.OnKeyDown("Discarded", "Escape"));
+        await h.Do(() => row.OnBlur("Discarded")); // the browser blurs the box that leaves the screen
+
+        Assert.Equal(title, row.Title);
+        Assert.False(row.Editing);
+    }
+
+    [Fact]
     public async Task Editing_DropsTheItemWhenTheNewTitleIsBlank()
     {
         var h = await Harness.Start("todos");

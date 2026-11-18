@@ -18,6 +18,12 @@ namespace Wdc.Cube.Blazor;
 /// guarded action flushes when it ends, so its result shows at once; typing mirrors show in the next window. A view
 /// that keeps state of its own (an open menu, focus) calls <see cref="ComponentBase.StateHasChanged"/> itself.
 /// </para>
+/// <para>
+/// A text box drawn from the scope uses <c>@bind:get="Scope.Text" @bind:set="Scope.OnTextChanged"
+/// @bind:event="oninput"</c>, not <c>value="@Scope.Text" @oninput="…"</c>. Only <c>@bind</c> tells Blazor that the
+/// browser already holds the typed value; without it, a render that lands between keystrokes writes the older value
+/// back, the caret jumps to the end and the next key goes in the wrong place.
+/// </para>
 /// </remarks>
 public abstract class ScopeView<TScope> : ComponentBase, IScopeView, IHandleEvent, IDisposable
     where TScope : Scope

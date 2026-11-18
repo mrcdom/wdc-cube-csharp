@@ -98,6 +98,7 @@ public sealed class SubscriptionsTests
 
         Assert.Equal(title, h.Scope.Alert!.Title);
         Assert.NotNull(h.Scope.Dialog);
+        Assert.Equal(email, Dialog(h).Email); // what was typed stays in the box: the view draws the scope
         Assert.Equal("subscriptions/detail?sd-site=1", h.History.Token);
     }
 

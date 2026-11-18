@@ -269,6 +269,7 @@ public sealed class BuyingTests(ShoppingDatabaseFixture db) : IClassFixture<Shop
 
         var deep = await Shop.Start(db, $"home/receipt?rc-id={adminPurchase}", shop.Session);
         Assert.Null(deep.Maybe<ReceiptPresenter>(Places.Receipt));
+        Assert.Equal(HomePresenter.ReceiptNotFound, deep.App.Scope.ErrorMessage); // a message for the user, not the log's
     }
 
     [Fact]

@@ -3,7 +3,7 @@
 <li class="@(Scope.Completed ? "completed" : null) @(Scope.Editing ? "editing" : null)">
     @if (Scope.Editing)
     {
-        <input class="edit" value="@Scope.Title" @oninput="e => _text = e.Value?.ToString() ?? string.Empty"
+        <input class="edit" @ref="_editor" value="@Scope.Title" @oninput="e => _text = e.Value?.ToString() ?? string.Empty"
                @onkeydown="e => Scope.OnKeyDown(_text ?? Scope.Title, e.Key)" @onblur="() => Scope.OnBlur(_text ?? Scope.Title)" />
     }
     else
@@ -17,13 +17,21 @@
 @code {
     // What is being typed in the edit box: view plumbing, not state the presenter needs until Enter or blur.
     private string? _text;
+    private ElementReference _editor;
+    private bool _wasEditing;
 
-    protected override void OnParametersSet()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        base.OnParametersSet();
-        if (!Scope.Editing)
+        // The editor just opened: forget what was typed last time (Escape keeps no draft) and put the caret in it.
+        if (Scope.Editing && !_wasEditing)
         {
             _text = null;
+            _wasEditing = true;
+            await _editor.FocusAsync();
+        }
+        else if (!Scope.Editing)
+        {
+            _wasEditing = false;
         }
     }
 }

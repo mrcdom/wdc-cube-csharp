@@ -66,14 +66,26 @@ public sealed class TutorialPageTests : IDisposable
     }
 
     [Fact]
-    public void ToDos_TypingAndEnter_AddsAnItem_AndTheFooterCounts()
+    public void ToDos_DoubleClick_OpensTheEditorWithTheCaretInIt()
     {
         var page = Open("todos");
         page.WaitForAssertion(() => Assert.Equal(5, page.FindAll(".todo-list li").Count));
 
-        var input = page.Find(".new-todo");
-        input.Input("Buy milk");
-        input.KeyDown("Enter");
+        page.FindAll(".todo-list li label")[0].DoubleClick();
+
+        page.WaitForAssertion(() => Assert.Equal("Walk the dog", page.Find(".todo-list li input.edit").GetAttribute("value")));
+        _ctx.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    [Fact]
+    public async Task ToDos_TypingAndEnter_AddsAnItem_AndTheFooterCounts()
+    {
+        var page = Open("todos");
+        page.WaitForAssertion(() => Assert.Equal(5, page.FindAll(".todo-list li").Count));
+
+        // Find and fire in one go: @bind makes a new handler on every render, and a render may land in between.
+        await page.InvokeAsync(() => page.Find(".new-todo").Input("Buy milk"));
+        await page.InvokeAsync(() => page.Find(".new-todo").KeyDown("Enter"));
 
         page.WaitForAssertion(() => Assert.Equal(6, page.FindAll(".todo-list li").Count));
         page.WaitForAssertion(() => Assert.Equal("3", page.Find(".todo-count strong").TextContent));
@@ -97,7 +109,7 @@ public sealed class TutorialPageTests : IDisposable
     }
 
     [Fact]
-    public void Subscriptions_DialogOpensOverTheList_SubscribesAndCloses()
+    public async Task Subscriptions_DialogOpensOverTheList_SubscribesAndCloses()
     {
         var page = Open();
         Click(page, ".menu button", "Subscriptions");
@@ -108,7 +120,7 @@ public sealed class TutorialPageTests : IDisposable
         Assert.Equal("subscriptions/detail?sd-site=2", Address);
         Assert.Equal(3, page.FindAll(".site").Count); // the list stays beneath
 
-        page.Find(".dialog .email").Input("ana@example.com");
+        await page.InvokeAsync(() => page.Find(".dialog .email").Input("ana@example.com"));
         page.Find(".dialog .subscribe").Click();
 
         page.WaitForAssertion(() => Assert.Empty(page.FindAll(".dialog")));

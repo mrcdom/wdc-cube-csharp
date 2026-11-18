@@ -173,6 +173,10 @@ public abstract class ApplicationPresenter<TScope> : CubeApplication, IActionHos
     /// <summary>
     /// Binds a handler that mirrors what the user types: on the dispatcher, but without flush or address update.
     /// </summary>
+    /// <remarks>
+    /// Write the value back into the property of the scope the box shows (<c>Scope.Email = value</c>): the view draws
+    /// the box from it, and a render with an older value would overwrite what the user typed.
+    /// </remarks>
     protected Func<T, Task> Mirror<T>(Action<T> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);

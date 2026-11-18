@@ -5,7 +5,7 @@
     {
         <input class="toggle-all" type="checkbox" checked="@Scope.AllItemsCompleted" @onchange="Scope.OnToggleAll" />
     }
-    <input class="new-todo" placeholder="What needs to be done?" value="@Scope.InputValue"
-           @oninput="e => Scope.OnInputChange(e.Value?.ToString() ?? string.Empty)"
+    <input class="new-todo" placeholder="What needs to be done?" @bind:get="Scope.InputValue"
+           @bind:set="Scope.OnInputChange" @bind:event="oninput"
            @onkeydown="e => Scope.OnInputKeyDown(e.Key)" />
 </header>

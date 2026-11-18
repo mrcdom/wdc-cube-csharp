@@ -144,6 +144,10 @@ public abstract class Presenter<TApp, TScope> : IActionHost
     /// Binds a handler that mirrors what the user types: it runs on the dispatcher but is not guarded — no immediate
     /// flush, no address update, no history entry per keystroke. Debounce and search stay in the presenter.
     /// </summary>
+    /// <remarks>
+    /// Write the value back into the property of the scope the box shows (<c>Scope.Email = value</c>): the view draws
+    /// the box from it, and a render with an older value would overwrite what the user typed.
+    /// </remarks>
     protected Func<T, Task> Mirror<T>(Action<T> handler)
     {
         ArgumentNullException.ThrowIfNull(handler);

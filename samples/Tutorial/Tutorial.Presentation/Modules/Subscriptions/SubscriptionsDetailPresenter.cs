@@ -15,7 +15,6 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
     private long? _siteId;
 
     private SiteItem? _item;
-    private string _email = string.Empty;
 
     /// <summary>Bumped on every load: a response that is no longer the latest stays silent.</summary>
     private int _pending;
@@ -44,7 +43,7 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
 
             Scope.OnClose = Action(Close);
             Scope.OnSubscribe = Action(OnSubscribe);
-            Scope.OnEmailChanged = Mirror<string>(email => _email = email);
+            Scope.OnEmailChanged = Mirror<string>(email => Scope.Email = email); // the box shows the scope: keep it in step
         }
 
         _dialogSlot(Scope);
@@ -70,7 +69,6 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
         var token = ++_pending;
         _siteId = siteId;
         _item = null;
-        _email = string.Empty;
         Scope.Site = null;
         Scope.Email = string.Empty;
 
@@ -102,7 +100,7 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
     private async Task OnSubscribe()
     {
         var siteId = _item?.Id ?? throw new InvalidOperationException("The site must be known before subscribing.");
-        var email = _email.Trim();
+        var email = Scope.Email.Trim();
         if (email.Length == 0)
         {
             App.Alert(AlertSeverity.Warning, "Field required", "An e-mail is required in order to request a subscription");

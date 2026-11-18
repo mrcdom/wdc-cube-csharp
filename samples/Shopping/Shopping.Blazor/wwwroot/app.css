@@ -63,3 +63,13 @@ button.buy { background: var(--price); color: #fff; border-color: var(--price); 
 .receipt-page th, .receipt-page td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; }
 .receipt-page .qty, .receipt-page .value { text-align: right; }
 .cube-missing-view { color: var(--error); border: 1px dashed var(--error); padding: 8px; }
+
+/* Narrow screens: logo and buttons on the first line, the greeting on its own line below. */
+@media (max-width: 700px) {
+  .app-header { row-gap: 4px; }
+  .app-header .logo { margin-right: auto; }
+  .app-header .greeting { order: 3; flex-basis: 100%; margin-right: 0; font-size: 14px; }
+}
+
+/* Receipt: number columns aligned with their headers. */
+.receipt-page th:nth-child(n+2) { text-align: right; }

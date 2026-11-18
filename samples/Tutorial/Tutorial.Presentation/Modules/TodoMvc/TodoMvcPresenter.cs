@@ -235,6 +235,12 @@ public sealed class TodoMvcPresenter : CubePresenter<MainPresenter, TodoMvcScope
 
     private void Save(ItemScope row, string value)
     {
+        // Escape closes the editor, and the box leaving the screen still fires blur: that one must not save.
+        if (!row.Editing)
+        {
+            return;
+        }
+
         var title = value.Trim();
         if (title.Length == 0)
         {
