@@ -225,6 +225,9 @@ public abstract class FieldModel<TEntity>
     /// <summary>Whether this field differs between two beans (references compare by key; collections are not compared).</summary>
     public abstract bool Differs(TEntity next, TEntity previous);
 
+    /// <summary>The value kind of a scalar field; <see langword="null"/> for references and collections.</summary>
+    public virtual IValueKind? ScalarKind => null;
+
     internal abstract void WriteJson(Utf8JsonWriter writer, TEntity entity, TEntity? projection, HashSet<object> visited);
 
     internal abstract void ReadJson(ref Utf8JsonReader reader, TEntity entity, TEntity? presence);
@@ -258,6 +261,8 @@ public sealed class ScalarField<TEntity, T> : FieldModel<TEntity>
     public override void SetValue(TEntity entity, object? value) => Set(entity, value is null ? default! : (T)value);
 
     public override void MarkOwnFields(TEntity projection) => Set(projection, ValueKind.Marker);
+
+    public override IValueKind? ScalarKind => ValueKind;
 
     public override bool Differs(TEntity next, TEntity previous) => !Same(Get(next), Get(previous));
 

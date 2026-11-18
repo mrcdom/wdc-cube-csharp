@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Persistence over ADO.NET: SQL tree, JSON-projection ORM, ambient transactions. No driver here: dialect packages
+       bring them. -->
+  <PropertyGroup>
+    <Description>Cube persistence: JSON-projection ORM over ADO.NET, criteria translation and ambient transactions.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Domain/Wdc.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wdc.Persistence.PostgreSql" />
+    <InternalsVisibleTo Include="Wdc.Persistence.SqlServer" />
+    <InternalsVisibleTo Include="Wdc.Persistence.Tests" />
+  </ItemGroup>
+</Project>

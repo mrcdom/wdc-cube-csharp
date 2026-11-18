@@ -45,10 +45,10 @@ public interface ITransactionService
 
     /// <summary>
     /// Runs <paramref name="task"/> after the open physical transaction commits, in scheduling order, outside of it;
-    /// dropped on rollback; at once when no transaction is open. Its failure is logged and never changes the
-    /// transaction's outcome.
+    /// dropped on rollback. With no transaction open it runs now, and the returned task completes when it ends. Its
+    /// failure is logged and never changes the transaction's outcome.
     /// </summary>
-    void AfterCommit(Func<Task> task);
+    Task AfterCommit(Func<Task> task);
 }
 
 /// <summary>The propagations as methods.</summary>

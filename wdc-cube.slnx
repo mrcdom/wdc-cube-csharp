@@ -10,6 +10,8 @@
     <Project Path="src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
     <Project Path="src/Wdc.Cube.Blazor/Wdc.Cube.Blazor.csproj" />
     <Project Path="src/Wdc.Domain/Wdc.Domain.csproj" />
+    <Project Path="src/Wdc.Persistence/Wdc.Persistence.csproj" />
+    <Project Path="src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/Tutorial/">
@@ -22,5 +24,6 @@
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />
     <Project Path="tests/Wdc.Cube.Blazor.Tests/Wdc.Cube.Blazor.Tests.csproj" />
     <Project Path="tests/Wdc.Domain.Tests/Wdc.Domain.Tests.csproj" />
+    <Project Path="tests/Wdc.Persistence.Tests/Wdc.Persistence.Tests.csproj" />
   </Folder>
 </Solution>

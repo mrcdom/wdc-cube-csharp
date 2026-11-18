@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>PostgreSQL dialect for Cube persistence (Npgsql).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Persistence/Wdc.Persistence.csproj" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+</Project>

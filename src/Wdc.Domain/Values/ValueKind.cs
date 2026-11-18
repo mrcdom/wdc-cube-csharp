@@ -39,6 +39,8 @@ public abstract class ValueKind<T> : IValueKind
 
     object? IValueKind.ToDatabaseObject(object? value) => value is null ? null : ToDatabase((T)value);
 
+    object? IValueKind.FromDatabaseObject(object? value) => FromDatabase(value);
+
     Type IValueKind.ClrType => typeof(T);
 }
 
@@ -50,6 +52,8 @@ public interface IValueKind
     Type ClrType { get; }
 
     object? ToDatabaseObject(object? value);
+
+    object? FromDatabaseObject(object? value);
 }
 
 /// <summary>The value kinds the framework knows.</summary>

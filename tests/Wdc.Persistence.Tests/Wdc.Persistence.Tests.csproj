@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wdc.Persistence/Wdc.Persistence.csproj" />
+    <ProjectReference Include="../../src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Wdc.Domain.Tests/SampleDomain.cs" Link="SampleDomain.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

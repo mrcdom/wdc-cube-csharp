@@ -2,6 +2,13 @@ using System.Text;
 
 namespace Wdc.Domain;
 
+/// <summary>A criteria that carries what to fetch.</summary>
+public interface IProjectionCarrier<out TEntity>
+    where TEntity : class
+{
+    TEntity? Projection { get; }
+}
+
 /// <summary>The untyped view of a criteria object, for codecs and repositories.</summary>
 public interface ICriteria
 {
@@ -43,7 +50,7 @@ public interface ICriteria
 /// </code>
 /// Requests on one field combine with AND (or OR after <c>Or()</c>); different fields always combine with AND.
 /// </summary>
-public abstract class Criteria<TSelf, TEntity> : ICriteria
+public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<TEntity>
     where TSelf : Criteria<TSelf, TEntity>
     where TEntity : class
 {
