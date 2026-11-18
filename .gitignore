@@ -12,3 +12,4 @@ TestResults/
 .DS_Store
 *.nupkg
 *.snupkg
+.claude/playwright-output/
