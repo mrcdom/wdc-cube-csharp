@@ -5,22 +5,39 @@
                 xmlns:v="using:Shopping.Avalonia.Views"
                 x:Class="Shopping.Avalonia.Views.LoginView"
                 x:DataType="m:LoginScope">
-  <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
-    <StackPanel Spacing="10">
-      <TextBlock Text="🛍" FontSize="36" HorizontalAlignment="Center" />
-      <TextBlock Classes="title" Text="Shopping" HorizontalAlignment="Center" />
-      <TextBlock Classes="muted" Text="Entre com suas credenciais para continuar" HorizontalAlignment="Center" />
-      <TextBox x:Name="UserBox" PlaceholderText="Usuário" IsEnabled="{Binding !Loading}" />
-      <TextBox x:Name="PasswordBox" PlaceholderText="Senha" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
-      <TextBlock Classes="error" Text="{Binding ErrorMessage}" TextWrapping="Wrap"
-                 IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
-      <Button x:Name="EnterButton" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-              IsEnabled="{Binding !Loading}" Click="OnEnter">
-        <Panel>
-          <TextBlock Text="Entrar" IsVisible="{Binding !Loading}" />
-          <TextBlock Text="Entrando…" IsVisible="{Binding Loading}" />
-        </Panel>
-      </Button>
-    </StackPanel>
-  </Border>
+  <Panel>
+    <Panel.Background>
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#1B5E7B" />
+        <GradientStop Offset="1" Color="#D0E8F2" />
+      </LinearGradientBrush>
+    </Panel.Background>
+    <Border Background="{StaticResource Surface}" CornerRadius="16" Padding="32" Width="560" Margin="16"
+            HorizontalAlignment="Center" VerticalAlignment="Center">
+      <StackPanel Spacing="12">
+        <Border Width="72" Height="72" CornerRadius="36" Background="{StaticResource PrimaryContainer}" HorizontalAlignment="Center">
+          <TextBlock Text="🛍" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <TextBlock Text="Shopping" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+        <TextBlock Classes="muted" Text="Entre com suas credenciais para continuar" HorizontalAlignment="Center" />
+        <StackPanel Spacing="4">
+          <TextBlock Classes="label" Text="Usuário" />
+          <TextBox x:Name="UserBox" IsEnabled="{Binding !Loading}" />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <TextBlock Classes="label" Text="Senha" />
+          <TextBox x:Name="PasswordBox" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
+        </StackPanel>
+        <TextBlock Classes="error" Text="{Binding ErrorMessage}" TextWrapping="Wrap" HorizontalAlignment="Center"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <Button x:Name="EnterButton" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                Padding="12,8" IsEnabled="{Binding !Loading}" Click="OnEnter">
+          <Panel>
+            <TextBlock Text="Entrar" FontWeight="SemiBold" IsVisible="{Binding !Loading}" />
+            <TextBlock Text="Entrando…" FontWeight="SemiBold" IsVisible="{Binding Loading}" />
+          </Panel>
+        </Button>
+      </StackPanel>
+    </Border>
+  </Panel>
 </cube:ScopeView>

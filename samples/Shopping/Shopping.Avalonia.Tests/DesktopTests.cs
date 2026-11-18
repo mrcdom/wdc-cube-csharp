@@ -160,9 +160,10 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         Desktop.Click(desktop.All<Button>().First(b => b.Classes.Contains("product-card")));
         await desktop.Until(() => desktop.All<ProductView>().Any(), "the product");
         Desktop.Click(desktop.ButtonWith("+"));
+        await desktop.Until(() => desktop.All<Image>().Any(i => i.Source is not null && i.Bounds.Width >= 100), "the product image");
+        desktop.Capture("3-product");
         Desktop.Click(desktop.Find<Button>("AddButton"));
         await desktop.Until(() => desktop.Find<TextBlock>("CartBadge").Text == "2", "the cart badge");
-        desktop.Capture("3-product");
 
         Desktop.Click(desktop.Find<Button>("CartButton"));
         await desktop.Until(() => desktop.All<CartLineView>().Count() == 1, "one cart line");

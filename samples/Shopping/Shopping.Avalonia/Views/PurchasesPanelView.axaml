@@ -6,20 +6,20 @@
                 x:Class="Shopping.Avalonia.Views.PurchasesPanelView"
                 x:DataType="m:PurchasesPanelScope">
   <Border Classes="card">
-    <StackPanel Spacing="10">
+    <StackPanel Spacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="title" Text="Compras" />
-        <TextBlock Classes="muted" Text="{Binding CountLabel}" VerticalAlignment="Center" />
+        <TextBlock Classes="h2" Text="Compras" />
+        <Border Classes="chip"><TextBlock Text="{Binding CountLabel}" /></Border>
       </StackPanel>
       <TextBlock Classes="muted" Text="Nenhuma compra realizada"
                  IsVisible="{Binding Purchases, Converter={x:Static v:Is.Empty}}" />
-      <ItemsControl ItemsSource="{Binding Purchases}">
+      <ItemsControl ItemsSource="{Binding Purchases}" Margin="0,0,0,-10">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="m:PurchaseCard">
-            <Button Classes="purchase-card" HorizontalAlignment="Stretch" Margin="0,0,0,6" Background="#F9FAFB" Click="OnOpen">
-              <StackPanel>
-                <TextBlock Text="{Binding DateLabel}" FontWeight="SemiBold" />
-                <TextBlock Classes="muted" Text="{Binding ItemsLabel}" TextWrapping="Wrap" />
+            <Button Classes="purchase-card" Click="OnOpen">
+              <StackPanel Spacing="2">
+                <TextBlock Classes="muted" FontSize="12" Text="{Binding DateLabel}" />
+                <TextBlock Text="{Binding ItemsLabel}" TextTrimming="CharacterEllipsis" />
                 <TextBlock Classes="price" Text="{Binding TotalLabel}" />
               </StackPanel>
             </Button>

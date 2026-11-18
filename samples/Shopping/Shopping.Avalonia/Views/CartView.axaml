@@ -7,25 +7,25 @@
                 x:DataType="m:CartScope">
   <Border Classes="card">
     <StackPanel Spacing="12">
-      <TextBlock Classes="title" Text="Carrinho de Compras" />
+      <TextBlock Classes="h2" Text="Carrinho de Compras" />
       <TextBlock Classes="error" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <StackPanel IsVisible="{Binding Lines, Converter={x:Static v:Is.Empty}}" HorizontalAlignment="Center" Spacing="4">
-        <TextBlock Text="🛒" FontSize="36" HorizontalAlignment="Center" />
+        <TextBlock Text="🛒" FontSize="40" HorizontalAlignment="Center" />
         <TextBlock Text="Seu carrinho está vazio" HorizontalAlignment="Center" />
         <TextBlock Classes="muted" Text="Adicione produtos para continuar" HorizontalAlignment="Center" />
       </StackPanel>
       <ItemsControl x:Name="LinesList" ItemsSource="{Binding Lines}" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="{Binding Lines, Converter={x:Static v:Is.NotEmpty}}">
-        <TextBlock Text="Total: " />
-        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontWeight="Bold" />
+        <TextBlock Text="Total: " FontSize="18" />
+        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="18" FontWeight="Bold" />
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-        <Button Content="Continuar Comprando" Click="OnContinue" />
-        <Button x:Name="BuyButton" Classes="primary" IsEnabled="{Binding !Buying}" Click="OnBuy"
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,4,0,0">
+        <Button Classes="outlined" Content="Continuar Comprando" Click="OnContinue" />
+        <Button x:Name="BuyButton" Classes="buy" IsEnabled="{Binding !Buying}" Click="OnBuy"
                 IsVisible="{Binding Lines, Converter={x:Static v:Is.NotEmpty}}">
           <Panel>
-            <TextBlock Text="Comprar" IsVisible="{Binding !Buying}" />
-            <TextBlock Text="Comprando…" IsVisible="{Binding Buying}" />
+            <TextBlock Text="Comprar" FontWeight="SemiBold" IsVisible="{Binding !Buying}" />
+            <TextBlock Text="Comprando…" FontWeight="SemiBold" IsVisible="{Binding Buying}" />
           </Panel>
         </Button>
       </StackPanel>

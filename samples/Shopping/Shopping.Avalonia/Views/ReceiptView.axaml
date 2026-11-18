@@ -7,30 +7,38 @@
                 x:DataType="m:ReceiptScope">
   <Border Classes="card">
     <StackPanel Spacing="12">
-      <TextBlock Classes="success" Text="Compra realizada com sucesso!" IsVisible="{Binding NotifySuccess}" />
+      <Border Classes="success" Margin="0,16,0,0" IsVisible="{Binding NotifySuccess}">
+        <TextBlock Text="Compra realizada com sucesso!" />
+      </Border>
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="title" Text="🧾 Recibo" />
-        <TextBlock Classes="muted" Text="{Binding DateLabel}" VerticalAlignment="Center" />
+        <TextBlock Classes="h2" Text="🧾 Recibo" />
+        <Border Classes="chip"><TextBlock Text="{Binding DateLabel}" /></Border>
       </StackPanel>
-      <Grid ColumnDefinitions="*,80,120">
-        <TextBlock Text="Item" FontWeight="SemiBold" />
-        <TextBlock Grid.Column="1" Text="Qtd" FontWeight="SemiBold" TextAlignment="Right" />
-        <TextBlock Grid.Column="2" Text="Valor" FontWeight="SemiBold" TextAlignment="Right" />
-      </Grid>
-      <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="m:ReceiptLine">
-            <Grid ColumnDefinitions="*,80,120" Margin="0,2">
-              <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
-              <TextBlock Grid.Column="1" Text="{Binding Quantity}" TextAlignment="Right" />
-              <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" TextAlignment="Right" />
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <StackPanel>
+        <Border Classes="row">
+          <Grid ColumnDefinitions="*,Auto,370">
+            <TextBlock Text="Item" FontWeight="Bold" />
+            <TextBlock Grid.Column="1" Text="Qtd" FontWeight="Bold" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="Valor" FontWeight="Bold" TextAlignment="Right" />
+          </Grid>
+        </Border>
+        <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="m:ReceiptLine">
+              <Border Classes="row">
+                <Grid ColumnDefinitions="*,Auto,370">
+                  <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                  <TextBlock Grid.Column="1" Text="{Binding Quantity}" TextAlignment="Right" MinWidth="32" />
+                  <TextBlock Grid.Column="2" Text="{Binding ValueLabel}" TextAlignment="Right" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <TextBlock Text="Total: " />
-        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontWeight="Bold" />
+        <TextBlock Text="Total: " FontSize="18" />
+        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="18" FontWeight="Bold" />
       </StackPanel>
       <Button Classes="primary" Content="Continuar Comprando" HorizontalAlignment="Right" Click="OnContinue" />
     </StackPanel>

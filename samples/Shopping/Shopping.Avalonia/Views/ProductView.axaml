@@ -6,30 +6,30 @@
                 x:Class="Shopping.Avalonia.Views.ProductView"
                 x:DataType="m:ProductScope">
   <Border Classes="card">
-    <StackPanel Spacing="12">
+    <StackPanel Spacing="16">
       <TextBlock Classes="error" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
-      <Grid ColumnDefinitions="Auto,24,*">
-        <Image Width="260" Height="220" Stretch="Uniform" v:RemoteImage.Url="{Binding ImageUrl}" />
-        <StackPanel Grid.Column="2" Spacing="8">
-          <TextBlock x:Name="ProductName" Classes="title" Text="{Binding Name}" TextWrapping="Wrap" />
-          <ItemsControl ItemsSource="{Binding DescriptionItems}">
+      <Grid ColumnDefinitions="120,16,*">
+        <Image Width="120" Height="120" Stretch="Uniform" VerticalAlignment="Top" v:RemoteImage.Url="{Binding ImageUrl}" />
+        <StackPanel Grid.Column="2" Spacing="12">
+          <TextBlock x:Name="ProductName" Text="{Binding Name}" FontSize="26" FontWeight="Bold" TextWrapping="Wrap" />
+          <ItemsControl ItemsSource="{Binding DescriptionItems}" Margin="4,0,0,0">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="x:String">
-                <TextBlock Text="{Binding StringFormat=• {0}}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding StringFormat=•  {0}}" TextWrapping="Wrap" Margin="0,1" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <TextBlock Classes="price" FontSize="18" Text="{Binding PriceLabel}" />
+          <TextBlock Classes="price" Text="{Binding PriceLabel}" />
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="Qtd:" VerticalAlignment="Center" />
             <Button Content="−" Click="OnMinus" />
-            <TextBlock x:Name="Quantity" Text="1" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
+            <TextBlock x:Name="Quantity" Text="1" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
             <Button Content="+" Click="OnPlus" />
           </StackPanel>
         </StackPanel>
       </Grid>
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-        <Button Content="Voltar" Click="OnBack" />
+        <Button Classes="outlined" Content="Voltar" Click="OnBack" />
         <Button x:Name="AddButton" Classes="primary" Content="🛒 Adicionar" Click="OnAdd" />
       </StackPanel>
     </StackPanel>

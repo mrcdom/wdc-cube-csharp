@@ -6,21 +6,21 @@
                 x:Class="Shopping.Avalonia.Views.ProductsPanelView"
                 x:DataType="m:ProductsPanelScope">
   <Border Classes="card">
-    <StackPanel Spacing="10">
+    <StackPanel Spacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="title" Text="Produtos" />
-        <TextBlock Classes="muted" Text="{Binding CountLabel}" VerticalAlignment="Center" />
+        <TextBlock Classes="h2" Text="Produtos" />
+        <Border Classes="chip"><TextBlock Text="{Binding CountLabel}" /></Border>
       </StackPanel>
       <TextBlock Classes="muted" Text="Carregando…" IsVisible="{Binding Loading}" />
-      <ItemsControl x:Name="Grid" ItemsSource="{Binding Products}">
+      <ItemsControl x:Name="Grid" ItemsSource="{Binding Products}" Margin="0,0,-12,-12">
         <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+          <ItemsPanelTemplate><WrapPanel ItemWidth="203" ItemHeight="250" /></ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="m:ProductCard">
-            <Button Classes="product-card" Margin="0,0,10,10" Width="170" Height="200" VerticalContentAlignment="Top" Background="#F9FAFB" Click="OnOpen">
-              <StackPanel Spacing="4">
-                <Image Height="110" Stretch="Uniform" v:RemoteImage.Url="{Binding ImageUrl}" />
+            <Button Classes="product-card" Margin="0,0,12,12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="OnOpen">
+              <StackPanel Spacing="6">
+                <Image Height="140" Stretch="Uniform" v:RemoteImage.Url="{Binding ImageUrl}" />
                 <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
                 <TextBlock Classes="price" Text="{Binding PriceLabel}" />
               </StackPanel>

@@ -5,11 +5,11 @@
                 xmlns:v="using:Shopping.Avalonia.Views"
                 x:Class="Shopping.Avalonia.Views.MainView"
                 x:DataType="m:MainScope">
-  <Panel>
+  <Panel Background="{StaticResource Bg}">
     <ContentControl Content="{Binding Body}" />
     <Border Classes="toast" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
             PointerPressed="OnDismiss">
-      <TextBlock x:Name="Toast" Text="{Binding ErrorMessage}" Foreground="White" TextWrapping="Wrap" MaxWidth="520" />
+      <TextBlock x:Name="Toast" Text="{Binding ErrorMessage}" TextWrapping="Wrap" MaxWidth="520" />
     </Border>
   </Panel>
 </cube:ScopeView>
