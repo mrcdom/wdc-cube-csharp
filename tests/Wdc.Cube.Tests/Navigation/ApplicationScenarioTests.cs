@@ -7,8 +7,8 @@ namespace Wdc.Cube.Tests.Navigation;
 /// composition through scope slots, the address published from the live presenters, and navigation from an address.
 /// </summary>
 /// <remarks>
-/// Differences from the TS original: the address carries the full path (<c>root/restricted</c>), and the parts that
-/// depend on the update pipeline (computed value in <c>onBeforeScopeUpdate</c>) wait for it.
+/// Differences from the TS original: the address carries the full path (<c>root/restricted</c>), and scope writes made
+/// by the test go through the dispatcher, where a view would make them.
 /// </remarks>
 public sealed class ApplicationScenarioTests
 {
@@ -29,10 +29,13 @@ public sealed class ApplicationScenarioTests
         Assert.Null(login.Scope.UserName);
         Assert.Same(login.Scope, root.Scope.Body);
 
-        // Wrong password
-        login.Scope.UserName = "test";
-        login.Scope.Password = "wrong-password";
-        await login.OnEnter();
+        // Wrong password (scope writes happen where the view would make them: on the dispatcher)
+        await app.InvokeAsync(() =>
+        {
+            login.Scope.UserName = "test";
+            login.Scope.Password = "wrong-password";
+        });
+        await login.Scope.OnEnter();
         Assert.Equal("User or password invalid", login.Scope.Message);
         Assert.Same(login.Scope, root.Scope.Body);
         Assert.Equal(0, app.Session.Id);
@@ -45,18 +48,26 @@ public sealed class ApplicationScenarioTests
         Assert.Same(login.Scope, root.Scope.Body); // and still bound to the parent scope
 
         // A valid login
-        login.Scope.Password = "test";
-        await login.OnEnter();
+        await app.InvokeAsync(() => login.Scope.Password = "test");
+        await login.Scope.OnEnter();
         Assert.False(login.Initialized); // released
         Assert.Equal(1, app.Session.Id);
         var restricted = app.GetPresenter<RestrictedPresenter>(ShopPlaces.Restricted)!;
         Assert.Same(restricted.Scope, root.Scope.Body);
 
+        // Computed value (OnBeforeScopeUpdate runs in the flush)
+        await app.Settle();
+        Assert.Equal(2, root.Scope.ComputedValue);
+
         // Logout
-        await restricted.OnLogout();
+        await restricted.Scope.OnLogout();
         Assert.Equal(0, app.Session.Id);
         Assert.False(restricted.Initialized);
         Assert.True(app.GetPresenter<LoginPresenter>(ShopPlaces.Login)!.Initialized);
+
+        await app.Settle();
+        Assert.Equal(0, root.Scope.ComputedValue);
+        Assert.Empty(app.UnexpectedErrors);
     }
 
     [Fact]
@@ -177,7 +188,7 @@ public sealed class ApplicationScenarioTests
     }
 }
 
-// :: Fixture (mirrors Cube.test.ts)
+// :: Fixture (mirrors Cube.test.ts), on the real CubePresenter
 
 internal static class ShopParams
 {
@@ -209,6 +220,10 @@ internal sealed class ShopApp() : CubeApplication(new TestHistoryManager(), Shop
     public new TestHistoryManager History => (TestHistoryManager)base.History;
 
     public Session Session { get; set; } = new(0, false);
+
+    public List<Exception> UnexpectedErrors { get; } = [];
+
+    public override void Unexpected(string message, Exception error) => UnexpectedErrors.Add(error);
 }
 
 internal static class EchoService
@@ -220,29 +235,25 @@ internal static class EchoService
     }
 }
 
-internal abstract class ShopPresenter<TScope>(ShopApp app, TScope scope) : ICubePresenter
+internal abstract class ShopPresenter<TScope>(ShopApp app, TScope scope) : CubePresenter<ShopApp, TScope>(app, scope)
     where TScope : Scope
 {
-    protected ShopApp App { get; } = app;
-
-    public TScope Scope { get; } = scope;
-
     public bool Initialized { get; protected set; }
 
     public bool Deepest { get; protected set; }
 
-    public abstract Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last);
-
-    public virtual void PublishParameters(FlipIntent intent)
+    public override void Release()
     {
+        Initialized = false;
+        base.Release();
     }
-
-    public virtual void Release() => Initialized = false;
 }
 
 internal sealed class RootScope : Scope
 {
-    public Scope? Body { get; set; }
+    public long ComputedValue { get; set => Set(ref field, value); }
+
+    public Scope? Body { get; set => Set(ref field, value); }
 }
 
 internal sealed class RootPresenter(ShopApp app) : ShopPresenter<RootScope>(app, new RootScope())
@@ -270,37 +281,43 @@ internal sealed class RootPresenter(ShopApp app) : ShopPresenter<RootScope>(app,
     }
 
     public override void PublishParameters(FlipIntent intent) => intent.SetParameter(ShopParams.SessionId, App.Session.Id);
+
+    protected override void OnBeforeScopeUpdate() => Scope.ComputedValue = App.Session.Id * 2;
 }
 
 internal sealed class LoginScope : Scope
 {
-    public string? UserName { get; set; }
+    public string? UserName { get; set => Set(ref field, value); }
 
-    public string? Password { get; set; }
+    public string? Password { get; set => Set(ref field, value); }
 
-    public string? Message { get; set; }
+    public string? Message { get; set => Set(ref field, value); }
+
+    public Func<Task> OnEnter { get; set; } = ScopeActions.Unbound();
 }
 
 internal sealed class LoginPresenter(ShopApp app) : ShopPresenter<LoginScope>(app, new LoginScope())
 {
-    private ScopeSlot _parentSlot = ScopeSlots.Noop;
-
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
-        Initialized |= initialization;
-        _parentSlot = intent.GetScopeSlot(ShopAttrs.Parent);
+        if (initialization)
+        {
+            Initialized = true;
+            Scope.OnEnter = Action(OnEnter);
+        }
+
         Deepest = last;
-        _parentSlot(Scope);
+        intent.GetScopeSlot(ShopAttrs.Parent)(Scope);
         return Task.FromResult(true);
     }
 
-    public async Task OnEnter()
+    private async Task OnEnter()
     {
         Scope.Message = null;
         if (Scope is { UserName: "test", Password: "test" })
         {
             App.Session = await EchoService.Echo(new Session(1, true));
-            await App.Flip(ShopPlaces.Restricted);
+            await Flip(ShopPlaces.Restricted);
         }
         else
         {
@@ -311,13 +328,13 @@ internal sealed class LoginPresenter(ShopApp app) : ShopPresenter<LoginScope>(ap
 
 internal sealed class RestrictedScope : Scope
 {
-    public Scope? Content { get; set; }
+    public Scope? Content { get; set => Set(ref field, value); }
+
+    public Func<Task> OnLogout { get; set; } = ScopeActions.Unbound();
 }
 
 internal sealed class RestrictedPresenter(ShopApp app) : ShopPresenter<RestrictedScope>(app, new RestrictedScope())
 {
-    private ScopeSlot _parentSlot = ScopeSlots.Noop;
-
     public List<bool> SeenHasNavigated { get; } = [];
 
     public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
@@ -327,12 +344,17 @@ internal sealed class RestrictedPresenter(ShopApp app) : ShopPresenter<Restricte
         // Guard: no restricted area without a session
         if (App.Session.Id == 0)
         {
-            await App.Flip(ShopPlaces.Login);
+            await Flip(ShopPlaces.Login);
             return false;
         }
 
-        Initialized |= initialization;
-        _parentSlot = intent.GetScopeSlot(ShopAttrs.Parent);
+        if (initialization)
+        {
+            Initialized = true;
+            Scope.OnLogout = Action(OnLogout);
+        }
+
+        var parentSlot = intent.GetScopeSlot(ShopAttrs.Parent);
         Deepest = last;
         if (last)
         {
@@ -343,14 +365,14 @@ internal sealed class RestrictedPresenter(ShopApp app) : ShopPresenter<Restricte
             intent.SetScopeSlot(ShopAttrs.Parent, content => Scope.Content = content);
         }
 
-        _parentSlot(Scope);
+        parentSlot(Scope);
         return true;
     }
 
-    public async Task OnLogout()
+    private async Task OnLogout()
     {
         App.Session = new Session(0, false);
-        await App.Flip(ShopPlaces.Login);
+        await Flip(ShopPlaces.Login);
     }
 }
 
@@ -358,8 +380,6 @@ internal sealed class CartScope : Scope;
 
 internal sealed class CartPresenter(ShopApp app) : ShopPresenter<CartScope>(app, new CartScope())
 {
-    private ScopeSlot _parentSlot = ScopeSlots.Noop;
-
     public long? CartId { get; private set; }
 
     public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
@@ -375,9 +395,8 @@ internal sealed class CartPresenter(ShopApp app) : ShopPresenter<CartScope>(app,
             await LoadData(cartId);
         }
 
-        _parentSlot = intent.GetScopeSlot(ShopAttrs.Parent);
         Deepest = last;
-        _parentSlot(Scope);
+        intent.GetScopeSlot(ShopAttrs.Parent)(Scope);
         return true;
     }
 
@@ -389,13 +408,11 @@ internal sealed class CartPresenter(ShopApp app) : ShopPresenter<CartScope>(app,
 
 internal sealed class ProductScope : Scope
 {
-    public string? Name { get; set; }
+    public string? Name { get; set => Set(ref field, value); }
 }
 
 internal sealed class ProductPresenter(ShopApp app) : ShopPresenter<ProductScope>(app, new ProductScope())
 {
-    private ScopeSlot _parentSlot = ScopeSlots.Noop;
-
     public long? ProductId { get; private set; }
 
     public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
@@ -411,9 +428,8 @@ internal sealed class ProductPresenter(ShopApp app) : ShopPresenter<ProductScope
             await LoadData(productId);
         }
 
-        _parentSlot = intent.GetScopeSlot(ShopAttrs.Parent);
         Deepest = last;
-        _parentSlot(Scope);
+        intent.GetScopeSlot(ShopAttrs.Parent)(Scope);
         return true;
     }
 

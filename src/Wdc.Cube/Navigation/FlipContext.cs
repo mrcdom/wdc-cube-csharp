@@ -109,11 +109,13 @@ internal sealed class FlipContext
     }
 
     /// <summary>
-    /// Keeps the presenters on the path of the committed place and releases every other one, leaves first.
+    /// Keeps the presenters on the path of the committed place and releases every other one, leaves first. When no
+    /// place was accepted (the target is the detached root, or the application itself stopped the walk), the face is
+    /// the root: no presenter of the tree stays.
     /// </summary>
     public Dictionary<int, ICubePresenter> Commit(out Place committedPlace)
     {
-        committedPlace = AcceptedPlace ?? TargetIntent.Place;
+        committedPlace = AcceptedPlace ?? Place.Root;
 
         var kept = new Dictionary<int, ICubePresenter>();
         foreach (var place in committedPlace.Path)

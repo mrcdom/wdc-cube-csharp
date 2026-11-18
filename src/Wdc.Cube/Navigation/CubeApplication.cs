@@ -240,7 +240,7 @@ public class CubeApplication
     // that is no longer the running one, so it counts as outside.
     private static bool IsInside(FlipContext running) => ReferenceEquals(s_ambientFlip.Value, running);
 
-    private async Task<bool> FlipCore(FlipIntent intent)
+    private protected async Task<bool> FlipCore(FlipIntent intent)
     {
         ObjectDisposedException.ThrowIf(IsReleased, this);
 
