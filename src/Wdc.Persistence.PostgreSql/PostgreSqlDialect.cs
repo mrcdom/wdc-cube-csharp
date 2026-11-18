@@ -61,19 +61,28 @@ public sealed class PostgreSqlDialect : ISqlDialect
         writer.Append(')');
     }
 
-    public void WriteJsonArrayAgg(SqlWriter writer, Action<SqlWriter> element, Action<SqlWriter>? orderBy)
+    // PostgreSQL accepts subqueries inside the aggregate: order it in place.
+    public void WriteJsonArraySubquery(SqlWriter writer, Action<SqlWriter> element,
+        IReadOnlyList<(Action<SqlWriter> Expression, bool Descending)> orderBy, Action<SqlWriter> fromWhere)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        writer.Append("coalesce(jsonb_agg(");
+        ArgumentNullException.ThrowIfNull(orderBy);
+        ArgumentNullException.ThrowIfNull(fromWhere);
+        writer.Append("(SELECT coalesce(jsonb_agg(");
         element(writer);
-        if (orderBy is not null)
+        if (orderBy.Count > 0)
         {
-            writer.Append(" ORDER BY ");
-            orderBy(writer);
+            writer.Append(" ORDER BY ").Join(", ", orderBy, (w, o) =>
+            {
+                o.Expression(w);
+                w.Append(o.Descending ? " DESC" : " ASC");
+            });
         }
 
         writer.Append("), '[]'::jsonb)");
+        fromWhere(writer);
+        writer.Append(')');
     }
 
     public void WriteJsonAsText(SqlWriter writer, Action<SqlWriter> json)

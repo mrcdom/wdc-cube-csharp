@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>SQL Server 2025 dialect for Cube persistence (Microsoft.Data.SqlClient).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wdc.Persistence/Wdc.Persistence.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+</Project>

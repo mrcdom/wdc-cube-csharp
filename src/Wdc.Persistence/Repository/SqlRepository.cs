@@ -266,8 +266,8 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     /// <summary>The value a binding writes to its column (a reference writes its child's key); null when not applicable.</summary>
     private static Wrapped? ColumnValue(Binding<TEntity> binding, TEntity bean) => binding switch
     {
-        ScalarBinding<TEntity> scalar => new(scalar.Kind.ToDatabaseObject(scalar.Field.GetValue(bean))),
-        IReferenceColumn<TEntity> reference => new(reference.ChildKeyOf(bean)),
+        ScalarBinding<TEntity> scalar => new(scalar.Kind.ToDatabaseObject(scalar.Field.GetValue(bean)) ?? TypedNull.Of(scalar.Kind)),
+        IReferenceColumn<TEntity> reference => new(reference.ChildKeyOf(bean) ?? TypedNull.Of(reference.ChildKeyKind)),
         _ => null,
     };
 

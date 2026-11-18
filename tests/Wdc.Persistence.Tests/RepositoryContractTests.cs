@@ -332,6 +332,10 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Transaction_UncommittedWork_IsInvisibleOutside_AndVisibleInside()
     {
+        // Reading outside while the transaction holds its locks: a locking database (SQL Server's default) waits.
+        Assert.SkipUnless(await fixture.ReadsDoNotWaitForWriters(),
+            "the database blocks readers on uncommitted rows (enable READ_COMMITTED_SNAPSHOT to run this test)");
+
         await Db.Database.Required(async _ =>
         {
             await NewProduct("pending", 1m);
@@ -426,3 +430,6 @@ public sealed class UserCriteriaWithUnmappedField : Criteria<UserCriteriaWithUnm
 
 public sealed class PostgreSqlRepositoryTests(PostgreSqlFixture fixture)
     : RepositoryContractTests(fixture), IClassFixture<PostgreSqlFixture>;
+
+public sealed class SqlServerRepositoryTests(SqlServerFixture fixture)
+    : RepositoryContractTests(fixture), IClassFixture<SqlServerFixture>;

@@ -119,12 +119,36 @@ public sealed class Database : ITransactionService
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "@p" + i.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            parameter.Value = statement.Parameters[i] ?? DBNull.Value;
+            switch (statement.Parameters[i])
+            {
+                case TypedNull typed:
+                    parameter.DbType = DbTypeOf(typed.ClrType);
+                    parameter.Value = DBNull.Value;
+                    break;
+                case var value:
+                    parameter.Value = value ?? DBNull.Value;
+                    break;
+            }
+
             command.Parameters.Add(parameter);
         }
 
         return command;
     }
+
+    private static System.Data.DbType DbTypeOf(Type type) => type switch
+    {
+        _ when type == typeof(byte[]) => System.Data.DbType.Binary,
+        _ when type == typeof(long) => System.Data.DbType.Int64,
+        _ when type == typeof(int) => System.Data.DbType.Int32,
+        _ when type == typeof(double) => System.Data.DbType.Double,
+        _ when type == typeof(decimal) => System.Data.DbType.Decimal,
+        _ when type == typeof(bool) => System.Data.DbType.Boolean,
+        _ when type == typeof(DateTimeOffset) => System.Data.DbType.DateTimeOffset,
+        _ when type == typeof(DateOnly) => System.Data.DbType.Date,
+        _ when type == typeof(Guid) => System.Data.DbType.Guid,
+        _ => System.Data.DbType.String,
+    };
 
     // :: Internals
 

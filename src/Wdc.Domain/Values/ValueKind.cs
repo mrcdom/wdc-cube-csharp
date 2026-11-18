@@ -182,6 +182,7 @@ public static class ValueKinds
         {
             JsonTokenType.True => true,
             JsonTokenType.False => false,
+            JsonTokenType.Number => reader.TryGetInt32(out var n) ? n != 0 : null, // a bit column
             _ => bool.TryParse(ReadText(ref reader), out var t) ? t : null,
         };
 

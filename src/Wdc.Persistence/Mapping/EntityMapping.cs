@@ -115,7 +115,10 @@ public sealed class EntityMapping<TEntity>
     }
 
     /// <summary>The ORDER BY columns of the criteria's named ordering, with the key as tie-breaker.</summary>
-    internal void WriteOrderBy(SqlWriter writer, string alias, ICriteria? criteria)
+    internal void WriteOrderBy(SqlWriter writer, string alias, ICriteria? criteria) =>
+        writer.Join(", ", OrderSpecs(criteria), (w, s) => w.Column(alias, s.Column).Append(s.Descending ? " DESC" : " ASC"));
+
+    internal IReadOnlyList<SortSpec> OrderSpecs(ICriteria? criteria)
     {
         var specs = _ordering(criteria?.OrderByName).ToList();
         if (!specs.Exists(s => s.Column == KeyColumn))
@@ -123,7 +126,7 @@ public sealed class EntityMapping<TEntity>
             specs.Add(SortSpec.Asc(KeyColumn));
         }
 
-        writer.Join(", ", specs, (w, s) => w.Column(alias, s.Column).Append(s.Descending ? " DESC" : " ASC"));
+        return specs;
     }
 }
 
@@ -270,6 +273,9 @@ internal interface IReferenceColumn<in TEntity>
 
     /// <summary>The child's key in database form, or null.</summary>
     object? ChildKeyOf(TEntity bean);
+
+    /// <summary>The kind of the child's key (the foreign key column's type).</summary>
+    IValueKind ChildKeyKind { get; }
 }
 
 internal sealed class ReferenceBinding<TEntity, TChild>(
@@ -280,6 +286,8 @@ internal sealed class ReferenceBinding<TEntity, TChild>(
 {
     public object? ChildKeyOf(TEntity bean) =>
         Reference.Get(bean) is { } child ? Child.Model.Key!.ScalarKind!.ToDatabaseObject(Child.Model.KeyOf(child)) : null;
+
+    public IValueKind ChildKeyKind => Child.Model.Key!.ScalarKind!;
 
     private readonly Lazy<EntityMapping<TChild>> _child = new(child);
 
@@ -341,19 +349,21 @@ internal sealed class CollectionBinding<TEntity, TChild>(
         entries.Add(new JsonEntry(Field.Name, w =>
         {
             var childAlias = w.NextAlias(child.AliasPrefix);
-            w.Append("(SELECT ");
-            w.Dialect.WriteJsonArrayAgg(w,
+            var order = child.OrderSpecs(criteria)
+                .Select(s => ((Action<SqlWriter>)(o => o.Column(childAlias, s.Column)), s.Descending))
+                .ToList();
+            w.Dialect.WriteJsonArraySubquery(w,
                 element => child.WriteJson(element, childAlias, shape),
-                order => child.WriteOrderBy(order, childAlias, criteria));
-            w.Append(" FROM ").Table(child.Table).Append(' ').Identifier(childAlias).Append(" WHERE ");
-
-            var where = Sql.And([
-                Sql.Equal(Sql.Column(childAlias, ChildForeignKeyColumn), Sql.Column(alias, parentKey)),
-                child.Conditions(criteria, childAlias),
-                sliced ? SliceCondition(childAlias, alias, parentKey, criteria, slice!) : null,
-            ])!;
-            where.Render(w);
-            w.Append(')');
+                order,
+                from =>
+                {
+                    from.Append(" FROM ").Table(child.Table).Append(' ').Identifier(childAlias).Append(" WHERE ");
+                    Sql.And([
+                        Sql.Equal(Sql.Column(childAlias, ChildForeignKeyColumn), Sql.Column(alias, parentKey)),
+                        child.Conditions(criteria, childAlias),
+                        sliced ? SliceCondition(childAlias, alias, parentKey, criteria, slice!) : null,
+                    ])!.Render(from);
+                });
         }, null));
     }
 

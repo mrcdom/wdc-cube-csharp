@@ -12,6 +12,7 @@
     <Project Path="src/Wdc.Domain/Wdc.Domain.csproj" />
     <Project Path="src/Wdc.Persistence/Wdc.Persistence.csproj" />
     <Project Path="src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
+    <Project Path="src/Wdc.Persistence.SqlServer/Wdc.Persistence.SqlServer.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/Tutorial/">

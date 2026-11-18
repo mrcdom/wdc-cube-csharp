@@ -22,9 +22,12 @@ public interface ISqlDialect
     void WriteJsonObject(SqlWriter writer, IReadOnlyList<JsonEntry> entries);
 
     /// <summary>
-    /// <c>FROM</c>-less aggregation of <paramref name="element"/> into a JSON array, ordered; an empty set gives <c>[]</c>.
+    /// A scalar subquery giving the JSON array of the rows that <paramref name="fromWhere"/> selects (it writes
+    /// <c>FROM ... WHERE ...</c>), each row shaped by <paramref name="element"/>, ordered by <paramref name="orderBy"/>;
+    /// an empty set gives <c>[]</c>.
     /// </summary>
-    void WriteJsonArrayAgg(SqlWriter writer, Action<SqlWriter> element, Action<SqlWriter>? orderBy);
+    void WriteJsonArraySubquery(SqlWriter writer, Action<SqlWriter> element, IReadOnlyList<(Action<SqlWriter> Expression, bool Descending)> orderBy,
+        Action<SqlWriter> fromWhere);
 
     /// <summary>Turns the dialect's JSON value into text, for the outermost select.</summary>
     void WriteJsonAsText(SqlWriter writer, Action<SqlWriter> json);

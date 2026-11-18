@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Wdc.Persistence/Wdc.Persistence.csproj" />
     <ProjectReference Include="../../src/Wdc.Persistence.PostgreSql/Wdc.Persistence.PostgreSql.csproj" />
+    <ProjectReference Include="../../src/Wdc.Persistence.SqlServer/Wdc.Persistence.SqlServer.csproj" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>
