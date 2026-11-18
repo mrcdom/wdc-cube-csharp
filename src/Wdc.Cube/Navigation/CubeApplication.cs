@@ -21,12 +21,18 @@ namespace Wdc.Cube;
 /// All presentation code runs on <see cref="Dispatcher"/> (decision D-01). Members returning a <see cref="Task"/>
 /// marshal themselves; synchronous members that read or change the navigation state require the caller to be on it.
 /// </para>
+/// <para>
+/// Concurrent requests (decision D-13): a redirect from inside the running attempt retargets it; a request from
+/// outside waits for it to end, only the latest one waits, and a failed attempt discards the waiting request.
+/// </para>
 /// </remarks>
 public class CubeApplication
 {
     private readonly Dictionary<string, Place> _placesByPath = new(StringComparer.Ordinal);
     private Dictionary<int, ICubePresenter> _presenters = [];
+    private static readonly AsyncLocal<FlipContext?> s_ambientFlip = new();
     private FlipContext? _flip;
+    private PendingNavigation? _pending;
     private Place? _lastPlace;
     private volatile int _releasePhase;
     private readonly bool _ownsDispatcher;
@@ -176,9 +182,9 @@ public class CubeApplication
     /// Brings the application to the face the intent asks for.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> when the committed face is the one the intent asked for; <see langword="false"/> when a
-    /// presenter stopped the composition earlier or redirected elsewhere. Inside another navigation (a redirect), it
-    /// retargets that navigation and returns whether its walk reached the leaf; the outer navigation commits.
+    /// <see langword="true"/> when the committed face is the one the intent asked for. <see langword="false"/> when a
+    /// presenter stopped the composition earlier, redirected elsewhere, or when the request was discarded while
+    /// waiting (see <see cref="CubeApplication"/> remarks on concurrent requests).
     /// </returns>
     /// <exception cref="CubeNavigationException">Presenters keep redirecting to one another.</exception>
     public Task<bool> FlipToIntent(FlipIntent intent)
@@ -196,10 +202,38 @@ public class CubeApplication
     /// <summary>Runs <paramref name="work"/> on <see cref="Dispatcher"/> and returns its result.</summary>
     public Task<T> InvokeAsync<T>(Func<Task<T>> work) => Dispatcher.InvokeAsync(work);
 
-    private Task<T> Enter<T>(Func<Task<T>> work) =>
+    private Task<bool> Enter(Func<Task<bool>> navigation) =>
         IsReleased
-            ? Task.FromException<T>(new ObjectDisposedException(GetType().Name))
-            : Dispatcher.InvokeAsync(work);
+            ? Task.FromException<bool>(new ObjectDisposedException(GetType().Name))
+            : Dispatcher.InvokeAsync(() => Request(navigation));
+
+    /// <summary>
+    /// Decides what a navigation request does while another may be running (decision D-13):
+    /// <list type="bullet">
+    /// <item>no navigation running: it runs now;</item>
+    /// <item>it comes from inside the running attempt (a presenter redirecting from its <c>ApplyParameters</c>): it
+    /// retargets that attempt;</item>
+    /// <item>it comes from outside (a click, the history): it waits for the running attempt to end. Only the latest
+    /// one waits; an older waiting request is discarded (completes with <see langword="false"/>). If the running
+    /// attempt fails, the waiting request is discarded too.</item>
+    /// </list>
+    /// </summary>
+    private Task<bool> Request(Func<Task<bool>> navigation)
+    {
+        if (_flip is not { } running || IsInside(running))
+        {
+            return navigation();
+        }
+
+        _pending?.Discard();
+        _pending = new PendingNavigation(navigation);
+        return _pending.Completion;
+    }
+
+    // A request is inside the attempt when it flows from it: the ambient context travels with every await of the
+    // presenters' ApplyParameters. Work started there and still running after the attempt ended carries a context
+    // that is no longer the running one, so it counts as outside.
+    private static bool IsInside(FlipContext running) => ReferenceEquals(s_ambientFlip.Value, running);
 
     private async Task<bool> FlipCore(FlipIntent intent)
     {
@@ -219,12 +253,15 @@ public class CubeApplication
 
         var context = new FlipContext(this, intent, NewFlipIntent(LastPlace), _presenters);
         _flip = context;
+        s_ambientFlip.Value = context; // flows into every presenter call of this attempt, and only into them
+        var succeeded = false;
         try
         {
             await WalkPath(context, 0);
 
             _presenters = context.Commit(out var committedPlace);
             _lastPlace = committedPlace;
+            succeeded = true;
             return ReferenceEquals(committedPlace, intent.Place);
         }
         catch
@@ -236,7 +273,27 @@ public class CubeApplication
         {
             _flip = null;
             SafeUpdateHistory();
+            RunOrDiscardPending(succeeded);
         }
+    }
+
+    private void RunOrDiscardPending(bool previousSucceeded)
+    {
+        var next = _pending;
+        _pending = null;
+        if (next is null)
+        {
+            return;
+        }
+
+        if (!previousSucceeded || IsReleased)
+        {
+            next.Discard();
+            return;
+        }
+
+        // Posted, so the attempt that just ended completes first, and without its ambient context.
+        Dispatcher.Post(() => _ = next.Run(this));
     }
 
     /// <summary>Walks the path of the context's target, at <paramref name="level"/>, from the root down.</summary>
@@ -274,48 +331,66 @@ public class CubeApplication
         }
     }
 
-    // The history may change on any thread (a browser callback, a test): look at it on the dispatcher.
+    // The history may change on any thread (a browser callback, a test): it becomes a request from outside, handled
+    // on the dispatcher. The address is read NOW: a navigation still running will publish its own address when it
+    // commits, and reading later would lose where the user asked to go.
     private void OnHistoryChanged(HistoryManager sender)
     {
         if (!IsReleased)
         {
-            Dispatcher.Post(() => FollowHistoryChange(sender));
+            var location = sender.Location;
+            Dispatcher.Post(() => _ = Request(() => FollowHistory(location)));
         }
     }
 
-    private void FollowHistoryChange(HistoryManager sender)
+    private async Task<bool> FollowHistory(string location)
     {
-        if (_flip is not null || IsReleased)
-        {
-            return;
-        }
-
         var previous = NewFlipIntent(LastPlace);
-        var location = sender.Location;
         if (string.Equals(location, previous.ToString(), StringComparison.Ordinal))
         {
-            return;
+            return true;
         }
 
-        _ = FollowHistory(location, previous);
-    }
-
-    private async Task FollowHistory(string location, FlipIntent previous)
-    {
         try
         {
-            await FlipToIntentString(location);
+            return await FlipCore(NewIntentFromString(location));
         }
         catch (Exception caught)
         {
             Unexpected($"Invalid history location '{location}'", caught);
             try
             {
-                await FlipToIntent(previous);
+                await FlipCore(previous);
             }
             catch (Exception caughtAgain)
             {
                 Unexpected("Returning to the previous location", caughtAgain);
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>The request from outside that waits for the running attempt to end.</summary>
+    private sealed class PendingNavigation(Func<Task<bool>> navigation)
+    {
+        private readonly TaskCompletionSource<bool> _completion =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<bool> Completion => _completion.Task;
+
+        public void Discard() => _completion.TrySetResult(false);
+
+        public async Task Run(CubeApplication app)
+        {
+            try
+            {
+                // Runs as a fresh request: if yet another one arrived meanwhile, the rule applies again.
+                _completion.TrySetResult(await app.Request(navigation));
+            }
+            catch (Exception caught)
+            {
+                _completion.TrySetException(caught);
             }
         }
     }

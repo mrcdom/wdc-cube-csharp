@@ -53,36 +53,6 @@ public sealed class ApplicationDispatchTests
     }
 
     [Fact]
-    public void NavigationRequestedMidFlight_RetargetsTheAttemptInProgress()
-    {
-        // TS semantics, kept: a navigation requested while another is waiting (a click during a slow load) takes
-        // over the attempt; what the first one created and did not use is released.
-        var dispatcher = new ManualDispatcher();
-        var app = new NavApp(dispatcher);
-        var gate = new TaskCompletionSource();
-        dispatcher.Run(() => app.Flip(NavPlaces.Root));
-        app.Behave(NavPlaces.Products, new() { Gate = gate });
-
-        var slow = app.Flip(NavPlaces.Products); // queued
-        dispatcher.RunPending(); // runs until Products waits on the gate
-        Assert.True(app.IsFlipping);
-
-        var click = app.Flip(NavPlaces.Settings); // arrives while the first one waits
-        dispatcher.RunPending();
-        Assert.True(click.IsCompletedSuccessfully);
-
-        gate.SetResult();
-        var reachedProducts = dispatcher.Run(() => slow);
-
-        Assert.False(reachedProducts);
-        Assert.Same(NavPlaces.Settings, app.LastPlace);
-        Assert.NotNull(app.GetPresenter(NavPlaces.Settings));
-        Assert.Null(app.GetPresenter(NavPlaces.Products));
-        Assert.True(app.CreatedAt(NavPlaces.Products).Single().Released);
-        Assert.True(app.CreatedAt(NavPlaces.Root).Single().Released);
-    }
-
-    [Fact]
     public async Task ErrorsNobodyAwaited_ReachUnexpected()
     {
         var app = new NavApp();

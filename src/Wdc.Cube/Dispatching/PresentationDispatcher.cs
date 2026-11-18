@@ -82,7 +82,7 @@ public abstract class PresentationDispatcher
         }
 
         var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-        Post(() =>
+        PostFlowing(() =>
         {
             try
             {
@@ -117,8 +117,23 @@ public abstract class PresentationDispatcher
         }
 
         var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-        Post(() => _ = RunAndComplete(work, completion));
+        PostFlowing(() => _ = RunAndComplete(work, completion));
         return completion.Task;
+    }
+
+    // InvokeAsync is a call, not an event: the work keeps the caller's ExecutionContext (its AsyncLocal values),
+    // exactly as an await would. Plain Post does not flow it, like any SynchronizationContext.
+    private void PostFlowing(Action action)
+    {
+        var context = ExecutionContext.Capture();
+        if (context is null)
+        {
+            Post(action);
+        }
+        else
+        {
+            Post(() => ExecutionContext.Run(context, static state => ((Action)state!)(), action));
+        }
     }
 
     /// <summary>Reports the exception of a posted item that nobody awaited.</summary>

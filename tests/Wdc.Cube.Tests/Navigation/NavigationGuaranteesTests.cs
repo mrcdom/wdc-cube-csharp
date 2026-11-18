@@ -321,6 +321,12 @@ internal sealed record PlaceBehavior
 
     /// <summary>Leaves the dispatcher (<c>ConfigureAwait(false)</c>) before redirecting: the mistake D-01 forbids.</summary>
     public bool EscapeDispatcherBeforeRedirect { get; init; }
+
+    /// <summary>
+    /// Starts work that is not awaited (a load in parallel) and, once the gate opens, navigates to the target. It
+    /// carries the ambient context of an attempt that has long ended.
+    /// </summary>
+    public (TaskCompletionSource Gate, Place Target)? DeferredFlip { get; init; }
 }
 
 internal sealed class NavApp(PresentationDispatcher? dispatcher = null)
@@ -330,6 +336,9 @@ internal sealed class NavApp(PresentationDispatcher? dispatcher = null)
     public List<bool> AccessLog { get; } = [];
 
     public List<Exception> UnexpectedErrors { get; } = [];
+
+    /// <summary>Results of the navigations started by <see cref="PlaceBehavior.DeferredFlip"/>.</summary>
+    public List<Task<bool>> DeferredResults { get; } = [];
 
     public override void Unexpected(string message, Exception error) => UnexpectedErrors.Add(error);
 
@@ -377,6 +386,11 @@ internal sealed class TestPresenter : ICubePresenter
         Initialized |= initialization;
 
         var behavior = _app.BehaviorOf(Place);
+        if (initialization && behavior.DeferredFlip is { } deferred)
+        {
+            _app.DeferredResults.Add(FlipLater(deferred.Gate, deferred.Target));
+        }
+
         if (behavior.Gate is { } gate)
         {
             await gate.Task;
@@ -400,6 +414,12 @@ internal sealed class TestPresenter : ICubePresenter
 
         await Task.Yield(); // a real presenter awaits something; make sure the algorithm survives it
         return behavior.GoAhead;
+    }
+
+    private async Task<bool> FlipLater(TaskCompletionSource gate, Place target)
+    {
+        await gate.Task;
+        return await _app.Flip(target);
     }
 
     public void PublishParameters(FlipIntent intent)
