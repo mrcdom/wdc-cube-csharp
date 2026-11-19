@@ -3,14 +3,16 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Shopping.Domain;
+using Shopping.Domain.Security;
+using Shopping.Persistence;
 using Shopping.Domain.Users;
 using Wdc.Domain;
 
 namespace Shopping.Server;
 
 /// <summary>Challenges, tokens and the refresh tokens in force (in memory: one server process).</summary>
-public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingRepositories repositories, TimeProvider time)
+/// <remarks>Reads the users through the store itself: nobody is acting yet.</remarks>
+public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingStore store, TimeProvider time)
 {
     public const string RoleClaim = "role";
     public const string UserIdClaim = "sub";
@@ -21,8 +23,15 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingReposito
 
     public ShoppingAuthOptions Options => options;
 
-    public static long? UserIdOf(ClaimsPrincipal user) =>
-        long.TryParse(user.FindFirstValue(UserIdClaim), System.Globalization.CultureInfo.InvariantCulture, out var id) ? id : null;
+    /// <summary>Who acts for an authenticated request (decision D-24): the token's user and roles; nobody without them.</summary>
+    public static Actor? ActorOf(ClaimsPrincipal user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        return user.Identity?.IsAuthenticated == true
+               && long.TryParse(user.FindFirstValue(UserIdClaim), System.Globalization.CultureInfo.InvariantCulture, out var id)
+            ? Permissions.ActorOf(id, string.Join(',', user.FindAll(RoleClaim).Select(c => c.Value)))
+            : null;
+    }
 
     /// <summary>A single-use nonce, and the salt and iterations of the user's hash (a fake but stable pair when unknown).</summary>
     public async Task<(string Nonce, byte[] Salt, int Iterations)> Challenge(string userName, CancellationToken cancellationToken)
@@ -65,7 +74,7 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingReposito
 
         var criteria = new UserCriteria().UserId.Eq(entry.UserId)
             .WithProjection(new User { Id = Mark.Int64, Name = Mark.String, Roles = Mark.String });
-        var user = (await repositories.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
+        var user = (await store.Repositories.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
         return user is null ? null : Issue(entry.UserId, user.Name ?? string.Empty, user.Roles);
     }
 
@@ -101,7 +110,7 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingReposito
     {
         var criteria = new UserCriteria().UserName.Eq(userName)
             .WithProjection(new User { Id = Mark.Int64, Name = Mark.String, Password = Mark.String, Roles = Mark.String });
-        return (await repositories.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
+        return (await store.Repositories.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
     }
 
     private void Sweep()

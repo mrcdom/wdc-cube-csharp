@@ -1,6 +1,8 @@
 using Shopping.Domain;
+using Shopping.Domain.Security;
 using Shopping.Persistence;
 using Shopping.Presentation.Infra;
+using Wdc.Domain;
 
 namespace Shopping.Presentation.Tests;
 
@@ -38,12 +40,16 @@ public class ShoppingDatabaseFixture : IAsyncLifetime
         await OnReady();
     }
 
-    /// <summary>What a new application instance gets: the repositories and the login (local here).</summary>
     /// <summary>The master key of the users' address keys (decision D-22), one per fixture.</summary>
     public byte[] HistoryMaster { get; } = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
 
-    public virtual (ShoppingRepositories Repositories, IAuthentication Authentication) Connect() =>
-        (Store!.Repositories, new LocalAuthentication(Store.Repositories, id => Domain.Users.HistoryKeys.Derive(HistoryMaster, id)));
+    /// <summary>As Blazor Server does (decision D-24): repositories protected for the session's actor, set by the login.</summary>
+    public virtual (ShoppingRepositories Repositories, IAuthentication Authentication) Connect()
+    {
+        var actors = new ActorSource();
+        return (ShoppingProtection.Protect(Store!.Repositories, actors),
+            new LocalAuthentication(Store.Repositories, actors, id => Domain.Users.HistoryKeys.Derive(HistoryMaster, id)));
+    }
 
     protected virtual Task OnReady() => Task.CompletedTask;
 

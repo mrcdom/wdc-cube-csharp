@@ -10,14 +10,11 @@ namespace Wdc.Rest.Server;
 /// <c>delete</c>, <c>count</c>, <c>fetch</c>, <c>fetch-page</c>, <c>fetch-by-id</c> and <c>GET {base}/{id}</c>.
 /// </summary>
 /// <remarks>
-/// <para>Order of a read: authorize → read the body → <see cref="SanitizeProjection"/> → <see cref="Scope"/> →
-/// repository → <see cref="SanitizeOutput"/>. Insert: authorize → read → <see cref="BeforeInsert"/> → insert →
-/// <see cref="SanitizeOutput"/>. Update: authorize → read → the row must be within <see cref="Scope"/> →
-/// <see cref="BeforeUpdate"/> → update.</para>
-/// <para><see cref="Scope"/> must narrow with <c>Restrict</c> (<c>c.UserId.Restrict(owner)</c>): a restriction is
-/// combined with AND outside whatever the client asked on the same field, so <c>"or": true</c> cannot widen it.</para>
+/// Only the wire: who may do what is the repository's business. The function that gives the repository of a request
+/// hands out a <see cref="ProtectedRepository{TEntity,TCriteria,TKey}"/> for whoever the request authenticated
+/// (decision D-24), so the rules are the same here and in any other host.
 /// </remarks>
-public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
+public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
     where TEntity : class
     where TCriteria : Criteria<TCriteria, TEntity>
 {
@@ -44,48 +41,20 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
     /// <summary>Whether the write routes are served (the repository must then be an <see cref="IRepository{TEntity,TCriteria,TKey}"/>).</summary>
     public bool Writes { get; set; } = true;
 
-    /// <summary>Checks the caller may do the operation; throws <see cref="AuthenticationException"/> or <see cref="AccessDeniedException"/>.</summary>
-    public Func<HttpContext, RpcOperation, ValueTask>? Authorize { get; set; }
-
-    /// <summary>Removes from a requested projection what the caller may not read (a password).</summary>
-    public Action<HttpContext, TEntity>? SanitizeProjection { get; set; }
-
-    /// <summary>Narrows a criteria to the caller's reach, with <c>Restrict</c>. Applies to reads, update and delete.</summary>
-    public Action<HttpContext, TCriteria>? Scope { get; set; }
-
-    /// <summary>Restricts a criteria to one key: needed for <see cref="Scope"/> to guard update and fetch by id.</summary>
-    public Action<TCriteria, TKey>? RestrictToId { get; set; }
-
-    /// <summary>Checks or completes an entity before it is inserted (inside the transaction).</summary>
-    public Func<HttpContext, TEntity, ValueTask>? BeforeInsert { get; set; }
-
-    /// <summary>Checks or completes an update before it is written (inside the transaction); the second argument marks the fields sent.</summary>
-    public Func<HttpContext, TEntity, TEntity, ValueTask>? BeforeUpdate { get; set; }
-
-    /// <summary>
-    /// Checks a delete before it runs (inside the transaction), given the criteria of the rows that would go, already
-    /// within the caller's reach. Applies to a delete by this route and to a child deleted in cascade (one key each).
-    /// </summary>
-    public Func<HttpContext, TCriteria, ValueTask>? BeforeDelete { get; set; }
-
-    /// <summary>Removes from an answer what the caller may not see.</summary>
-    public Action<HttpContext, TEntity>? SanitizeOutput { get; set; }
-
     public RouteGroupBuilder Map(IEndpointRouteBuilder routes)
     {
         ArgumentNullException.ThrowIfNull(routes);
-        (routes.ServiceProvider.GetService(typeof(RpcRegistry)) as RpcRegistry)?.Add(typeof(TEntity), this);
         var group = routes.MapGroup(BasePath);
-        group.MapPost(RestNames.Count, c => Handle(c, RpcOperation.Count, false, Count));
-        group.MapPost(RestNames.Fetch, c => Handle(c, RpcOperation.Fetch, false, Fetch));
-        group.MapPost(RestNames.FetchPage, c => Handle(c, RpcOperation.FetchPage, false, FetchPage));
-        group.MapPost(RestNames.FetchById, c => Handle(c, RpcOperation.FetchById, false, FetchById));
-        group.MapGet("{id}", c => Handle(c, RpcOperation.FetchById, false, FetchByRoute));
+        group.MapPost(RestNames.Count, c => Handle(c, false, Count));
+        group.MapPost(RestNames.Fetch, c => Handle(c, false, Fetch));
+        group.MapPost(RestNames.FetchPage, c => Handle(c, false, FetchPage));
+        group.MapPost(RestNames.FetchById, c => Handle(c, false, FetchById));
+        group.MapGet("{id}", c => Handle(c, false, FetchByRoute));
         if (Writes)
         {
-            group.MapPost(RestNames.Insert, c => Handle(c, RpcOperation.Insert, true, Insert));
-            group.MapPost(RestNames.Update, c => Handle(c, RpcOperation.Update, true, Update));
-            group.MapPost(RestNames.Delete, c => Handle(c, RpcOperation.Delete, true, Delete));
+            group.MapPost(RestNames.Insert, c => Handle(c, true, Insert));
+            group.MapPost(RestNames.Update, c => Handle(c, true, Update));
+            group.MapPost(RestNames.Delete, c => Handle(c, true, Delete));
         }
 
         return group;
@@ -93,25 +62,11 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
 
     // :: Pipeline
 
-    private Task Handle(HttpContext context, RpcOperation operation, bool write, Func<HttpContext, byte[], Task<byte[]?>> handler) =>
+    private static Task Handle(HttpContext context, bool write, Func<HttpContext, byte[], Task<byte[]?>> handler) =>
         RestHttp.Respond(context, async () =>
         {
-            if (Authorize is { } authorize)
-            {
-                await authorize(context, operation);
-            }
-
             var body = HttpMethods.IsGet(context.Request.Method) ? [] : await RestHttp.ReadBody(context);
-            if (!write)
-            {
-                return await RestTransactions.Run(context, write, () => handler(context, body));
-            }
-
-            // Children written in cascade answer to their own routes' rules (decision D-23). Without the registry
-            // (AddCubeRest not called) the guard knows no routes and refuses every cascade.
-            var registry = context.RequestServices.GetService(typeof(RpcRegistry)) as RpcRegistry ?? new RpcRegistry();
-            var guard = new RpcCascadeGuard(context, registry);
-            return await RestTransactions.Run(context, write, () => CascadeGuard.Run(guard, () => handler(context, body)));
+            return await RestTransactions.Run(context, write, () => handler(context, body));
         });
 
     // :: Reads
@@ -138,8 +93,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
             throw new InvalidRequestException($"More than {max} items match: page the request (offset/limit).");
         }
 
-        Output(context, items);
-        return Wire.WriteItems(items, ProjectionOf(context, criteria));
+        return Wire.WriteItems(items, criteria.Projection);
     }
 
     private async Task<byte[]?> FetchPage(HttpContext context, byte[] body)
@@ -152,8 +106,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
         }
 
         var page = await Repository(context).FetchPage(criteria, slice.Page, slice.PageSize, context.RequestAborted);
-        Output(context, page.Items);
-        return Wire.WriteItems(page.Items, ProjectionOf(context, criteria), page.TotalItems);
+        return Wire.WriteItems(page.Items, criteria.Projection, page.TotalItems);
     }
 
     private Task<byte[]?> FetchById(HttpContext context, byte[] body)
@@ -170,30 +123,10 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
 
     private async Task<byte[]?> FetchOne(HttpContext context, TKey key, TEntity? projection)
     {
-        projection ??= Repository(context).OwnFieldsProjection();
-        SanitizeProjection?.Invoke(context, projection);
-        TEntity? found;
-        if (Scope is { } scope)
-        {
-            // Through the criteria, so the reach applies.
-            var criteria = KeyCriteria(key);
-            criteria.Projection = projection;
-            scope(context, criteria);
-            var rows = await Repository(context).Fetch(criteria, 0, 1, context.RequestAborted);
-            found = rows.Count == 0 ? null : rows[0];
-        }
-        else
-        {
-            found = await Repository(context).FetchById(key, projection, context.RequestAborted);
-        }
-
-        if (found is null)
-        {
-            return null; // 404
-        }
-
-        SanitizeOutput?.Invoke(context, found);
-        return Wire.WriteEntity(found, projection);
+        var repository = Repository(context);
+        projection ??= repository.OwnFieldsProjection();
+        var found = await repository.FetchById(key, projection, context.RequestAborted);
+        return found is null ? null : Wire.WriteEntity(found, projection); // null: 404
     }
 
     // :: Writes
@@ -201,33 +134,16 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
     private async Task<byte[]?> Insert(HttpContext context, byte[] body)
     {
         var (entity, projection) = Wire.ReadInsert(body);
-        if (BeforeInsert is { } before)
-        {
-            await before(context, entity);
-        }
-
         var success = await Writable(context).Insert(entity, projection, context.RequestAborted);
-        if (success)
-        {
-            SanitizeOutput?.Invoke(context, entity);
-        }
-
         return Wire.WriteInsertResult(success, entity);
     }
 
     private async Task<byte[]?> Update(HttpContext context, byte[] body)
     {
         var (entity, presence) = Wire.ReadUpdate(body);
-        if (Wire.Model.KeyOf(entity) is not { } key)
+        if (Wire.Model.KeyOf(entity) is null)
         {
             throw new InvalidRequestException($"update of {Wire.Model.Name} without its key");
-        }
-
-        await RequireWithinReach(context, (TKey)key);
-
-        if (BeforeUpdate is { } before)
-        {
-            await before(context, entity, presence);
         }
 
         return RepositoryWire<TEntity, TCriteria>.WriteSuccess(
@@ -239,84 +155,10 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
         var (criteria, _) = Wire.ReadQuery(body);
         if (!criteria.HasFilter)
         {
-            // Checked before the reach is added: "delete everything I can reach" is not a use case either.
             throw new InvalidRequestException($"delete of {Wire.Model.Name} without a filter");
         }
 
-        Scope?.Invoke(context, criteria);
-        if (BeforeDelete is { } before)
-        {
-            await before(context, criteria);
-        }
-
         return RepositoryWire<TEntity, TCriteria>.WriteCount(await Writable(context).Delete(criteria, context.RequestAborted));
-    }
-
-    // :: Rules for a child written in cascade (decision D-23)
-
-    async Task ICascadeRules.CheckInsert(HttpContext context, object entity)
-    {
-        if (Authorize is { } authorize)
-        {
-            await authorize(context, RpcOperation.Insert);
-        }
-
-        if (BeforeInsert is { } before)
-        {
-            await before(context, (TEntity)entity);
-        }
-    }
-
-    async Task ICascadeRules.CheckUpdate(HttpContext context, object entity, object projection)
-    {
-        if (Authorize is { } authorize)
-        {
-            await authorize(context, RpcOperation.Update);
-        }
-
-        if (Wire.Model.KeyOf((TEntity)entity) is { } key)
-        {
-            await RequireWithinReach(context, (TKey)key);
-        }
-
-        if (BeforeUpdate is { } before)
-        {
-            await before(context, (TEntity)entity, (TEntity)projection);
-        }
-    }
-
-    async Task ICascadeRules.CheckDelete(HttpContext context, IReadOnlyList<object> keys)
-    {
-        if (Authorize is { } authorize)
-        {
-            await authorize(context, RpcOperation.Delete);
-        }
-
-        foreach (var key in keys)
-        {
-            await RequireWithinReach(context, (TKey)key);
-            if (BeforeDelete is { } before)
-            {
-                var criteria = KeyCriteria((TKey)key);
-                Scope?.Invoke(context, criteria);
-                await before(context, criteria);
-            }
-        }
-    }
-
-    private async Task RequireWithinReach(HttpContext context, TKey key)
-    {
-        if (Scope is not { } scope)
-        {
-            return;
-        }
-
-        var criteria = KeyCriteria(key);
-        scope(context, criteria);
-        if (await Repository(context).Count(criteria, context.RequestAborted) == 0)
-        {
-            throw new KeyNotFoundException($"No {Wire.Model.Name} {key} within reach.");
-        }
     }
 
     // :: Internals
@@ -325,31 +167,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey> : ICascadeRules
     {
         var (criteria, slice) = Wire.ReadQuery(body);
         criteria.Projection ??= Repository(context).OwnFieldsProjection();
-        SanitizeProjection?.Invoke(context, criteria.Projection);
-        Scope?.Invoke(context, criteria);
         return (criteria, slice);
-    }
-
-    private static TEntity? ProjectionOf(HttpContext context, TCriteria criteria) => criteria.Projection;
-
-    private void Output(HttpContext context, IReadOnlyList<TEntity> items)
-    {
-        if (SanitizeOutput is { } sanitize)
-        {
-            foreach (var item in items)
-            {
-                sanitize(context, item);
-            }
-        }
-    }
-
-    private TCriteria KeyCriteria(TKey key)
-    {
-        var restrict = RestrictToId
-            ?? throw new InvalidOperationException($"{BasePath}: a Scope needs RestrictToId to guard update and fetch by id.");
-        var criteria = Wire.NewCriteria();
-        restrict(criteria, key);
-        return criteria;
     }
 
     private TKey KeyOf(TEntity holder) => (TKey)Wire.Model.KeyOf(holder)!;

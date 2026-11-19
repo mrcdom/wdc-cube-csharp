@@ -17,7 +17,6 @@ public static class RestServerServiceCollectionExtensions
         var options = new RestServerOptions();
         configure?.Invoke(options);
         services.AddSingleton(options);
-        services.AddSingleton<RpcRegistry>();
         if (remoteTransactions)
         {
             var txOptions = new RemoteTransactionOptions();

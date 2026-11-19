@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Shopping.Domain;
 using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
+using Shopping.Domain.Security;
 using Shopping.Domain.Users;
 using Shopping.Persistence;
 using Wdc.Domain;
@@ -12,7 +13,8 @@ namespace Shopping.Server;
 
 /// <summary>
 /// The Shopping API: the four repositories as REST routes (decision D-18), remote transactions (D-17), JWT login
-/// (D-19), the product image, and the rules of who reaches what.
+/// (D-19) and the product image. Who reaches what is in the policies of the protected repositories (D-24), the same
+/// in every host; here, the actor comes from the request's token.
 /// </summary>
 public static class ShoppingApi
 {
@@ -21,7 +23,12 @@ public static class ShoppingApi
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(auth);
         services.AddSingleton(store);
-        services.AddSingleton(store.Repositories);
+        services.AddHttpContextAccessor();
+        // What each request reaches: the repositories protected for whoever its token authenticated (decision D-24).
+        services.AddScoped(sp => ShoppingProtection.Protect(store.Repositories,
+            new ActorSource(sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.User is { } user
+                ? ShoppingTokens.ActorOf(user)
+                : null)));
         services.AddSingleton<ITransactionService>(store.Database);
         services.AddSingleton<IDetachedTransactionSource>(store.Database);
         services.AddSingleton(auth);
@@ -65,174 +72,30 @@ public static class ShoppingApi
         return app;
     }
 
-    // :: Who reaches what
+    // :: The repositories (who reaches what is in their policies, Shopping.Domain.Security)
 
     private static void MapRepositories(WebApplication app)
     {
-        var repositories = app.Services.GetRequiredService<ShoppingRepositories>();
-
-        new RepositoryRpc<User, UserCriteria, long>("/api/repo/user", User.Model, () => new UserCriteria(), _ => repositories.Users)
-        {
-            Authorize = Allow("user"),
-            Scope = (c, criteria) => Reach(c, id => criteria.UserId.Restrict(id)),
-            RestrictToId = (criteria, id) => criteria.UserId.Restrict(id),
-            SanitizeProjection = (_, p) => p.Password = null,
-            SanitizeOutput = (_, u) => u.Password = null,
-            BeforeInsert = (_, u) =>
-            {
-                u.Password = u.Password is null ? null : PasswordHash.Hash(u.Password);
-                return ValueTask.CompletedTask;
-            },
-            BeforeUpdate = (_, u, sent) =>
-            {
-                if (sent.Password is not null && u.Password is not null)
-                {
-                    u.Password = PasswordHash.Hash(u.Password);
-                }
-
-                return ValueTask.CompletedTask;
-            },
-        }.Map(app);
-
+        new RepositoryRpc<User, UserCriteria, long>("/api/repo/user", User.Model, () => new UserCriteria(),
+            c => Of(c).Users).Map(app);
         new RepositoryRpc<Product, ProductCriteria, long>("/api/repo/product", Product.Model, () => new ProductCriteria(),
-            _ => repositories.Products)
-        {
-            Authorize = Allow("product"),
-        }.Map(app);
-
+            c => Of(c).Products).Map(app);
         new RepositoryRpc<Purchase, PurchaseCriteria, long>("/api/repo/purchase", Purchase.Model, () => new PurchaseCriteria(),
-            _ => repositories.Purchases)
-        {
-            Authorize = Allow("purchase"),
-            Scope = (c, criteria) => Reach(c, id => criteria.UserId.Restrict(id)),
-            RestrictToId = (criteria, id) => criteria.PurchaseId.Restrict(id),
-            SanitizeProjection = (_, p) => DropPassword(p.User),
-            SanitizeOutput = (_, p) => DropPassword(p.User),
-            BeforeInsert = (c, purchase) =>
-            {
-                if (Permissions.ReachOf(c.User) is { } owner)
-                {
-                    purchase.User = new User { Id = owner }; // bought by whoever is logged in, whatever was sent
-                }
-
-                // The items, inserted in cascade, go through the purchase-item rules below (price from the product).
-                return ValueTask.CompletedTask;
-            },
-            BeforeUpdate = (c, _, sent) => sent.User is not null && Permissions.ReachOf(c.User) is not null
-                ? throw new AccessDeniedException("A purchase cannot change hands.")
-                : ValueTask.CompletedTask,
-        }.Map(app);
-
+            c => Of(c).Purchases).Map(app);
         new RepositoryRpc<PurchaseItem, PurchaseItemCriteria, long>("/api/repo/purchase-item", PurchaseItem.Model,
-            () => new PurchaseItemCriteria(), _ => repositories.PurchaseItems)
-        {
-            Authorize = Allow("purchase-item"),
-            Scope = (c, criteria) => Reach(c, id => criteria.UserId.Restrict(id)),
-            RestrictToId = (criteria, id) => criteria.PurchaseItemId.Restrict(id),
-            SanitizeProjection = (_, i) => DropPassword(i.Purchase?.User),
-            SanitizeOutput = (_, i) => DropPassword(i.Purchase?.User),
-            BeforeInsert = async (c, item) =>
-            {
-                await RequireOwnPurchase(c, repositories, item.Purchase?.Id);
-                item.Price = await PriceOf(repositories, item.Product?.Id, c.RequestAborted);
-            },
-            BeforeUpdate = async (c, item, sent) =>
-            {
-                if (sent.Purchase is not null)
-                {
-                    await RequireOwnPurchase(c, repositories, item.Purchase?.Id);
-                }
-
-                if (sent.Price is not null && Permissions.ReachOf(c.User) is not null)
-                {
-                    throw new AccessDeniedException("The price of an item comes from the product.");
-                }
-            },
-            BeforeDelete = (c, criteria) => RequireNotBought(c, repositories, criteria),
-        }.Map(app);
+            () => new PurchaseItemCriteria(), c => Of(c).PurchaseItems).Map(app);
     }
 
-    private static Func<HttpContext, RpcOperation, ValueTask> Allow(string entity) => (context, operation) =>
-    {
-        Permissions.Require(context.User, entity, operation);
-        return ValueTask.CompletedTask;
-    };
-
-    private static void Reach(HttpContext context, Action<long> restrict)
-    {
-        if (Permissions.ReachOf(context.User) is { } owner)
-        {
-            restrict(owner);
-        }
-    }
-
-    private static async Task RequireOwnPurchase(HttpContext context, ShoppingRepositories repositories, long? purchaseId)
-    {
-        if (purchaseId is not { } id)
-        {
-            throw new InvalidRequestException("An item needs its purchase.");
-        }
-
-        var criteria = new PurchaseCriteria().PurchaseId.Restrict(id);
-        Reach(context, owner => criteria.UserId.Restrict(owner));
-        if (await repositories.Purchases.Count(criteria, context.RequestAborted) == 0)
-        {
-            throw new AccessDeniedException("Not your purchase.");
-        }
-    }
-
-    /// <summary>
-    /// A purchase already made (it has its date) keeps its items, whether removed one by one or left out of the
-    /// purchase's full state on update (decision D-23); only the administrator may amend it.
-    /// </summary>
-    private static async ValueTask RequireNotBought(HttpContext context, ShoppingRepositories repositories,
-        PurchaseItemCriteria criteria)
-    {
-        if (Permissions.Has(context.User, Permissions.AmendBought))
-        {
-            return;
-        }
-
-        var projection = criteria.Projection;
-        try
-        {
-            criteria.Projection = new PurchaseItem { Purchase = new Purchase { BuyDate = Mark.Instant } };
-            var items = await repositories.PurchaseItems.Fetch(criteria, cancellationToken: context.RequestAborted);
-            if (items.Any(i => i.Purchase?.BuyDate is not null))
-            {
-                throw new AccessDeniedException("The purchase was already made: its items cannot be removed.");
-            }
-        }
-        finally
-        {
-            criteria.Projection = projection;
-        }
-    }
-
-    private static async Task<decimal?> PriceOf(ShoppingRepositories repositories, long? productId, CancellationToken cancellationToken)
-    {
-        var product = productId is { } id
-            ? await repositories.Products.FetchById(id, new Product { Price = Mark.Decimal }, cancellationToken)
-            : null;
-        return product?.Price ?? throw new InvalidRequestException($"No product {productId}.");
-    }
-
-    private static void DropPassword(User? user)
-    {
-        if (user is not null)
-        {
-            user.Password = null;
-        }
-    }
+    private static ShoppingRepositories Of(HttpContext context) => context.RequestServices.GetRequiredService<ShoppingRepositories>();
 
     // :: Routes outside the repositories
 
     /// <summary>200 with the PNG, 204 without an image, 404 for an unknown product. Revalidated, never "immutable".</summary>
-    private static async Task<IResult> ProductImage(long productId, ShoppingRepositories repositories, HttpContext context)
+    private static async Task<IResult> ProductImage(long productId, ShoppingStore store, HttpContext context)
     {
         try
         {
-            var image = await repositories.Products.FetchImage(productId, context.RequestAborted);
+            var image = await store.Repositories.Products.FetchImage(productId, context.RequestAborted);
             context.Response.Headers.CacheControl = "no-cache";
             return image is null ? Results.NoContent() : Results.File(image, "image/png");
         }

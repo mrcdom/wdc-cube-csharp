@@ -26,7 +26,8 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
         ArgumentNullException.ThrowIfNull(session);
         Repositories = repositories;
         Session = session;
-        Authentication = authentication ?? new LocalAuthentication(repositories);
+        // The host's: it knows whether the session is local (and says who acts to the protected repositories) or remote.
+        Authentication = authentication ?? throw new ArgumentNullException(nameof(authentication));
     }
 
     public ShoppingRepositories Repositories { get; }

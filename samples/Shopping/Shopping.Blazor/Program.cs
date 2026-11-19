@@ -1,10 +1,11 @@
 using Shopping.Blazor.Components;
 using Shopping.Blazor.Infra;
 using Shopping.Blazor.Views;
-using Shopping.Domain;
+using Shopping.Domain.Security;
 using Shopping.Persistence;
 using Shopping.Presentation.Infra;
 using Wdc.Cube.Blazor;
+using Wdc.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,9 @@ var store = ShoppingStore.Open(
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSingleton(store);
-builder.Services.AddSingleton(store.Repositories);
+// Each circuit is a session: its own actor, set by the login, and the repositories protected for it (decision D-24).
+builder.Services.AddScoped<ActorSource>();
+builder.Services.AddScoped(sp => ShoppingProtection.Protect(store.Repositories, sp.GetRequiredService<ActorSource>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ISessionStore, BrowserSessionStore>(); // one per circuit, like the application
 
@@ -26,8 +29,8 @@ var historyMaster = builder.Configuration["Shopping:History:Key"] is { Length: >
     : builder.Environment.IsDevelopment()
         ? System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)
         : throw new InvalidOperationException("Shopping:History:Key is missing (Base64, 32 bytes).");
-builder.Services.AddSingleton<IAuthentication>(new LocalAuthentication(store.Repositories,
-    id => Shopping.Domain.Users.HistoryKeys.Derive(historyMaster, id)));
+builder.Services.AddScoped<IAuthentication>(sp => new LocalAuthentication(store.Repositories,
+    sp.GetRequiredService<ActorSource>(), id => Shopping.Domain.Users.HistoryKeys.Derive(historyMaster, id)));
 builder.Services.AddCubeViews(ViewCatalog.Register);
 
 var app = builder.Build();
@@ -46,11 +49,11 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 
 // Product images, as the Kotlin host served them: 200 with the PNG, 204 without an image, 404 for an unknown product.
-app.MapGet("/image/product/{productId:long}.png", async (long productId, ShoppingRepositories repositories) =>
+app.MapGet("/image/product/{productId:long}.png", async (long productId, ShoppingStore images) =>
 {
     try
     {
-        var image = await repositories.Products.FetchImage(productId);
+        var image = await images.Repositories.Products.FetchImage(productId);
         return image is null ? Results.NoContent() : Results.File(image, "image/png");
     }
     catch (KeyNotFoundException)

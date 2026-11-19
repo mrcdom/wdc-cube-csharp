@@ -22,9 +22,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         _db = db;
         if (db.Store is not null)
         {
-            _ctx.Services.AddSingleton(db.Store.Repositories);
-            _ctx.Services.AddSingleton<IAuthentication>(new LocalAuthentication(db.Store.Repositories,
-                id => Domain.Users.HistoryKeys.Derive(db.HistoryMaster, id)));
+            var (repositories, authentication) = db.Connect(); // protected, as in the Blazor Server host
+            _ctx.Services.AddSingleton(repositories);
+            _ctx.Services.AddSingleton(authentication);
         }
 
         _ctx.Services.AddSingleton<ISessionStore>(new MemorySessionStore());

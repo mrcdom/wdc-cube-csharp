@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Time.Testing;
 using Wdc.Domain;
@@ -37,9 +38,9 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     }
 
     private async Task<RestTestHost> Host(Action<RestServerOptions>? configure = null, Action<RemoteTransactionOptions>? transactions = null,
-        Action<RepositoryRpc<Purchase, PurchaseCriteria, long>>? purchases = null, TimeProvider? time = null)
+        Func<HttpContext, IRepository<Purchase, PurchaseCriteria, long>>? purchases = null, TimeProvider? time = null)
     {
-        _host = await RestTestHost.Start(Local, configure, transactions, configurePurchases: purchases, time: time);
+        _host = await RestTestHost.Start(Local, configure, transactions, purchases: purchases, time: time);
         return _host;
     }
 
@@ -167,11 +168,17 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
 
     // :: The caller's reach (bug 13 of the Kotlin report)
 
-    private static void ScopeByTestUser(RepositoryRpc<Purchase, PurchaseCriteria, long> rpc)
+    /// <summary>The purchases protected for the user named by a test header (decision D-24): each reaches only their own.</summary>
+    private IRepository<Purchase, PurchaseCriteria, long> ScopeByTestUser(HttpContext context)
     {
-        rpc.RestrictToId = (c, id) => c.PurchaseId.Restrict(id);
-        rpc.Scope = (context, c) =>
-            c.UserId.Restrict(long.Parse(context.Request.Headers["X-Test-User"].ToString(), System.Globalization.CultureInfo.InvariantCulture));
+        var policy = new RepositoryPolicy<Purchase, PurchaseCriteria, long>(Purchase.Model, () => new PurchaseCriteria())
+        {
+            RestrictToId = (c, id) => c.PurchaseId.Restrict(id),
+            Scope = (p, c) => c.UserId.Restrict(long.Parse(p.Actor.Id, System.Globalization.CultureInfo.InvariantCulture)),
+        };
+        var actor = new Actor(context.Request.Headers["X-Test-User"].ToString(), []);
+        return new ProtectedRepository<Purchase, PurchaseCriteria, long>(Local.Purchases, policy,
+            new Protection(new ActorSource(actor), Local.Database));
     }
 
     [Fact]

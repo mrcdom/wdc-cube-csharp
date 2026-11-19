@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ public sealed class RestTestHost : IAsyncDisposable
 
     public static async Task<RestTestHost> Start(Shopping local, Action<RestServerOptions>? configure = null,
         Action<RemoteTransactionOptions>? configureTransactions = null, Action<WebApplication>? mapMore = null,
-        Action<RepositoryRpc<Purchase, PurchaseCriteria, long>>? configurePurchases = null, TimeProvider? time = null)
+        Func<HttpContext, IRepository<Purchase, PurchaseCriteria, long>>? purchases = null, TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(local);
         var builder = WebApplication.CreateSlimBuilder();
@@ -44,10 +45,8 @@ public sealed class RestTestHost : IAsyncDisposable
             _ => local.Products).Map(app);
         new RepositoryRpc<User, UserCriteria, long>("/api/repo/user", User.Model, () => new UserCriteria(),
             _ => local.Users).Map(app);
-        var purchases = new RepositoryRpc<Purchase, PurchaseCriteria, long>("/api/repo/purchase", Purchase.Model,
-            () => new PurchaseCriteria(), _ => local.Purchases);
-        configurePurchases?.Invoke(purchases);
-        purchases.Map(app);
+        new RepositoryRpc<Purchase, PurchaseCriteria, long>("/api/repo/purchase", Purchase.Model,
+            () => new PurchaseCriteria(), purchases ?? (_ => local.Purchases)).Map(app);
         new RepositoryRpc<PurchaseItem, PurchaseItemCriteria, long>("/api/repo/purchase-item", PurchaseItem.Model,
             () => new PurchaseItemCriteria(), _ => local.Items).Map(app);
         app.MapRemoteTransactions();
