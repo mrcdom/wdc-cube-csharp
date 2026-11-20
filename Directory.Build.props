@@ -1,5 +1,5 @@
 <Project>
-  <!-- Configuração comum a todos os projetos. Decisões: .claude/docs/decisions/D-12-alvos-net10-net11.md -->
+  <!-- Configuração comum a todos os projetos. -->
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <!-- Fixo para o mesmo fonte compilar igual nos dois alvos (net11 usaria C# 15 por padrão). -->
@@ -12,6 +12,13 @@
     <Deterministic>true</Deterministic>
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <Version>0.1.0</Version>
+    <Authors>WeDoCode Consultoria e Soluções Avançadas LTDA</Authors>
+    <Company>WeDoCode Consultoria e Soluções Avançadas LTDA</Company>
+    <Copyright>Copyright (c) 2017-2026 WeDoCode Consultoria e Soluções Avançadas LTDA</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mrcdom/wdc-cube-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mrcdom/wdc-cube-csharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <!-- Bibliotecas publicáveis (src/): compatíveis com trimming/AOT e documentadas. -->
@@ -22,7 +29,17 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Documentação de API pública será cobrada a partir da fase 1. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>cube;presenter;mvp;navigation;blazor;avalonia;repository</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectDirectory.Contains('/src/'))">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/samples/'))">
     <IsPackable>false</IsPackable>

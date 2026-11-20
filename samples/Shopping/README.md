@@ -1,7 +1,8 @@
 # Shopping (C#)
 
 Port of the Kotlin Shopping demo (`wdc-cube-kotlin`): login, a restricted home with the catalogue and the purchase
-history, product, cart, purchase and receipt. Choices and differences: `.claude/docs/decisions/D-15-port-do-shopping.md`.
+history, product, cart, purchase and receipt; plus an administration area where Admin and Manager correct a purchase
+already made (an errata, kept with who, when and why).
 
 | Project | What it is |
 |---|---|
@@ -26,8 +27,16 @@ dotnet run        # Development, http://localhost:5190
 ```
 
 The database comes from `appsettings.json` (`Shopping:Database`: `Provider` = `PostgreSql` or `SqlServer`,
-`ConnectionString`, `Schema`). On the first start the schema and the demo data are created. Users: `admin`/`admin`,
-`fulano`/`fulano`, `beotrano`/`beotrano`.
+`ConnectionString`, `Schema`). On the first start the schema and the demo data are created. Users (password = login):
+
+| User | Role |
+|---|---|
+| `fulano`, `beotrano` | Customer: buys, sees their own purchases. |
+| `gerente` | Manager: maintains products, corrects purchases. |
+| `admin` | Admin: everything a role of the application may do. |
+| `suporte` | Super: maintenance; some business rules are relaxed for it. |
+
+The product images are illustrations made for this sample.
 
 ### WebAssembly
 
@@ -62,6 +71,6 @@ The Shopping presentation tests run twice: on the database and through the serve
 ## Tests
 
 ```bash
-source scripts/test-env.sh   # database connection strings (decision D-14)
+source scripts/test-env.sh   # database connection strings
 dotnet test --solution wdc-cube.slnx
 ```

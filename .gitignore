@@ -12,4 +12,7 @@ TestResults/
 .DS_Store
 *.nupkg
 *.snupkg
-.claude/playwright-output/
+# Local working notes and assistant configuration (not published)
+.claude/
+# This machine's test databases (see scripts/test-env.sh)
+scripts/test-env.local.sh
