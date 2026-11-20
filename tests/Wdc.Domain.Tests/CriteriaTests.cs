@@ -106,6 +106,15 @@ public sealed class CriteriaTests
         Assert.Equal(ProductOrderBy.CheapestFirst, c.OrderBy);
     }
 
+    [Theory]
+    [InlineData("""{ "price": { "p": [ { "o": "GT", "v": [null] } ] } }""")]
+    [InlineData("""{ "price": { "p": [ { "o": "BETWEEN", "v": [1] } ] } }""")]
+    [InlineData("""{ "price": { "p": [ { "o": "LE", "v": [] } ] } }""")]
+    [InlineData("""{ "name": { "p": [ { "o": "LIKE", "v": [null] } ] } }""")]
+    [InlineData("""{ "price": { "p": [ { "o": "IS_NULL", "v": [1] } ] } }""")]
+    public void Wire_ARequestThatCannotFilter_IsRefused_NotKeptAsAFilterThatTranslatesToNone(string json) =>
+        Assert.Throws<InvalidRequestException>(() => CriteriaCodec.FromJson(json, new ProductCriteria()));
+
     [Fact]
     public void Wire_AnUnknownOperatorIsDropped_AnExplicitNullSurvives_AndUnknownKeysAreSkipped()
     {

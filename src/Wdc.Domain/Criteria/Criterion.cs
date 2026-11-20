@@ -99,7 +99,6 @@ public class Criterion<TOwner, T> : Criterion
         return this;
     }
 
-    /// <summary>Removes every request.</summary>
     /// <summary>
     /// Restricts the field to <paramref name="value"/> whatever else was asked (see <see cref="Criterion.Restrictions"/>).
     /// <see cref="Clear"/> does not remove it.
@@ -123,6 +122,7 @@ public class Criterion<TOwner, T> : Criterion
         return _owner;
     }
 
+    /// <summary>Removes every request (not the restrictions).</summary>
     public TOwner Clear()
     {
         _requests.Clear();
@@ -160,7 +160,22 @@ public class Criterion<TOwner, T> : Criterion
     /// <summary>
     /// Puts back a request read from the wire, as it was: unlike the fluent methods, it keeps an explicit null.
     /// </summary>
-    public void Restore(Operator op, IReadOnlyList<T>? values) => _requests.Add(new Predicate(op, [.. values ?? []]));
+    /// <exception cref="InvalidRequestException">
+    /// The request cannot be a filter: the wrong number of values for the operator, or a null where only a value
+    /// compares (<c>GT</c>, <c>BETWEEN</c>, <c>LIKE</c>...). Kept, it would count as a filter and translate to none,
+    /// and a delete would reach every row.
+    /// </exception>
+    public void Restore(Operator op, IReadOnlyList<T>? values)
+    {
+        T[] list = [.. values ?? []];
+        if (!op.Accepts(list.Length) || (op.ComparesValues() && list.Any(v => ValueKind<T>.IsNull(v))))
+        {
+            throw new InvalidRequestException(
+                $"'{Name}': {op.WireName()} with [{string.Join(", ", list.Select(v => v?.ToString() ?? "null"))}] is not a filter.");
+        }
+
+        _requests.Add(new Predicate(op, list));
+    }
 
     /// <summary>Puts back the combination read from the wire.</summary>
     public void RestoreDisjunctive(bool value) => Disjunctive = value;

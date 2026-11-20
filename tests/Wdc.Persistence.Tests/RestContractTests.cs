@@ -98,6 +98,21 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         Assert.Equal($$"""{"items":[{"id":{{ball.Id}},"name":"Bola de futebol"}]}""", body);
     }
 
+    [Theory]
+    [InlineData("""{"price":{"p":[{"o":"GT","v":[null]}]}}""")]
+    [InlineData("""{"price":{"p":[{"o":"BETWEEN","v":[1]}]}}""")]
+    public async Task Wire_ADeleteWhoseFilterCannotFilter_IsRefused_AndNothingIsDeleted(string criteria)
+    {
+        await NewProduct("Fica", 1m);
+        var host = await Host();
+        var before = await Local.Products.Count(new ProductCriteria(), Ct);
+
+        var (status, _) = await Raw(host, HttpMethod.Post, "/api/repo/product/delete", criteria);
+
+        Assert.Equal(HttpStatusCode.BadRequest, status);
+        Assert.Equal(before, await Local.Products.Count(new ProductCriteria(), Ct));
+    }
+
     [Fact]
     public async Task Wire_InsertLooseEntity_UpdatePartial_DeleteByCriteria()
     {

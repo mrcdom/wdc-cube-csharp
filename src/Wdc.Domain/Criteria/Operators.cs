@@ -18,6 +18,10 @@ public static class Operators
     /// <summary>Whether <paramref name="count"/> values fit the operator.</summary>
     public static bool Accepts(this Operator op, int count) => op.Arity() < 0 ? count >= 0 : count == op.Arity();
 
+    /// <summary>Whether the operator needs actual values: a null there asks nothing (<c>EQ null</c> is <c>IS NULL</c>).</summary>
+    public static bool ComparesValues(this Operator op) =>
+        op is Operator.Gt or Operator.Ge or Operator.Lt or Operator.Le or Operator.Between or Operator.Like or Operator.ILike;
+
     public static string WireName(this Operator op) => op switch
     {
         Operator.Eq => "EQ",
