@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The getting-started app: places, keys, presenters and scopes. No view technology here. -->
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
+  </ItemGroup>
+</Project>

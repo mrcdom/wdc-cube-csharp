@@ -1,0 +1,15 @@
+@* <snippet:list-view> *@
+@inherits ScopeView<ContactListScope>
+
+<div class="contacts">
+    <ul>
+        @foreach (var contact in Scope.Contacts)
+        {
+            <li @key="contact.Id">
+                <button @onclick="() => Scope.OnOpen(contact.Id)">@contact.Name</button>
+            </li>
+        }
+    </ul>
+    <ViewSlot Scope="Scope.Detail" />
+</div>
+@* </snippet:list-view> *@

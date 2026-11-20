@@ -4,7 +4,7 @@ using Tutorial.Presentation.Modules.TodoMvc;
 
 namespace Tutorial.Presentation.Tests;
 
-/// <summary>Ported from <c>presentation-test/src/navigation.test.ts</c>.</summary>
+/// <summary>Navigation of the tutorial: menu, addresses, Back and the restricted area.</summary>
 public sealed class NavigationTests
 {
     [Fact]

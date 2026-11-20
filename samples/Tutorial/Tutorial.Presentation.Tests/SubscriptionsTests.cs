@@ -4,7 +4,7 @@ using Wdc.Cube.Testing;
 
 namespace Tutorial.Presentation.Tests;
 
-/// <summary>Ported from <c>presentation-test/src/subscriptions.test.ts</c>.</summary>
+/// <summary>The subscriptions list and its detail dialog.</summary>
 public sealed class SubscriptionsTests
 {
     private static SubscriptionsScope List(Harness h) => Assert.IsType<SubscriptionsScope>(h.Scope.Body);

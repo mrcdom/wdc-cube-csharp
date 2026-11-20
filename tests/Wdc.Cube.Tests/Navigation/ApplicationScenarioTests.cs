@@ -188,7 +188,7 @@ public sealed class ApplicationScenarioTests
     }
 }
 
-// :: Fixture (mirrors Cube.test.ts), on the real CubePresenter
+// :: Fixture, on the real CubePresenter
 
 internal static class ShopParams
 {

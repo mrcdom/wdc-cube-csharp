@@ -4,19 +4,83 @@
 implementation, alongside the [TypeScript](https://github.com/mrcdom/wdc-cube) and
 [Kotlin](https://github.com/mrcdom/wdc-cube-kotlin) ones.
 
-Screens are described by three collaborating pieces:
+The screens of a Cube application are plain C#: presenters that load data, react to actions and navigate, and scopes
+that hold what the screen shows. Views only draw scopes and forward events. So:
+
+- **The whole application is tested without any UI**, the way a user drives it: call the actions, read the scopes,
+  check the address.
+- **The same presentation runs on Blazor Server, Blazor WebAssembly and Avalonia**, unchanged.
+- **Every screen has an address.** Reload, deep links, Back and Forward work without code in the views; addresses
+  can be sealed (encrypted per user).
+- **Data access is the same locally or over HTTP**: repositories, criteria and transactions keep their contract
+  through a REST layer, with rules per role enforced in the repository every host hands to a session.
+
+## A taste
+
+A presenter fills its scope and binds its actions; navigation is filling the target's keys and flipping:
+
+<!-- snippet: list-presenter -->
+```csharp
+public sealed class ContactListPresenter(ContactsApp app)
+    : CubePresenter<ContactsApp, ContactListScope>(app, new ContactListScope())
+{
+    public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
+    {
+        var keys = new AppKeys(App, intent);
+        keys.ParentSlot(Scope); // into the application's body
+
+        if (initialization)
+        {
+            Scope.OnOpen = Action<long>(id => new ContactKeys(App) { ContactId = id }.Flip());
+            var contacts = await App.Book.All();
+            Scope.Contacts = [.. contacts.Select(c => new ContactRow(c.Id, c.Name))];
+        }
+
+        if (last)
+        {
+            Scope.Detail = null; // the list itself: no contact open
+        }
+        else
+        {
+            keys.ParentSlot = detail => Scope.Detail = detail; // the contact shows beside the list
+        }
+
+        return true;
+    }
+}
+```
+
+The view draws the scope and nothing else:
+
+<!-- snippet: list-view -->
+```razor
+@inherits ScopeView<ContactListScope>
+
+<div class="contacts">
+    <ul>
+        @foreach (var contact in Scope.Contacts)
+        {
+            <li @key="contact.Id">
+                <button @onclick="() => Scope.OnOpen(contact.Id)">@contact.Name</button>
+            </li>
+        }
+    </ul>
+    <ViewSlot Scope="Scope.Detail" />
+</div>
+```
+
+Tests drive the same scopes with no view at all. The full walkthrough, tests included, is in
+[Getting started](docs/getting-started.md).
+
+## The pieces
 
 | Piece | Role |
 |---|---|
 | **Place** | A node in the navigation tree. Places form a hierarchy, and an address is a path through it. |
 | **Presenter** | Owns the logic of a place: loads data, reacts to user actions, decides where to navigate. Knows nothing about the view technology. |
 | **Scope** | The state a presenter publishes for a view to draw. Changes are batched and flushed to the view. |
-
-Navigation happens through a **FlipIntent**: a description of "go to this place with these parameters" that maps
-one-to-one to the address. A presenter never touches the router; it fills an intent and flips to it.
-
-Because presenters and scopes are plain C#, the whole application is tested without any UI, and each view technology
-(Blazor, Avalonia) is a thin layer that draws scopes and forwards user events back to them.
+| **FlipIntent** | "Go to this place with these parameters": maps one-to-one to the address. |
+| **Slot** | How a level hands the level below the place where its scope is shown. |
 
 ## Packages
 
@@ -34,12 +98,20 @@ Because presenters and scopes are plain C#, the whole application is tested with
 
 The libraries are trimming- and AOT-compatible: no runtime reflection in the core and the domain.
 
-## Samples
+## Documentation
 
-- [`samples/Tutorial`](samples/Tutorial/README.md): a page frame, a restricted area, a list with a detail dialog and
-  TodoMVC, in Blazor.
-- [`samples/Shopping`](samples/Shopping/README.md): login, catalogue, cart, purchase, receipt and an administration
-  area, on PostgreSQL or SQL Server; in Blazor Server, Blazor WebAssembly and Avalonia, locally or through its server.
+- [Getting started](docs/getting-started.md): build a small app, step by step.
+- [Concepts](docs/README.md#concepts): how each part works and why.
+- Samples:
+  - [`samples/GettingStarted`](samples/GettingStarted): the app of the tutorial.
+  - [`samples/Tutorial`](samples/Tutorial/README.md): a page frame, a restricted area, a list with a detail dialog
+    and TodoMVC, in Blazor.
+  - [`samples/Shopping`](samples/Shopping/README.md): login, catalogue, cart, purchase, receipt and an
+    administration area, on PostgreSQL or SQL Server; in Blazor Server, Blazor WebAssembly and Avalonia, locally or
+    through its server.
+
+The criteria, projection and repository routes on the wire are shared with the Kotlin implementation, and sealed
+addresses with the TypeScript one.
 
 ## Build and test
 
@@ -52,7 +124,7 @@ dotnet test --solution wdc-cube.slnx
 ```
 
 Tests that need a database are skipped, with the reason, when its connection string is missing. See
-`scripts/test-env.sh` for PostgreSQL and SQL Server.
+[CONTRIBUTING](CONTRIBUTING.md) for the databases and the conventions.
 
 ## License
 

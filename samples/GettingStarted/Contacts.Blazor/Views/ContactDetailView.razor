@@ -1,0 +1,10 @@
+@* <snippet:detail-view> *@
+@inherits ScopeView<ContactDetailScope>
+
+<section class="contact">
+    <h2>@Scope.Name</h2>
+    <p>✉ @Scope.Email</p>
+    <p>☎ @Scope.Phone</p>
+    <button class="close" @onclick="Scope.OnClose">Close</button>
+</section>
+@* </snippet:detail-view> *@

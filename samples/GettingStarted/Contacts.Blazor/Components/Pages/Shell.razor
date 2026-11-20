@@ -1,0 +1,16 @@
+@* <snippet:shell> *@
+@page "/"
+@page "/{*path}"
+@inject IContactBook Book
+
+@* Every path is this page: the address belongs to the application, which turns it into a place. *@
+<CubeHost TApp="ContactsApp" CreateApplication="host => new ContactsApp(host.History, Book, host.Dispatcher)"
+          Start="app => app.Start()">
+    <ViewSlot Scope="context.Scope" />
+</CubeHost>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+}
+@* </snippet:shell> *@

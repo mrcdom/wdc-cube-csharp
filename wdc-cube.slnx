@@ -20,6 +20,11 @@
     <Project Path="src/Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
   </Folder>
   <Folder Name="/samples/" />
+  <Folder Name="/samples/GettingStarted/">
+    <Project Path="samples/GettingStarted/Contacts.Presentation/Contacts.Presentation.csproj" />
+    <Project Path="samples/GettingStarted/Contacts.Tests/Contacts.Tests.csproj" />
+    <Project Path="samples/GettingStarted/Contacts.Blazor/Contacts.Blazor.csproj" />
+  </Folder>
   <Folder Name="/samples/Tutorial/">
     <Project Path="samples/Tutorial/Tutorial.Presentation/Tutorial.Presentation.csproj" />
     <Project Path="samples/Tutorial/Tutorial.Presentation.Tests/Tutorial.Presentation.Tests.csproj" />

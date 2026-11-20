@@ -1,6 +1,6 @@
 namespace Wdc.Cube.Tests.Navigation;
 
-/// <summary>Address format, ported from <c>Cube.test.ts</c> (FlipIntent.toString / parse) and extended.</summary>
+/// <summary>Address format: FlipIntent to and from its string form.</summary>
 public sealed class FlipIntentTests
 {
     private static readonly Place s_root = Place.Create("root");

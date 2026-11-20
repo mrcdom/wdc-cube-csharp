@@ -3,7 +3,7 @@ using Wdc.Cube.Testing;
 
 namespace Tutorial.Presentation.Tests;
 
-/// <summary>Ported from <c>presentation-test/src/todo-mvc.test.ts</c>, plus row reconciliation.</summary>
+/// <summary>TodoMVC: filters in the address, editing, the stress mode, and row reconciliation.</summary>
 public sealed class TodoMvcTests
 {
     private static TodoMvcScope Todo(Harness h) => Assert.IsType<TodoMvcScope>(h.Scope.Body);

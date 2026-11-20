@@ -11,8 +11,8 @@ namespace Wdc.Rest.Server;
 /// </summary>
 /// <remarks>
 /// Only the wire: who may do what is the repository's business. The function that gives the repository of a request
-/// hands out a <see cref="ProtectedRepository{TEntity,TCriteria,TKey}"/> for whoever the request authenticated
-///, so the rules are the same here and in any other host.
+/// hands out a <see cref="ProtectedRepository{TEntity,TCriteria,TKey}"/> for whoever the request authenticated, so
+/// the rules are the same here and in any other host.
 /// </remarks>
 public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
     where TEntity : class
