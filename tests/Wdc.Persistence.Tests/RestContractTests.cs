@@ -12,7 +12,7 @@ using Wdc.Rest.Server;
 namespace Wdc.Persistence.Tests;
 
 /// <summary>
-/// What the REST layer adds to the repository contract (decisions D-17 and D-18): the wire of the Kotlin version, the
+/// What the REST layer adds to the repository contract: the wire of the Kotlin version, the
 /// errors, the limits, the caller's reach, and remote transactions. On PostgreSQL.
 /// </summary>
 public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlFixture>
@@ -166,9 +166,9 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         Assert.Equal(2, (await remote.Products.Fetch(new ProductCriteria(), limit: 2, cancellationToken: Ct)).Count);
     }
 
-    // :: The caller's reach (bug 13 of the Kotlin report)
+    // :: The caller's reach
 
-    /// <summary>The purchases protected for the user named by a test header (decision D-24): each reaches only their own.</summary>
+    /// <summary>The purchases protected for the user named by a test header: each reaches only their own.</summary>
     private IRepository<Purchase, PurchaseCriteria, long> ScopeByTestUser(HttpContext context)
     {
         var policy = new RepositoryPolicy<Purchase, PurchaseCriteria, long>(Purchase.Model, () => new PurchaseCriteria())
@@ -271,7 +271,7 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
                 (RestNames.ClientHeader, "phone"));
             Assert.Equal(HttpStatusCode.Conflict, lostHeader.Status);
 
-            // Another client of the same user writes freely (bug 18 of the Kotlin report).
+            // Another client of the same user writes freely.
             await otherDevice.Tx.NotSupported(_ => otherDevice.Products.Insert(new Product { Name = "y", Price = 1m }, cancellationToken: Ct), Ct);
         }, Ct);
 

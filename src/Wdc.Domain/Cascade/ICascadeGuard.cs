@@ -2,8 +2,8 @@ namespace Wdc.Domain;
 
 /// <summary>
 /// Watches the writes a repository makes in cascade — the children it inserts, updates or deletes because the
-/// projection of the entity being written asked for them (decision D-23). Rules that hold per entity (the policies of
-/// the protected repositories, decision D-24) apply to those children through it. The entity the caller wrote directly is not
+/// projection of the entity being written asked for them. Rules that hold per entity (the policies of
+/// the protected repositories) apply to those children through it. The entity the caller wrote directly is not
 /// reported: its own rules already ran.
 /// </summary>
 public interface ICascadeGuard

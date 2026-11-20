@@ -3,14 +3,12 @@ using Wdc.Cube.Testing;
 namespace Wdc.Cube.Tests.Navigation;
 
 /// <summary>
-/// The navigation guarantees, ported from the 14 scenarios of <c>CubeNavigationTest.kt</c> (Kotlin).
+/// The navigation guarantees, scenario by scenario.
 /// </summary>
 /// <remarks>
-/// The Kotlin tests swapped a place's factory per scenario; here the tree is fixed and each test tells
-/// <see cref="NavApp"/> how the presenter born at a place behaves. Kotlin's explicit step lists
-/// (<c>ROOT, PRODUCTS</c>) become the path of a place (<c>root/products</c>).
-/// Extra assertions cover decision D-02: <c>false</c> commits up to the presenter that returned it, and every
-/// presenter is released exactly once.
+/// The tree is fixed and each test tells <see cref="NavApp"/> how the presenter born at a place behaves; a step is
+/// named by the path of its place (<c>root/products</c>). Each scenario also checks that <c>false</c> commits up to
+/// the presenter that returned it, and that every presenter is released exactly once.
 /// </remarks>
 public sealed class NavigationGuaranteesTests
 {
@@ -152,7 +150,7 @@ public sealed class NavigationGuaranteesTests
         Assert.Null(PresenterOf(NavPlaces.ProductDetail));
         Assert.Empty(_app.CreatedAt(NavPlaces.ProductDetail));
 
-        // D-02: the current place is the last accepted presenter, not the leaf the intent asked for.
+        // The current place is the last accepted presenter, not the leaf the intent asked for.
         Assert.Same(NavPlaces.Products, _app.LastPlace);
         Assert.Equal("root/products", _app.History.Token);
     }
@@ -319,7 +317,7 @@ internal sealed record PlaceBehavior
     /// <summary>Holds <c>ApplyParameters</c> until the test completes it.</summary>
     public TaskCompletionSource? Gate { get; init; }
 
-    /// <summary>Leaves the dispatcher (<c>ConfigureAwait(false)</c>) before redirecting: the mistake D-01 forbids.</summary>
+    /// <summary>Leaves the dispatcher (<c>ConfigureAwait(false)</c>) before redirecting: what presentation code must never do.</summary>
     public bool EscapeDispatcherBeforeRedirect { get; init; }
 
     /// <summary>

@@ -4,7 +4,7 @@ using Wdc.Domain;
 namespace Wdc.Rest;
 
 /// <summary>
-/// The bodies of the repository routes (decision D-18, the Kotlin wire): written by the client, read by the server and
+/// The bodies of the repository routes (the wire of the Kotlin version): written by the client, read by the server and
 /// the other way round, from the same entity model.
 /// </summary>
 /// <remarks>
@@ -95,7 +95,7 @@ public sealed class RepositoryWire<TEntity, TCriteria>
                 default:
                     if (!CriteriaCodec.TryReadField(ref r, criteria, name))
                     {
-                        r.Skip(); // unknown key: ignored, as in the Kotlin version
+                        r.Skip(); // unknown key: ignored
                     }
 
                     break;
@@ -342,7 +342,7 @@ public sealed class RepositoryWire<TEntity, TCriteria>
 
     /// <summary>
     /// The projection to write an entity for a write: the key at every level, scalars as marked; a reference with its
-    /// key alone, or with its marked fields when the projection asks for them (decision D-23); a marked collection
+    /// key alone, or with its marked fields when the projection asks for them; a marked collection
     /// with the shape of its children.
     /// </summary>
     private TEntity ForWriting(TEntity projection) => Model.WriteProjection(projection);

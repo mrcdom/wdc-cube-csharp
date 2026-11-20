@@ -2,7 +2,7 @@ using Wdc.Cube.Codec;
 
 namespace Wdc.Cube.Tests.Codec;
 
-/// <summary>The address codec (decision D-20): RFC 5297, the TypeScript version's addresses, and the envelope rules.</summary>
+/// <summary>The address codec: RFC 5297, the TypeScript version's addresses, and the envelope rules.</summary>
 public sealed class AesHistoryCodecTests
 {
     private static readonly byte[] s_key = [.. Enumerable.Range(0, 32).Select(i => (byte)i)];

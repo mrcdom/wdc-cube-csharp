@@ -5,7 +5,7 @@ namespace Wdc.Cube.Blazor;
 /// <summary>
 /// Base of a component that draws a scope. It binds itself as the scope's <see cref="IScopeView"/>: when the scope
 /// is flushed it re-renders, and after rendering it confirms with <see cref="Scope.MarkRendered"/>, so the scope
-/// becomes clean only when the screen shows it (decision D-03).
+/// becomes clean only when the screen shows it.
 /// </summary>
 /// <remarks>
 /// <para>

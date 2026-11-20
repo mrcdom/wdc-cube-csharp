@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- The Shopping demo as a desktop app (phase 5, decision D-16): the same presentation, drawn by Avalonia, with the
+  <!-- The Shopping demo as a desktop app: the same presentation, drawn by Avalonia, with the
        repositories and the login through the Shopping server. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

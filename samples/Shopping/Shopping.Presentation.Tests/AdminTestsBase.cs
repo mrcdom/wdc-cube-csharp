@@ -9,7 +9,7 @@ using Wdc.Domain;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>
-/// The administration (decision D-25): the purchases of every customer and their correction, offered to whoever may
+/// The administration: the purchases of every customer and their correction, offered to whoever may
 /// correct them; the buyer sees the correction on the receipt.
 /// </summary>
 public abstract class AdminTestsBase(ShoppingDatabaseFixture db)

@@ -243,7 +243,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.Equal([2], stored[purchases[3].Id!.Value]);
     }
 
-    // :: Writes in cascade, as the projection asks (decision D-23)
+    // :: Writes in cascade, as the projection asks
 
     private static readonly PurchaseItem s_itemWrite = new() { Amount = Mark.Int32, Price = Mark.Decimal, Product = new Product() };
 

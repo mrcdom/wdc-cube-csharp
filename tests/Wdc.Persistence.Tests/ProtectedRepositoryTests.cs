@@ -5,7 +5,7 @@ using Wdc.Domain.Tests;
 namespace Wdc.Persistence.Tests;
 
 /// <summary>
-/// The repository seen by whoever is acting (decision D-24): the policy's rules apply in process, with no transport,
+/// The repository seen by whoever is acting: the policy's rules apply in process, with no transport,
 /// and to the children written in cascade. On PostgreSQL.
 /// </summary>
 public sealed class ProtectedRepositoryTests(PostgreSqlFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlFixture>

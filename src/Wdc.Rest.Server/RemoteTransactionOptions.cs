@@ -1,6 +1,6 @@
 namespace Wdc.Rest.Server;
 
-/// <summary>Limits and timeouts of remote transactions (decision D-17; the Kotlin defaults).</summary>
+/// <summary>Limits and timeouts of remote transactions.</summary>
 public sealed class RemoteTransactionOptions
 {
     /// <summary>Open at once, in total. Each one holds a connection.</summary>

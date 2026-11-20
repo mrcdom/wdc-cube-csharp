@@ -5,7 +5,7 @@ using Wdc.Cube.Testing;
 namespace Wdc.Cube.Tests.Presentation;
 
 /// <summary>
-/// Scope observation and the update pipeline (decision D-03): changes are gathered in a ~16 ms window, a scope is
+/// Scope observation and the update pipeline: changes are gathered in a ~16 ms window, a scope is
 /// clean only after its view confirms the render, and nothing changed meanwhile is lost.
 /// </summary>
 public sealed class UpdatePipelineTests

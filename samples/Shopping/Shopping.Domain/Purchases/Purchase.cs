@@ -22,7 +22,7 @@ public sealed class Purchase : IKeyedEntity
 
     public List<PurchaseItem>? Items { get; set; }
 
-    /// <summary>The errata of the purchase (decision D-25), written only by inserting them.</summary>
+    /// <summary>The errata of the purchase, written only by inserting them.</summary>
     public List<PurchaseAmendment>? Amendments { get; set; }
 
     object? IKeyedEntity.Key => Id;

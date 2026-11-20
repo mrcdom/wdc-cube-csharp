@@ -83,7 +83,7 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
 
         page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Bola de vôlei").Click();
         page.WaitForAssertion(() => Assert.Equal("Bola de vôlei", page.Find(".product-page h2").TextContent), Wait);
-        Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key (D-22)
+        Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key
         Assert.Equal(3, page.FindAll(".description li").Count);
 
         page.Find(".product-page .plus").Click();

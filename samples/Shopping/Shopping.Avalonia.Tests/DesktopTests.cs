@@ -32,7 +32,7 @@ internal static class Headless
 
 /// <summary>
 /// The desktop Shopping, end to end: Avalonia views over the same presentation, repositories and login through the
-/// Shopping server (phase 5, decision D-16).
+/// Shopping server.
 /// </summary>
 public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<ShoppingHttpFixture>
 {
@@ -169,7 +169,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         desktop.History.GoBack();
         await desktop.Until(() => !desktop.All<ReceiptView>().Any(), "leaving the receipt");
 
-        // Every scope on screen ended clean: the views confirmed each render (decision D-03).
+        // Every scope on screen ended clean: the views confirmed each render.
         await desktop.Until(() => desktop.All<ScopeView>().All(v => v.Scope!.RenderState == ScopeRenderState.Clean), "clean scopes");
         desktop.Presenter.Release();
         desktop.Window.Close();

@@ -4,7 +4,7 @@ using Wdc.Persistence;
 
 namespace Shopping.Persistence;
 
-/// <summary>The errata of the purchases (decision D-25): inserted with their lines, deleted with their purchase.</summary>
+/// <summary>The errata of the purchases: inserted with their lines, deleted with their purchase.</summary>
 public sealed class PurchaseAmendmentRepository(Database database)
     : SqlRepository<PurchaseAmendment, PurchaseAmendmentCriteria, long>(database, Mapping), IPurchaseAmendmentRepository
 {

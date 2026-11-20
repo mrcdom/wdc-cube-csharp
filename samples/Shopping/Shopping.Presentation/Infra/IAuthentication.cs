@@ -2,7 +2,7 @@ namespace Shopping.Presentation.Infra;
 
 /// <summary>
 /// Opens and closes the session. Locally it checks the user table; through HTTP it answers the server's challenge and
-/// keeps the tokens (decision D-19). The presenters do not know which.
+/// keeps the tokens. The presenters do not know which.
 /// </summary>
 public interface IAuthentication
 {

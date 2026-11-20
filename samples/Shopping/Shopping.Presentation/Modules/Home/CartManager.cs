@@ -36,7 +36,7 @@ public sealed class CartManager(ShoppingRepositories repositories, TimeProvider 
             _lines.Add(new CartLine(productId, name, price, quantity));
         }
 
-        Changed?.Invoke(); // in both cases: the badge counts quantities (the Kotlin version only notified new lines)
+        Changed?.Invoke(); // in both cases: the badge counts quantities, not lines
     }
 
     /// <summary>Sets the quantity of a line. Returns false when the product is not in the cart.</summary>

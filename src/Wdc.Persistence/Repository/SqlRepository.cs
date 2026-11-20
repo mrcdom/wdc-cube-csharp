@@ -10,7 +10,7 @@ namespace Wdc.Persistence;
 /// <remarks>
 /// <para>Each fetch is a single statement whose rows are JSON objects shaped by the projection, read back by the
 /// same <see cref="JsonEntityCodec{TEntity}"/> the REST layer uses.</para>
-/// <para><b>Writes cascade as the projection asks</b> (decision D-23), in one transaction: a referenced entity marked
+/// <para><b>Writes cascade as the projection asks</b>, in one transaction: a referenced entity marked
 /// beyond its key is inserted or updated; a marked collection is inserted with its parent, and on update it is the
 /// full state (new children inserted, known ones updated, missing ones deleted). A collection declared
 /// <c>cascadeDelete</c> goes with its parent on delete. Each child is written by its own repository, which must exist

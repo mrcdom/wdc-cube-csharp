@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  <!-- The Shopping views in Blazor, shared by the two hosts (decision D-21): interactive server (Shopping.Blazor) and
+  <!-- The Shopping views in Blazor, shared by the two hosts: interactive server (Shopping.Blazor) and
        WebAssembly (Shopping.Wasm). The host brings the services: repositories, login, session storage. -->
   <ItemGroup>
     <SupportedPlatform Include="browser" />

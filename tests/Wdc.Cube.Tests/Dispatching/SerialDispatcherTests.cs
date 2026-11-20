@@ -115,7 +115,7 @@ public sealed class SerialDispatcherTests : IDisposable
     [Fact]
     public async Task ConfigureAwaitFalse_LeavesTheDispatcher()
     {
-        // The rule of D-01, demonstrated: after ConfigureAwait(false) the code is outside, and VerifyAccess says so.
+        // The dispatcher rule, demonstrated: after ConfigureAwait(false) the code is outside, and VerifyAccess says so.
         var (inside, outside, verifyFailed) = await _dispatcher.InvokeAsync(async () =>
         {
             var before = _dispatcher.CheckAccess();

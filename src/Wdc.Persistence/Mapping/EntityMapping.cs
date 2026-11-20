@@ -131,7 +131,7 @@ internal abstract class Binding<TEntity>(FieldModel<TEntity> field)
 
     public abstract void AddJsonEntry(List<JsonEntry> entries, string alias, TEntity projection);
 
-    // :: Cascade (decision D-23). Each returns whether it wrote something.
+    // :: Cascade. Each returns whether it wrote something.
 
     /// <summary>Before the row is written: a referenced row the projection marks beyond its key.</summary>
     public virtual Task<bool> BeforeWrite(Database database, TEntity bean, TEntity projection, CancellationToken cancellationToken) =>
@@ -301,7 +301,7 @@ internal sealed class CollectionBinding<TEntity, TChild>(
                 await guard.BeforeInsert(typeof(TChild), item, cancellationToken).ConfigureAwait(false);
             }
 
-            // A new row writes every field that holds a value (as the Kotlin cascade does), the parent's key and what the
+            // A new row writes every field that holds a value, the parent's key and what the
             // child's rules filled in included; the projection's shape says what to update in the children that exist.
             await store.InsertRow(item, null, cancellationToken).ConfigureAwait(false);
         }

@@ -1,6 +1,6 @@
 namespace Wdc.Domain.Tests;
 
-// The Shopping domain of the Kotlin version, declared the C# way.
+// A small Shopping domain for the framework's tests.
 
 public sealed class Product : IKeyedEntity
 {

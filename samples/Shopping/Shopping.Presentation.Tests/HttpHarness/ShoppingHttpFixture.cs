@@ -9,7 +9,7 @@ using Shopping.Server;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>
-/// The Shopping server in memory over the same throwaway database (phase 5): each application instance connects as a
+/// The Shopping server in memory over the same throwaway database: each application instance connects as a
 /// new client, through HTTP, with the remote repositories and the JWT login.
 /// </summary>
 public sealed class ShoppingHttpFixture : ShoppingDatabaseFixture

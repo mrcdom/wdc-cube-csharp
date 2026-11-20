@@ -5,7 +5,7 @@ using Wdc.Persistence;
 namespace Shopping.Persistence;
 
 /// <summary>
-/// A purchase is written with its items in one transaction, by the framework's cascade (decision D-23): its items
+/// A purchase is written with its items in one transaction, by the framework's cascade: its items
 /// belong to it — they are inserted with it, synchronised on update when the projection marks them, and deleted with it.
 /// </summary>
 public sealed class PurchaseRepository(Database database)

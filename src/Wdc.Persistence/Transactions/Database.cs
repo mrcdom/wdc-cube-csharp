@@ -6,7 +6,7 @@ using Wdc.Domain;
 namespace Wdc.Persistence;
 
 /// <summary>
-/// A database: its dialect, how to open a connection, and the ambient transaction (decision D-09).
+/// A database: its dialect, how to open a connection, and the ambient transaction.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -89,7 +89,7 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
         return RunAfterCommit([task]);
     }
 
-    // :: Repositories by mapping (D-23: a cascade writes each child through its own repository)
+    // :: Repositories by mapping (a cascade writes each child through its own repository)
 
     internal void Register<TEntity>(EntityMapping<TEntity> mapping, IEntityStore<TEntity> store)
         where TEntity : class => _stores[mapping] = store;
@@ -101,7 +101,7 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
             : throw new InvalidOperationException(
                 $"No repository of {mapping.Model.Name} exists on this database: create it before writing {mapping.Model.Name} in cascade.");
 
-    // :: Detached transactions (D-17)
+    // :: Detached transactions
 
     public async Task<IDetachedTransaction> BeginDetached(CancellationToken cancellationToken = default)
     {

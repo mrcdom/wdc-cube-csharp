@@ -105,7 +105,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     }
 
     /// <summary>
-    /// Seals the addresses with the user's key (decision D-22), or stops sealing. Where the codec cannot run
+    /// Seals the addresses with the user's key, or stops sealing. Where the codec cannot run
     /// (WebAssembly has no AES), the addresses stay plain.
     /// </summary>
     private void InstallCodec(Subject? subject)

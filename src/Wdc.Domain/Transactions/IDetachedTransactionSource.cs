@@ -2,7 +2,7 @@ namespace Wdc.Domain;
 
 /// <summary>
 /// Opens transactions that outlive the call that opened them: a remote client begins one, sends several requests, and
-/// commits later (decision D-17). Implemented by the database; used by the REST server's coordinator.
+/// commits later. Implemented by the database; used by the REST server's coordinator.
 /// </summary>
 public interface IDetachedTransactionSource
 {

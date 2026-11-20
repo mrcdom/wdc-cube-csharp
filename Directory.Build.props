@@ -27,7 +27,7 @@
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Documentação de API pública será cobrada a partir da fase 1. -->
+    <!-- Membros públicos sem documentação não quebram o build. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>cube;presenter;mvp;navigation;blazor;avalonia;repository</PackageTags>

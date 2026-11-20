@@ -4,7 +4,7 @@ using System.Text;
 namespace Shopping.Domain.Users;
 
 /// <summary>
-/// The address key of each user (decision D-22): derived from a master key the server keeps, so nothing is stored and
+/// The address key of each user: derived from a master key the server keeps, so nothing is stored and
 /// the same user always gets the same key (their links keep opening) while another user's key does not open them.
 /// </summary>
 public static class HistoryKeys

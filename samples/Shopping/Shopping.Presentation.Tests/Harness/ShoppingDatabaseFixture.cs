@@ -6,7 +6,7 @@ using Wdc.Domain;
 
 namespace Shopping.Presentation.Tests;
 
-/// <summary>A Shopping database in a throwaway schema, with the demo's own DDL and data (decision D-14).</summary>
+/// <summary>A Shopping database in a throwaway schema, with the demo's own DDL and data.</summary>
 public class ShoppingDatabaseFixture : IAsyncLifetime
 {
     public ShoppingDatabaseFixture()
@@ -40,10 +40,10 @@ public class ShoppingDatabaseFixture : IAsyncLifetime
         await OnReady();
     }
 
-    /// <summary>The master key of the users' address keys (decision D-22), one per fixture.</summary>
+    /// <summary>The master key of the users' address keys, one per fixture.</summary>
     public byte[] HistoryMaster { get; } = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
 
-    /// <summary>As Blazor Server does (decision D-24): repositories protected for the session's actor, set by the login.</summary>
+    /// <summary>As Blazor Server does: repositories protected for the session's actor, set by the login.</summary>
     public virtual (ShoppingRepositories Repositories, IAuthentication Authentication) Connect()
     {
         var actors = new ActorSource();

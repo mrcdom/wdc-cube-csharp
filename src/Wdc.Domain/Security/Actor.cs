@@ -1,7 +1,7 @@
 namespace Wdc.Domain;
 
 /// <summary>
-/// Who is acting (decision D-24): an identifier and the roles, as the application writes them. The framework only
+/// Who is acting: an identifier and the roles, as the application writes them. The framework only
 /// compares them; what a role may do is the application's policies.
 /// </summary>
 public sealed class Actor

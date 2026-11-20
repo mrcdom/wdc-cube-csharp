@@ -54,7 +54,7 @@ public abstract class ApplicationPresenter<TScope> : CubeApplication, IActionHos
     /// Starts the application from the current address: applies the application's own parameters once
     /// (<c>initialization: true</c>, <c>last: true</c>), then, when the address names a deeper face, flips there.
     /// Any failure sends the user to <paramref name="safePlace"/> instead, without the parameters of the address that
-    /// failed (unlike the TypeScript version, which carried them along).
+    /// failed.
     /// </summary>
     /// <remarks>
     /// The address is read first: install a history codec before calling this.

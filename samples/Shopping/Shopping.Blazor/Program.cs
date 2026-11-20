@@ -17,13 +17,13 @@ var store = ShoppingStore.Open(
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSingleton(store);
-// Each circuit is a session: its own actor, set by the login, and the repositories protected for it (decision D-24).
+// Each circuit is a session: its own actor, set by the login, and the repositories protected for it.
 builder.Services.AddScoped<ActorSource>();
 builder.Services.AddScoped(sp => ShoppingProtection.Protect(store.Repositories, sp.GetRequiredService<ActorSource>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ISessionStore, BrowserSessionStore>(); // one per circuit, like the application
 
-// Each user's address key derives from this master key (decision D-22); in Development a random one is enough.
+// Each user's address key derives from this master key; in Development a random one is enough.
 var historyMaster = builder.Configuration["Shopping:History:Key"] is { Length: > 0 } historyKey
     ? Convert.FromBase64String(historyKey)
     : builder.Environment.IsDevelopment()
@@ -48,7 +48,7 @@ if (!app.Environment.IsDevelopment())
 app.UseAntiforgery();
 app.MapStaticAssets();
 
-// Product images, as the Kotlin host served them: 200 with the PNG, 204 without an image, 404 for an unknown product.
+// Product images: 200 with the PNG, 204 without an image, 404 for an unknown product.
 app.MapGet("/image/product/{productId:long}.png", async (long productId, ShoppingStore images) =>
 {
     try

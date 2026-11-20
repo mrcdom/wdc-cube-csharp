@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-  <!-- The Shopping demo in the browser (decision D-21): the presentation runs in WebAssembly and talks to
+  <!-- The Shopping demo in the browser: the presentation runs in WebAssembly and talks to
        Shopping.Server through Shopping.Client. Served by Shopping.Server, same origin. -->
   <PropertyGroup>
     <TargetFrameworks></TargetFrameworks>

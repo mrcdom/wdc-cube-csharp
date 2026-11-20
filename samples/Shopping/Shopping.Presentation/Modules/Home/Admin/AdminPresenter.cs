@@ -11,7 +11,7 @@ namespace Shopping.Presentation.Modules.Home.Admin;
 
 /// <summary>
 /// The administration, under Home: the purchases of every customer, a page at a time, filtered by the customer's
-/// name; opening one corrects it (decision D-25). Offered only to whoever may correct; the repositories refuse the
+/// name; opening one corrects it. Offered only to whoever may correct; the repositories refuse the
 /// others anyway.
 /// </summary>
 public sealed class AdminPresenter(MainPresenter app) : CubePresenter<MainPresenter, AdminScope>(app, new AdminScope())

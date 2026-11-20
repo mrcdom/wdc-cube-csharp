@@ -6,7 +6,7 @@ using Wdc.Domain;
 namespace Shopping.Domain.Security;
 
 /// <summary>
-/// The errata of the purchases (decision D-25). Inserting one is the correction: only reducing or removing items of
+/// The errata of the purchases. Inserting one is the correction: only reducing or removing items of
 /// the purchase, at the price it was bought, never all of them, with a reason. The correction is applied to the items
 /// here, in the insert's transaction, through the trusted inside — the generic item update stays refused to every
 /// role of the application. Once inserted an errata does not change and is not deleted, except by maintenance.

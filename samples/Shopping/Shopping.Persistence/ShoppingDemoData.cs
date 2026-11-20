@@ -6,7 +6,7 @@ using Wdc.Domain;
 
 namespace Shopping.Persistence;
 
-/// <summary>The demo data of the Kotlin version (users, products with images, two purchases of the admin).</summary>
+/// <summary>The demo data: users of each role, products with images, two purchases of the admin.</summary>
 public static class ShoppingDemoData
 {
     public static async Task Load(ShoppingRepositories repositories, CancellationToken cancellationToken = default)
@@ -18,7 +18,7 @@ public static class ShoppingDemoData
             await NewUser(repositories, "fulano", "fulano", "Fulano de Tal", "Customer", cancellationToken);
             await NewUser(repositories, "beotrano", "beotrano", "Beotrano de Alguma Coisa", "Customer", cancellationToken);
             await NewUser(repositories, "gerente", "gerente", "Gerente de Loja", "Manager", cancellationToken);
-            await NewUser(repositories, "suporte", "suporte", "Suporte Técnico", "Super", cancellationToken); // maintenance (D-24)
+            await NewUser(repositories, "suporte", "suporte", "Suporte Técnico", "Super", cancellationToken); // maintenance
 
             var coffee = await NewProduct(repositories, "Cafeteira design italiano", 199.99m, CoffeeMaker, "cafeteira.png", cancellationToken);
             var ball = await NewProduct(repositories, "Bola de vôlei", 45.30m, VolleyBall, "bola.png", cancellationToken);

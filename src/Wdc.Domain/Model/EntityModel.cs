@@ -1,7 +1,7 @@
 namespace Wdc.Domain;
 
 /// <summary>
-/// The fields of an entity, declared once (decision D-10): name, kind, getter and setter. Shared by client and
+/// The fields of an entity, declared once: name, kind, getter and setter. Shared by client and
 /// server; the SQL layer binds columns to these fields and the JSON codec reads and writes through them. No reflection.
 /// </summary>
 /// <remarks>
@@ -66,7 +66,7 @@ public sealed class EntityModel<TEntity> : IEntityModel
     }
 
     /// <summary>
-    /// The projection to send for a write (decision D-23): what <paramref name="projection"/> marks, with the key at
+    /// The projection to send for a write: what <paramref name="projection"/> marks, with the key at
     /// every level — a referenced entity marked beyond its key and the shape of a marked collection carry their keys,
     /// which is how the other side tells a child to update from one to insert.
     /// </summary>

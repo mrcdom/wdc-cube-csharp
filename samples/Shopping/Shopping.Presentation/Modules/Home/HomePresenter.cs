@@ -96,7 +96,7 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
 
     private void OnCartCommitted(long purchaseId)
     {
-        _ = _products?.Load(); // stock, prices: as the Kotlin version did
+        _ = _products?.Load(); // stock, prices
         _ = _purchases?.ShowPage(1, reload: true);
     }
 

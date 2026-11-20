@@ -1,6 +1,6 @@
 # Shopping (C#)
 
-Port of the Kotlin Shopping demo (`wdc-cube-kotlin`): login, a restricted home with the catalogue and the purchase
+The Shopping demo, as in the Kotlin version (`wdc-cube-kotlin`): login, a restricted home with the catalogue and the purchase
 history, product, cart, purchase and receipt; plus an administration area where Admin and Manager correct a purchase
 already made (an errata, kept with who, when and why).
 
@@ -14,7 +14,7 @@ already made (an errata, kept with who, when and why).
 | `Shopping.Blazor` | The interactive-server host (one application per circuit), image endpoint, sealed addresses. |
 | `Shopping.Wasm` | The WebAssembly host: the presentation in the browser, data and login through `Shopping.Server`. |
 | `Shopping.Blazor.Tests` | The whole page on Blazor's renderer (bUnit) and the host in memory. |
-| `Shopping.Server` | The backend over HTTP (phase 5): repositories as REST routes, remote transactions, JWT login, images. |
+| `Shopping.Server` | The backend over HTTP: repositories as REST routes, remote transactions, JWT login, images. |
 | `Shopping.Client` | The repositories and the login through HTTP, for clients that run the presentation themselves. |
 | `Shopping.Avalonia` | The desktop app: the same presentation drawn by Avalonia, talking to `Shopping.Server`. |
 | `Shopping.Avalonia.Tests` | The desktop app headless (clicks, typing, frame captures) against the server in memory. |
@@ -45,7 +45,7 @@ cd samples/Shopping/Shopping.Server
 dotnet run -f net11.0          # serves the WebAssembly app at http://localhost:5200 and the API under /api
 ```
 
-Addresses stay plain there: WebAssembly has no AES, so the sealed-address codec (decision D-22) is off.
+Addresses stay plain there: WebAssembly has no AES, so the sealed-address codec is off.
 
 ### Sealed addresses
 

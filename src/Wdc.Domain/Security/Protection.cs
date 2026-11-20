@@ -4,7 +4,7 @@ namespace Wdc.Domain;
 
 /// <summary>
 /// What the protected repositories of one session share: who is acting, the transactions, and each other — a write
-/// that cascades to a child applies the child's policy (decision D-24).
+/// that cascades to a child applies the child's policy.
 /// </summary>
 public sealed class Protection
 {

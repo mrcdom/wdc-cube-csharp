@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <!-- The Shopping backend over HTTP (phase 5): the repositories as REST routes, remote transactions and JWT login,
+  <!-- The Shopping backend over HTTP: the repositories as REST routes, remote transactions and JWT login,
        for clients that run the presentation themselves (the Avalonia desktop app). -->
   <ItemGroup>
     <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
-  <!-- The WebAssembly app it serves (decision D-21) is built for net11.0 only. -->
+  <!-- The WebAssembly app it serves is built for net11.0 only. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
     <ProjectReference Include="../Shopping.Wasm/Shopping.Wasm.csproj" />
   </ItemGroup>

@@ -6,13 +6,13 @@ using Wdc.Domain;
 namespace Wdc.Rest.Server;
 
 /// <summary>
-/// Serves a repository as the routes of the Kotlin version (decision D-18): <c>POST {base}/insert</c>, <c>update</c>,
+/// Serves a repository as the routes of the Kotlin version: <c>POST {base}/insert</c>, <c>update</c>,
 /// <c>delete</c>, <c>count</c>, <c>fetch</c>, <c>fetch-page</c>, <c>fetch-by-id</c> and <c>GET {base}/{id}</c>.
 /// </summary>
 /// <remarks>
 /// Only the wire: who may do what is the repository's business. The function that gives the repository of a request
 /// hands out a <see cref="ProtectedRepository{TEntity,TCriteria,TKey}"/> for whoever the request authenticated
-/// (decision D-24), so the rules are the same here and in any other host.
+///, so the rules are the same here and in any other host.
 /// </remarks>
 public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
     where TEntity : class

@@ -12,8 +12,8 @@ using Wdc.Rest.Server;
 namespace Shopping.Server;
 
 /// <summary>
-/// The Shopping API: the repositories as REST routes (decision D-18), remote transactions (D-17), JWT login
-/// (D-19) and the product image. Who reaches what is in the policies of the protected repositories (D-24), the same
+/// The Shopping API: the repositories as REST routes, remote transactions, JWT login
+/// and the product image. Who reaches what is in the policies of the protected repositories, the same
 /// in every host; here, the actor comes from the request's token.
 /// </summary>
 public static class ShoppingApi
@@ -24,7 +24,7 @@ public static class ShoppingApi
         ArgumentNullException.ThrowIfNull(auth);
         services.AddSingleton(store);
         services.AddHttpContextAccessor();
-        // What each request reaches: the repositories protected for whoever its token authenticated (decision D-24).
+        // What each request reaches: the repositories protected for whoever its token authenticated.
         services.AddScoped(sp => ShoppingProtection.Protect(store.Repositories,
             new ActorSource(sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.User is { } user
                 ? ShoppingTokens.ActorOf(user)

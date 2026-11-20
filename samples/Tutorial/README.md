@@ -1,6 +1,6 @@
 # Cube tutorial (C#)
 
-Port of `wdc-cube/apps/cube-tutorial`: a page frame (menu, alerts), a session-free restricted area, a subscriptions
+The Cube tutorial, as in `wdc-cube/apps/cube-tutorial`: a page frame (menu, alerts), a session-free restricted area, a subscriptions
 list with a detail dialog, and TodoMVC (with a 1000-item stress mode and a clock).
 
 | Project | What it is |

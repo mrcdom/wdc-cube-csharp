@@ -84,7 +84,7 @@ public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<T
 /// <summary>
 /// A criteria with a named ordering. The ordering is named by its effect (<c>CheapestFirst</c>), not by columns: the
 /// repository turns the name into columns and adds the key as a tie-breaker. On the wire it travels as
-/// <c>CHEAPEST_FIRST</c>, as in the Kotlin version.
+/// <c>CHEAPEST_FIRST</c>, as on the wire.
 /// </summary>
 public abstract class Criteria<TSelf, TEntity, TOrderBy> : Criteria<TSelf, TEntity>
     where TSelf : Criteria<TSelf, TEntity, TOrderBy>

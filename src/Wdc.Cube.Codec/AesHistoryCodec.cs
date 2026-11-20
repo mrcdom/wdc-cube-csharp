@@ -4,7 +4,7 @@ using System.Text;
 namespace Wdc.Cube.Codec;
 
 /// <summary>
-/// The reference <see cref="IHistoryCodec"/> (decision D-20): AES-SIV over the query, Base64url on the wire, the
+/// The reference <see cref="IHistoryCodec"/>: AES-SIV over the query, Base64url on the wire, the
 /// envelope of the TypeScript version, so an address sealed by one opens in the other with the same key.
 /// </summary>
 /// <remarks>

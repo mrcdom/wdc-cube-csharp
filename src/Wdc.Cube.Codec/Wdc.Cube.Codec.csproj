@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- The reference address codec (decision D-20): AES-SIV over the query, the envelope of the TypeScript version.
+  <!-- The reference address codec: AES-SIV over the query, the envelope of the TypeScript version.
        Separate and optional, like its `wdc-cube/codec` subpath: an application that never seals an address does not
        carry a cipher. -->
   <PropertyGroup>

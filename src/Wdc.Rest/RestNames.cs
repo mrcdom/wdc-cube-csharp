@@ -1,6 +1,6 @@
 namespace Wdc.Rest;
 
-/// <summary>Names on the wire, shared with the Kotlin version (decision D-18).</summary>
+/// <summary>Names on the wire, shared with the Kotlin version.</summary>
 public static class RestNames
 {
     /// <summary>The remote transaction a request belongs to.</summary>

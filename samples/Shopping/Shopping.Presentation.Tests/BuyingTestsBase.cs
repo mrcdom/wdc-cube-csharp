@@ -61,7 +61,7 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
 
         product = await OpenProduct(shop, "Fita veda rosca");
         await shop.Do(() => product.Scope.OnAddToCart(1)); // the same product again: its quantity grows
-        Assert.Equal(3, shop.PresenterOf<HomePresenter>(Places.Home).Scope.CartCount); // the badge follows (Kotlin bug fixed)
+        Assert.Equal(3, shop.PresenterOf<HomePresenter>(Places.Home).Scope.CartCount); // the badge follows the quantities
     }
 
     [Fact]

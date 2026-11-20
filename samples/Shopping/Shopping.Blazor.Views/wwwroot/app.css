@@ -74,7 +74,7 @@ button.buy { background: var(--price); color: #fff; border-color: var(--price); 
 /* Receipt: number columns aligned with their headers. */
 .receipt-page th:nth-child(n+2) { text-align: right; }
 
-/* Administration (decision D-25). */
+/* Administration. */
 .app-header .admin-button { background: none; color: inherit; border-color: rgba(255,255,255,.5); }
 .admin-filter { display: flex; gap: 8px; margin-bottom: 12px; }
 .admin-filter input { flex: 1; min-width: 0; font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }

@@ -8,7 +8,7 @@ using Wdc.Rest.Client;
 namespace Shopping.Client;
 
 /// <summary>
-/// Login through the server's challenge (decision D-19): the password never leaves this process. Keeps the tokens;
+/// Login through the server's challenge: the password never leaves this process. Keeps the tokens;
 /// the refresh token is the <see cref="Subject.Credential"/> that takes the session back after a reload.
 /// </summary>
 public sealed class RemoteAuthentication : IAuthentication
@@ -68,7 +68,7 @@ public sealed class RemoteAuthentication : IAuthentication
         _credentials.RefreshToken = null;
         if (refresh is not null)
         {
-            // The token goes along, so the server revokes it (the Kotlin client sent "{}": bug 20 of its report).
+            // The token goes along, so the server revokes it.
             using var answer = await Post("/api/auth/logout", w => w.WriteString("refreshToken", refresh), cancellationToken);
         }
     }

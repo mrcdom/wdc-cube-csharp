@@ -3,7 +3,7 @@ using Shopping.Presentation.Modules.Home.ProductDetail;
 
 namespace Shopping.Presentation.Tests;
 
-/// <summary>Sealed addresses with each user's key (decision D-22).</summary>
+/// <summary>Sealed addresses with each user's key.</summary>
 public abstract class SealedAddressTestsBase(ShoppingDatabaseFixture db)
 {
     private static async Task<long> FirstProduct(Shop shop)

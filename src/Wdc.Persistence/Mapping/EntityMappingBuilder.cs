@@ -53,7 +53,7 @@ public sealed class EntityMappingBuilder<TEntity>
     /// <summary>
     /// A collection whose children point at this entity's key through their own foreign-key column. With
     /// <paramref name="cascadeDelete"/>, deleting this entity deletes its children first (they belong to it); without
-    /// it the collection is a view (the sales of a product) and a delete leaves it alone (decision D-23).
+    /// it the collection is a view (the sales of a product) and a delete leaves it alone.
     /// </summary>
     public EntityMappingBuilder<TEntity> Collection<TChild>(string field, string childForeignKeyColumn, Func<EntityMapping<TChild>> child,
         bool cascadeDelete = false)
@@ -66,7 +66,7 @@ public sealed class EntityMappingBuilder<TEntity>
     }
 
     /// <summary>
-    /// How the repository translates its criteria (decision of the Kotlin version: each repository owns it). Every
+    /// How the repository translates its criteria (each repository owns it). Every
     /// relation that reaches this entity reuses it on the relation's subquery.
     /// </summary>
     public EntityMappingBuilder<TEntity> Conditions<TCriteria>(Func<TCriteria, FilterContext, ISqlFragment?> conditions)

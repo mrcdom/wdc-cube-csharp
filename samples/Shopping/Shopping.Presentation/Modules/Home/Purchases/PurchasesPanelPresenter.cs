@@ -46,7 +46,7 @@ public sealed class PurchasesPanelPresenter : Presenter<MainPresenter, Purchases
             var subject = App.Subject ?? throw new InvalidOperationException("No session.");
             var criteria = new PurchaseCriteria().UserId.Eq(subject.Id).WithOrderBy(PurchaseOrderBy.MostRecentPurchaseFirst);
 
-            // Count first and clamp, then fetch the page that exists (the Kotlin version clamped after fetching).
+            // Count first and clamp, then fetch the page that exists.
             var total = await App.Repositories.Purchases.Count(criteria);
             var totalPages = Math.Max(1, (total + PageSize - 1) / PageSize);
             page = Math.Min(page, totalPages);

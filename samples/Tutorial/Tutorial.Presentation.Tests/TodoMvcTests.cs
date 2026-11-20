@@ -221,7 +221,7 @@ public sealed class TodoMvcTests
     [Fact]
     public async Task Reload_ReusesTheRowOfTheSameToDo_InsteadOfRebuildingTheList()
     {
-        // The TS tutorial rebuilt every row on each load (see the bug report); here rows are reconciled by identity.
+        // Rows are reconciled by identity, not rebuilt on each load.
         var h = await Harness.Start("todos");
         var first = Rows(h)[0];
 

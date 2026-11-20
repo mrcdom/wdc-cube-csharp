@@ -9,7 +9,7 @@ using Wdc.Domain;
 namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 
 /// <summary>
-/// Corrects a purchase already made (decision D-25): a smaller quantity per item (0 removes it), never all of them,
+/// Corrects a purchase already made: a smaller quantity per item (0 removes it), never all of them,
 /// with a reason. The repository checks it all again; what it refuses here means the purchase changed meanwhile.
 /// </summary>
 public sealed class AmendPresenter(MainPresenter app) : CubePresenter<MainPresenter, AmendScope>(app, new AmendScope())

@@ -2,7 +2,7 @@ using Wdc.Cube.Tests.Navigation;
 
 namespace Wdc.Cube.Tests.Dispatching;
 
-/// <summary>How <see cref="CubeApplication"/> uses its dispatcher (decision D-01).</summary>
+/// <summary>How <see cref="CubeApplication"/> uses its dispatcher.</summary>
 public sealed class ApplicationDispatchTests
 {
     [Fact]

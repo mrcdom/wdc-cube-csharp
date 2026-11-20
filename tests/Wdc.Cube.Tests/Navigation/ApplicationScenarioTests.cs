@@ -3,7 +3,7 @@ using Wdc.Cube.Testing;
 namespace Wdc.Cube.Tests.Navigation;
 
 /// <summary>
-/// Use-case scenarios ported from <c>Cube.test.ts</c> (TypeScript): a session guard that redirects to login,
+/// Use-case scenarios: a session guard that redirects to login,
 /// composition through scope slots, the address published from the live presenters, and navigation from an address.
 /// </summary>
 /// <remarks>

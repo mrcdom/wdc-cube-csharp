@@ -8,7 +8,7 @@ namespace Wdc.Cube;
 /// given moment is the sum of these presenters.
 /// </summary>
 /// <remarks>
-/// <para>Navigation guarantees (decision D-02):</para>
+/// <para>Navigation guarantees:</para>
 /// <list type="bullet">
 /// <item>every presenter created gets <see cref="ICubePresenter.Release"/> exactly once, leaves first;</item>
 /// <item>a presenter that returns <see langword="false"/> is accepted and the face stops there;</item>
@@ -18,11 +18,11 @@ namespace Wdc.Cube;
 /// <item>the address is republished at the end, on success or failure.</item>
 /// </list>
 /// <para>
-/// All presentation code runs on <see cref="Dispatcher"/> (decision D-01). Members returning a <see cref="Task"/>
+/// All presentation code runs on <see cref="Dispatcher"/>. Members returning a <see cref="Task"/>
 /// marshal themselves; synchronous members that read or change the navigation state require the caller to be on it.
 /// </para>
 /// <para>
-/// Concurrent requests (decision D-13): a redirect from inside the running attempt retargets it; a request from
+/// Concurrent requests: a redirect from inside the running attempt retargets it; a request from
 /// outside waits for it to end, only the latest one waits, and a failed attempt discards the waiting request.
 /// </para>
 /// </remarks>
@@ -218,7 +218,7 @@ public class CubeApplication
             : Dispatcher.InvokeAsync(() => Request(navigation));
 
     /// <summary>
-    /// Decides what a navigation request does while another may be running (decision D-13):
+    /// Decides what a navigation request does while another may be running:
     /// <list type="bullet">
     /// <item>no navigation running: it runs now;</item>
     /// <item>it comes from inside the running attempt (a presenter redirecting from its <c>ApplyParameters</c>): it

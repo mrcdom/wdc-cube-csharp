@@ -1,6 +1,6 @@
 namespace Wdc.Cube;
 
-/// <summary>Where a scope is in the render cycle (decision D-03).</summary>
+/// <summary>Where a scope is in the render cycle.</summary>
 public enum ScopeRenderState
 {
     /// <summary>What is on screen matches the scope.</summary>

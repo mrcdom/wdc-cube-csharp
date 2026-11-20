@@ -6,7 +6,7 @@ using Wdc.Domain;
 namespace Wdc.Rest.Server;
 
 /// <summary>
-/// Holds the transactions remote clients open (decision D-17): each one keeps a connection between requests, is used by
+/// Holds the transactions remote clients open: each one keeps a connection between requests, is used by
 /// one request at a time, belongs to an owner, and is rolled back by the reaper when idle or too old.
 /// </summary>
 /// <remarks>

@@ -7,7 +7,7 @@ namespace Wdc.Cube.Avalonia;
 /// <summary>
 /// Base of a control that draws a scope (its <c>DataContext</c>). It binds itself as the scope's
 /// <see cref="IScopeView"/> while on screen and confirms each flush with <see cref="Scope.MarkRendered"/> after
-/// Avalonia has laid out and rendered, so the scope becomes clean only when the screen shows it (decision D-03).
+/// Avalonia has laid out and rendered, so the scope becomes clean only when the screen shows it.
 /// </summary>
 /// <remarks>
 /// Bind the markup to the scope's properties (compiled bindings, <c>x:DataType</c>): the scope raises

@@ -7,7 +7,7 @@ using Wdc.Domain;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>
-/// The errata of a purchase already made (decision D-25), in process and through HTTP: Admin and Manager reduce or
+/// The errata of a purchase already made, in process and through HTTP: Admin and Manager reduce or
 /// remove items, with a reason, and the record says who, when and what each item went from and to.
 /// </summary>
 public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)

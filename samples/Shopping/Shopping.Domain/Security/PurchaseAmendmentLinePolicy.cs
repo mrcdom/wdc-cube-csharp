@@ -4,7 +4,7 @@ using Wdc.Domain;
 namespace Shopping.Domain.Security;
 
 /// <summary>
-/// The lines of the errata (decision D-25): they enter only with their errata, which fills them in, and then do not
+/// The lines of the errata: they enter only with their errata, which fills them in, and then do not
 /// change nor leave, except by maintenance. Read by whoever reads the errata.
 /// </summary>
 public static class PurchaseAmendmentLinePolicy

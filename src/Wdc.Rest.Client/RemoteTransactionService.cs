@@ -16,7 +16,7 @@ internal sealed class RemoteTransactionState(string id)
 }
 
 /// <summary>
-/// <see cref="ITransactionService"/> over the server's remote transactions (decision D-17): the same demarcation as
+/// <see cref="ITransactionService"/> over the server's remote transactions: the same demarcation as
 /// the local database, so a use case runs unchanged on either side. The open transaction follows the calling flow
 /// (<see cref="AsyncLocal{T}"/>), and every call of the same <see cref="RestClient"/> in that flow carries its
 /// <c>X-Tx-Id</c>.

@@ -7,7 +7,7 @@ using Wdc.Domain;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>
-/// Who reaches what (decisions D-19, D-23 and D-24, bug 13 of the Kotlin report). The same tests run in process and
+/// Who reaches what. The same tests run in process and
 /// through HTTP: the rules are the protected repositories', not the transport's. The roles of the application follow
 /// the business rules in every case; <c>suporte</c> (<see cref="Role.Super"/>) maintains the solution.
 /// </summary>

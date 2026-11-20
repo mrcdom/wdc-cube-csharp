@@ -4,7 +4,7 @@ using Wdc.Domain;
 namespace Shopping.Domain.Purchases;
 
 /// <summary>
-/// An errata of a purchase already made (decision D-25): who corrected it, when, why, and what each item went from
+/// An errata of a purchase already made: who corrected it, when, why, and what each item went from
 /// and to. Inserting it is what applies the correction to the purchase's items; once inserted it does not change.
 /// </summary>
 public sealed class PurchaseAmendment : IKeyedEntity

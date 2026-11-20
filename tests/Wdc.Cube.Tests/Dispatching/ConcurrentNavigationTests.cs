@@ -4,7 +4,7 @@ using Wdc.Cube.Tests.Navigation;
 namespace Wdc.Cube.Tests.Dispatching;
 
 /// <summary>
-/// Navigation requests that arrive while another navigation is running (decision D-13). Every test drives a
+/// Navigation requests that arrive while another navigation is running. Every test drives a
 /// <see cref="ManualDispatcher"/>, so the interleaving is exactly the one written.
 /// </summary>
 public sealed class ConcurrentNavigationTests

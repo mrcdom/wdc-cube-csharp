@@ -24,7 +24,7 @@ public sealed class RestClient
 
     public string ClientId => _options.ClientId;
 
-    /// <summary>The remote transaction of the calling flow (decision D-17: follows <c>await</c>, like the local one).</summary>
+    /// <summary>The remote transaction of the calling flow (follows <c>await</c>, like the local one).</summary>
     internal AsyncLocal<RemoteTransactionState?> Ambient { get; } = new();
 
     internal string? CurrentTransactionId => Ambient.Value is { Active: true } state ? state.Id : null;

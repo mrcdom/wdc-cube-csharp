@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Avalonia renderer for Cube (decision D-16): the presentation dispatcher on the UI thread, a scope-to-view
+  <!-- Avalonia renderer for Cube: the presentation dispatcher on the UI thread, a scope-to-view
        locator, and the render confirmation after Avalonia's render pass. -->
   <PropertyGroup>
     <Description>Avalonia renderer for Cube scopes (desktop).</Description>

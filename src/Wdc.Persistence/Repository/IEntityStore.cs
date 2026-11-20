@@ -1,7 +1,7 @@
 namespace Wdc.Persistence;
 
 /// <summary>
-/// What a cascade needs from the repository of a child (decision D-23): the child is written by its own repository,
+/// What a cascade needs from the repository of a child: the child is written by its own repository,
 /// so its rules (a validation in an overridden <c>Insert</c>) hold in cascade too.
 /// </summary>
 internal interface IEntityStore<TEntity>

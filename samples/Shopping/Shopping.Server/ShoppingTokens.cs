@@ -23,7 +23,7 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingStore st
 
     public ShoppingAuthOptions Options => options;
 
-    /// <summary>Who acts for an authenticated request (decision D-24): the token's user and roles; nobody without them.</summary>
+    /// <summary>Who acts for an authenticated request: the token's user and roles; nobody without them.</summary>
     public static Actor? ActorOf(ClaimsPrincipal user)
     {
         ArgumentNullException.ThrowIfNull(user);

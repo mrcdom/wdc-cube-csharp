@@ -5,7 +5,7 @@ using Wdc.Domain;
 namespace Wdc.Rest.Server;
 
 /// <summary>
-/// The transaction a request runs in (decisions D-09 and D-17):
+/// The transaction a request runs in:
 /// <list type="number">
 /// <item>with <c>X-Tx-Id</c>: inside that remote transaction — reads too, so they see the transaction's own writes;</item>
 /// <item>a write without it while the owner has a remote transaction open: refused (409), see

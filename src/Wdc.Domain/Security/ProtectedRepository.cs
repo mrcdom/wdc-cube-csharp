@@ -1,7 +1,7 @@
 namespace Wdc.Domain;
 
 /// <summary>
-/// A repository seen by whoever is acting (decision D-24): every operation goes through the entity's
+/// A repository seen by whoever is acting: every operation goes through the entity's
 /// <see cref="RepositoryPolicy{TEntity,TCriteria,TKey}"/>, and so does every child it writes in cascade. This is what
 /// a host hands to a session — in Blazor Server as in the REST server — so the rules hold in every host.
 /// </summary>

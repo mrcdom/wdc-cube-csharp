@@ -28,7 +28,7 @@ public static class Places
 
     public static readonly Place Receipt = Home.Child<MainPresenter>("receipt", app => new ReceiptPresenter(app));
 
-    /// <summary>The purchases of every customer (decision D-25): only for whoever may correct them.</summary>
+    /// <summary>The purchases of every customer: only for whoever may correct them.</summary>
     public static readonly Place Admin = Home.Child<MainPresenter>("admin", app => new AdminPresenter(app));
 
     /// <summary>Correcting one purchase, below the list it came from.</summary>

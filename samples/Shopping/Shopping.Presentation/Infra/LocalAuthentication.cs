@@ -7,7 +7,7 @@ namespace Shopping.Presentation.Infra;
 
 /// <summary>
 /// Checks credentials against the user table, in this process, and says who is acting to the session's protected
-/// repositories (decision D-24).
+/// repositories.
 /// </summary>
 /// <param name="store">Where the users are: the trusted inside (nobody is acting before the login).</param>
 /// <param name="actors">The actor of the session's protected repositories: set at login and resume, cleared at logout.</param>

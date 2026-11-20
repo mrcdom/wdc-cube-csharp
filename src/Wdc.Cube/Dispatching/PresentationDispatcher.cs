@@ -1,9 +1,9 @@
 namespace Wdc.Cube;
 
 /// <summary>
-/// Runs the presentation code of one application one item at a time (decision D-01). Actions, navigation and
+/// Runs the presentation code of one application one item at a time. Actions, navigation and
 /// scope flushes run here, and every <c>await</c> inside them comes back here, so presenters are written as if the
-/// application had a single thread, as in the TypeScript and Kotlin versions.
+/// application had a single thread.
 /// </summary>
 /// <remarks>
 /// <para>

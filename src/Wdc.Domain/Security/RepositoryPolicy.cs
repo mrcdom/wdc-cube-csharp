@@ -1,7 +1,7 @@
 namespace Wdc.Domain;
 
 /// <summary>
-/// The rules of an entity per role (decision D-24): what each actor may do, which rows they reach, which fields they
+/// The rules of an entity per role: what each actor may do, which rows they reach, which fields they
 /// read, and the checks of each write. Applied by <see cref="ProtectedRepository{TEntity,TCriteria,TKey}"/>, in any host,
 /// and to the entity written in cascade through another one.
 /// </summary>

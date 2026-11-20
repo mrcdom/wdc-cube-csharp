@@ -4,7 +4,7 @@ using Avalonia.Controls.Templates;
 namespace Wdc.Cube.Avalonia;
 
 /// <summary>
-/// Which control draws each scope type (the <c>ViewRegistry</c> of decision D-04). Install it in the application's
+/// Which control draws each scope type (as <c>ViewRegistry</c> does in Blazor). Install it in the application's
 /// <c>DataTemplates</c>; a <c>ContentControl</c> whose content is a scope then draws it with its view. A new scope
 /// instance always gets a new control (like Blazor's <c>@key</c> by instance): no state leaks between faces.
 /// </summary>

@@ -3,8 +3,7 @@ using System.Security.Cryptography;
 namespace Shopping.Domain.Users;
 
 /// <summary>
-/// Password hashing: PBKDF2-SHA256 with a random salt, stored as <c>pbkdf2-sha256$iterations$salt$hash</c>
-/// (decision D-15; the Kotlin demo used an unsalted MD5).
+/// Password hashing: PBKDF2-SHA256 with a random salt, stored as <c>pbkdf2-sha256$iterations$salt$hash</c>.
 /// </summary>
 public static class PasswordHash
 {
@@ -23,7 +22,7 @@ public static class PasswordHash
 
     /// <summary>
     /// Reads a stored hash: the iterations, the salt and the derived bytes. A login challenge hands the first two to
-    /// the client, which derives the same bytes from the password without sending it (decision D-19).
+    /// the client, which derives the same bytes from the password without sending it.
     /// </summary>
     public static bool TryRead(string? stored, out int iterations, out byte[] salt, out byte[] hash)
     {

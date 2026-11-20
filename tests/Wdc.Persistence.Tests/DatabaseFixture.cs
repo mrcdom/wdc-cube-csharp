@@ -3,7 +3,7 @@ using System.Data.Common;
 namespace Wdc.Persistence.Tests;
 
 /// <summary>
-/// One schema per test run, created and dropped by the fixture (decision D-14). Without the connection string in the
+/// One schema per test run, created and dropped by the fixture. Without the connection string in the
 /// environment the tests are skipped, saying why.
 /// </summary>
 public abstract class DatabaseFixture : IAsyncLifetime
