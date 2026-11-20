@@ -10,6 +10,7 @@ public sealed class PurchaseCriteria : Criteria<PurchaseCriteria, Purchase, Purc
         UserId = Equality(ValueKinds.Int64, "userId");
         BuyDate = Comparable(ValueKinds.Instant, "buyDate");
         ProductId = Equality(ValueKinds.Int64, "productId");
+        CustomerName = Text("customerName");
     }
 
     public ComparableCriterion<PurchaseCriteria, long?> PurchaseId { get; }
@@ -20,4 +21,7 @@ public sealed class PurchaseCriteria : Criteria<PurchaseCriteria, Purchase, Purc
 
     /// <summary>Purchases that contain the product (a field of the items, not of the purchase).</summary>
     public Criterion<PurchaseCriteria, long?> ProductId { get; }
+
+    /// <summary>Purchases of users whose name matches (a field of the user, not of the purchase).</summary>
+    public TextCriterion<PurchaseCriteria> CustomerName { get; }
 }

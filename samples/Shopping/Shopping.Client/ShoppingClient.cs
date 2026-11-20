@@ -29,6 +29,8 @@ public sealed class ShoppingClient
             new RemoteProductRepository(Rest),
             new RemotePurchaseRepository(Rest),
             new RemotePurchaseItemRepository(Rest),
+            new RemotePurchaseAmendmentRepository(Rest),
+            new RemotePurchaseAmendmentLineRepository(Rest),
             new RemoteTransactionService(Rest));
     }
 

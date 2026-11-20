@@ -11,4 +11,6 @@ public sealed record ShoppingRepositories(
     IProductRepository Products,
     IPurchaseRepository Purchases,
     IPurchaseItemRepository PurchaseItems,
+    IPurchaseAmendmentRepository Amendments,
+    IPurchaseAmendmentLineRepository AmendmentLines,
     ITransactionService Transactions);

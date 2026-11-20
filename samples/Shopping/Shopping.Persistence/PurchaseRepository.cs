@@ -20,6 +20,7 @@ public sealed class PurchaseRepository(Database database)
         .Column("buyDate", "buy_date")
         .Reference("user", "user_id", () => UserRepository.Mapping)
         .Collection("items", "purchase_id", () => PurchaseItemRepository.Mapping, cascadeDelete: true) // resolved lazily
+        .Collection("amendments", "purchase_id", () => PurchaseAmendmentRepository.Mapping, cascadeDelete: true)
         .Conditions<PurchaseCriteria>(Conditions)
         .Ordering<PurchaseOrderBy>(o => o switch
         {
@@ -48,7 +49,25 @@ public sealed class PurchaseRepository(Database database)
         t.Translate("user_id", criteria.UserId),
         t.Translate("buy_date", criteria.BuyDate),
         ExistsItemMatching(criteria, t),
+        ExistsUserNamed(criteria, t),
     ]);
+
+    /// <summary>Purchases of users whose name matches: the name is a field of the user, correlated by the foreign key.</summary>
+    private static ISqlFragment? ExistsUserNamed(PurchaseCriteria criteria, FilterContext t)
+    {
+        if (!FilterContext.Asks(criteria.CustomerName))
+        {
+            return null;
+        }
+
+        var user = t.NewAlias("us");
+        var onName = t.Translate(Sql.Column(user, "name"), criteria.CustomerName);
+        return Sql.Exists(w =>
+        {
+            w.Append("SELECT 1 FROM ").Table("user_account").Append(' ').Identifier(user).Append(" WHERE ");
+            Sql.And([Sql.Equal(Sql.Column(user, "id"), t.Column("user_id")), onName])!.Render(w);
+        });
+    }
 
     /// <summary>
     /// Purchases that contain the product asked for. The product is not a column of the purchase but of its items:

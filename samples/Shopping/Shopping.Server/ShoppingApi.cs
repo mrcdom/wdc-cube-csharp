@@ -12,7 +12,7 @@ using Wdc.Rest.Server;
 namespace Shopping.Server;
 
 /// <summary>
-/// The Shopping API: the four repositories as REST routes (decision D-18), remote transactions (D-17), JWT login
+/// The Shopping API: the repositories as REST routes (decision D-18), remote transactions (D-17), JWT login
 /// (D-19) and the product image. Who reaches what is in the policies of the protected repositories (D-24), the same
 /// in every host; here, the actor comes from the request's token.
 /// </summary>
@@ -84,6 +84,10 @@ public static class ShoppingApi
             c => Of(c).Purchases).Map(app);
         new RepositoryRpc<PurchaseItem, PurchaseItemCriteria, long>("/api/repo/purchase-item", PurchaseItem.Model,
             () => new PurchaseItemCriteria(), c => Of(c).PurchaseItems).Map(app);
+        new RepositoryRpc<PurchaseAmendment, PurchaseAmendmentCriteria, long>("/api/repo/purchase-amendment",
+            PurchaseAmendment.Model, () => new PurchaseAmendmentCriteria(), c => Of(c).Amendments).Map(app);
+        new RepositoryRpc<PurchaseAmendmentLine, PurchaseAmendmentLineCriteria, long>("/api/repo/purchase-amendment-line",
+            PurchaseAmendmentLine.Model, () => new PurchaseAmendmentLineCriteria(), c => Of(c).AmendmentLines).Map(app);
     }
 
     private static ShoppingRepositories Of(HttpContext context) => context.RequestServices.GetRequiredService<ShoppingRepositories>();

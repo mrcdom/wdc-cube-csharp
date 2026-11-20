@@ -17,6 +17,7 @@ public static class ShoppingDemoData
             var admin = await NewUser(repositories, "admin", "admin", "João da Silva", "Admin", cancellationToken);
             await NewUser(repositories, "fulano", "fulano", "Fulano de Tal", "Customer", cancellationToken);
             await NewUser(repositories, "beotrano", "beotrano", "Beotrano de Alguma Coisa", "Customer", cancellationToken);
+            await NewUser(repositories, "gerente", "gerente", "Gerente de Loja", "Manager", cancellationToken);
             await NewUser(repositories, "suporte", "suporte", "Suporte Técnico", "Super", cancellationToken); // maintenance (D-24)
 
             var coffee = await NewProduct(repositories, "Cafeteira design italiano", 199.99m, CoffeeMaker, "cafeteira.png", cancellationToken);

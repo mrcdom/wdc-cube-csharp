@@ -10,6 +10,8 @@ public sealed class Purchase : IKeyedEntity
         .Field(ValueKinds.Instant, "buyDate", p => p.BuyDate, (p, v) => p.BuyDate = v)
         .Reference("user", p => p.User, (p, v) => p.User = v, () => User.Model)
         .Collection("items", p => p.Items, (p, v) => p.Items = v, () => PurchaseItem.Model, () => new PurchaseItemCriteria())
+        .Collection("amendments", p => p.Amendments, (p, v) => p.Amendments = v, () => PurchaseAmendment.Model,
+            () => new PurchaseAmendmentCriteria())
         .Build();
 
     public long? Id { get; set; }
@@ -19,6 +21,9 @@ public sealed class Purchase : IKeyedEntity
     public User? User { get; set; }
 
     public List<PurchaseItem>? Items { get; set; }
+
+    /// <summary>The errata of the purchase (decision D-25), written only by inserting them.</summary>
+    public List<PurchaseAmendment>? Amendments { get; set; }
 
     object? IKeyedEntity.Key => Id;
 }

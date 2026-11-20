@@ -20,13 +20,18 @@ public static class PurchasePolicy
             Authorize = Permissions.Allow("purchase"),
             Scope = (c, criteria) => Permissions.Reach(c, id => criteria.UserId.Restrict(id)),
             RestrictToId = (criteria, id) => criteria.PurchaseId.Restrict(id),
-            SanitizeProjection = (_, p) => UserPolicy.DropPassword(p.User),
-            SanitizeOutput = (_, p) => UserPolicy.DropPassword(p.User),
+            SanitizeProjection = Sanitize,
+            SanitizeOutput = Sanitize,
             BeforeInsert = (c, purchase, _) =>
             {
                 if (Permissions.ReachOf(c.Actor) is { } owner)
                 {
                     purchase.User = new User { Id = owner }; // bought by whoever is acting, whatever was sent
+                }
+                else if (purchase.User?.Id is null)
+                {
+                    // Whoever reaches all the data may name the buyer; without one, it is themselves.
+                    purchase.User = new User { Id = long.Parse(c.Actor.Id, System.Globalization.CultureInfo.InvariantCulture) };
                 }
 
                 // The items, inserted in cascade, go through the purchase-item policy (price from the product).
@@ -57,6 +62,12 @@ public static class PurchasePolicy
                 }
             },
         };
+    }
+
+    private static void Sanitize(PolicyContext context, Purchase purchase)
+    {
+        UserPolicy.DropPassword(purchase.User);
+        PurchaseAmendmentPolicy.Sanitize(context, purchase.Amendments);
     }
 
     /// <summary>Whether any of the purchases that match was already made.</summary>

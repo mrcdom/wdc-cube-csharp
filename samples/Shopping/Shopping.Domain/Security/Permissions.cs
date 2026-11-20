@@ -16,9 +16,10 @@ public static class Permissions
     {
         [Role.Super] = ["*", AllData],
         [Role.Admin] = ["*", AllData],
-        [Role.Manager] = ["user:read", "product:read", "product:write", "product:delete", "purchase:read", "purchase-item:read", AllData],
+        [Role.Manager] = ["user:read", "product:read", "product:write", "product:delete", "purchase:read", "purchase-item:read",
+            "purchase-amendment:read", "purchase-amendment:write", AllData],
         [Role.Customer] = ["user:read", "product:read", "purchase:read", "purchase:write", "purchase-item:read", "purchase-item:write",
-            "purchase-item:delete"],
+            "purchase-item:delete", "purchase-amendment:read"],
     };
 
     /// <summary>Who acts: the user's id and roles (comma-separated <see cref="Role"/> names, as the user record keeps them).</summary>

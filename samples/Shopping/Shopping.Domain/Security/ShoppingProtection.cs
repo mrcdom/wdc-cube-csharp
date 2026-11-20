@@ -9,7 +9,10 @@ namespace Shopping.Domain.Security;
 /// </summary>
 public static class ShoppingProtection
 {
-    public static ShoppingRepositories Protect(ShoppingRepositories store, IActorSource actors)
+    /// <param name="store">The trusted inside: the repositories of the store.</param>
+    /// <param name="actors">Who is acting, at each call.</param>
+    /// <param name="time">The clock of what the server dates (an errata); the system's by default.</param>
+    public static ShoppingRepositories Protect(ShoppingRepositories store, IActorSource actors, TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(actors);
@@ -19,6 +22,8 @@ public static class ShoppingProtection
             new ProtectedProductRepository(store.Products, protection),
             new ProtectedPurchaseRepository(store.Purchases, store, protection),
             new ProtectedPurchaseItemRepository(store.PurchaseItems, store, protection),
+            new ProtectedPurchaseAmendmentRepository(store.Amendments, store, time ?? TimeProvider.System, protection),
+            new ProtectedPurchaseAmendmentLineRepository(store.AmendmentLines, protection),
             store.Transactions);
     }
 }
