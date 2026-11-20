@@ -21,7 +21,12 @@ public sealed class HomeScope : Scope
     /// <summary>The purchase history panel (its own presenter).</summary>
     public PurchasesPanelScope? Purchases { get; set => Set(ref field, value); }
 
+    /// <summary>Whether the administration is offered (whoever may correct purchases).</summary>
+    public bool ShowAdmin { get; set => Set(ref field, value); }
+
     public Func<Task> OnOpenCart { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnOpenAdmin { get; set; } = ScopeActions.Unbound();
 
     public Func<Task> OnExit { get; set; } = ScopeActions.Unbound();
 

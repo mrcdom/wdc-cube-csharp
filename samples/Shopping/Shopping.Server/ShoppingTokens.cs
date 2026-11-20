@@ -103,7 +103,7 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingStore st
         });
         var refresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         _refresh[refresh] = (userId, now + options.RefreshLifetime);
-        return new Tokens(userId, name, access, refresh, expires, HistoryKeys.Derive(options.HistoryMasterKey, userId));
+        return new Tokens(userId, name, access, refresh, expires, HistoryKeys.Derive(options.HistoryMasterKey, userId), roles);
     }
 
     private async Task<User?> FindUser(string userName, CancellationToken cancellationToken)
@@ -134,5 +134,5 @@ public sealed class ShoppingTokens(ShoppingAuthOptions options, ShoppingStore st
     }
 
     public sealed record Tokens(long UserId, string Name, string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt,
-        string HistoryKey);
+        string HistoryKey, string? Roles);
 }

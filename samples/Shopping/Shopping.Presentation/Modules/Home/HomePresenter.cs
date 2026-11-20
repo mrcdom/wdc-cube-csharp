@@ -48,6 +48,8 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
             Scope.OnOpenCart = Action(() => Flip(Places.Cart));
             Scope.OnExit = Action(OnExit);
             Scope.OnHome = Action(() => Flip(Places.Home));
+            Scope.ShowAdmin = subject.Can(Admin.AdminPresenter.Permission);
+            Scope.OnOpenAdmin = Action(() => Flip(Places.Admin));
 
             _products = new ProductsPanelPresenter(App, OpenProduct);
             _purchases = new PurchasesPanelPresenter(App, OpenReceipt);

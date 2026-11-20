@@ -50,6 +50,6 @@ public sealed class LocalAuthentication(ShoppingRepositories store, ActorSource 
     {
         var id = user.Id!.Value;
         actors.Current = Permissions.ActorOf(id, user.Roles);
-        return new Subject(id, user.Name ?? fallbackName, HistoryKey: historyKeyOf?.Invoke(id));
+        return new Subject(id, user.Name ?? fallbackName, HistoryKey: historyKeyOf?.Invoke(id), Roles: user.Roles);
     }
 }

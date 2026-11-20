@@ -82,7 +82,9 @@ internal sealed class Shop
         var home = Maybe<Modules.Home.HomePresenter>(Places.Home);
         return home is not null && (home.Scope.Products?.Loading == true || home.Scope.Purchases?.Loading == true)
                || Maybe<Modules.Login.LoginPresenter>(Places.Login)?.Scope.Loading == true
-               || Maybe<Modules.Home.Cart.CartPresenter>(Places.Cart)?.Scope.Buying == true;
+               || Maybe<Modules.Home.Cart.CartPresenter>(Places.Cart)?.Scope.Buying == true
+               || Maybe<Modules.Home.Admin.AdminPresenter>(Places.Admin)?.Scope.Loading == true
+               || Maybe<Modules.Home.Admin.Amend.AmendPresenter>(Places.Amend)?.Scope.Saving == true;
     }
 
     public async Task Do(Func<Task> action)

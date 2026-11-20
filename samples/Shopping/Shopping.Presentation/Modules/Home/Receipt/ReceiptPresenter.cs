@@ -52,6 +52,9 @@ public sealed class ReceiptPresenter(MainPresenter app) : CubePresenter<MainPres
                 Items = Mark.List(
                     new PurchaseItem { Id = Mark.Int64, Price = Mark.Decimal, Amount = Mark.Int32, Product = new Domain.Products.Product { Name = Mark.String } },
                     new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.OldestFirst)),
+                Amendments = Mark.List(
+                    new PurchaseAmendment { Date = Mark.Instant, Reason = Mark.String },
+                    new PurchaseAmendmentCriteria().WithOrderBy(PurchaseAmendmentOrderBy.OldestFirst)),
             });
         var purchase = (await App.Repositories.Purchases.Fetch(criteria, limit: 1)).FirstOrDefault()
                        ?? throw new PurchaseNotFoundException(purchaseId);
@@ -61,5 +64,7 @@ public sealed class ReceiptPresenter(MainPresenter app) : CubePresenter<MainPres
         Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : string.Empty;
         Scope.Lines = [.. items.Select(i => new ReceiptLine(i.Product?.Name ?? string.Empty, i.Amount ?? 0, Formats.Money(i.Price ?? 0)))];
         Scope.TotalLabel = Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0)));
+        Scope.Corrections = [.. (purchase.Amendments ?? []).Select(a =>
+            $"Compra corrigida em {(a.Date is { } when ? Formats.Date(when) : string.Empty)}: {a.Reason}")];
     }
 }

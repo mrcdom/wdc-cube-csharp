@@ -8,7 +8,7 @@ namespace Shopping.Server;
 /// <summary>
 /// <c>GET /api/auth/challenge?userName=</c> → <c>{"nonce","salt","iterations"}</c>;
 /// <c>POST /api/auth/login</c> <c>{"userName","nonce","digest"}</c> and <c>POST /api/auth/refresh</c>
-/// <c>{"refreshToken"}</c> → <c>{"userId","name","accessToken","refreshToken","expiresAt","historyKey"}</c>;
+/// <c>{"refreshToken"}</c> → <c>{"userId","name","accessToken","refreshToken","expiresAt","historyKey","roles"}</c>;
 /// <c>POST /api/auth/logout</c> <c>{"refreshToken"}</c> → <c>{"success":true}</c>.
 /// </summary>
 public static class AuthRoutes
@@ -80,6 +80,7 @@ public static class AuthRoutes
         w.WriteString("refreshToken", tokens.RefreshToken);
         w.WriteString("expiresAt", tokens.ExpiresAt);
         w.WriteString("historyKey", tokens.HistoryKey);
+        w.WriteString("roles", tokens.Roles);
         w.WriteEndObject();
     });
 
