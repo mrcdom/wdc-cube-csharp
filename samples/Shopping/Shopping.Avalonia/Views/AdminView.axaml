@@ -1,0 +1,53 @@
+<cube:ScopeView xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:m="using:Shopping.Presentation.Modules.Home.Admin"
+                xmlns:v="using:Shopping.Avalonia.Views"
+                x:Class="Shopping.Avalonia.Views.AdminView"
+                x:DataType="m:AdminScope">
+  <Panel>
+    <ContentControl Content="{Binding Content}" IsVisible="{Binding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    <Border Classes="card" IsVisible="{Binding Content, Converter={x:Static ObjectConverters.IsNull}}">
+      <StackPanel Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="h2" Text="Administração" />
+          <Border Classes="chip"><TextBlock Text="{Binding CountLabel}" /></Border>
+        </StackPanel>
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Classes="outlined" Content="Filtrar" Margin="8,0,0,0" Click="OnFilter" />
+          <TextBox x:Name="CustomerBox" PlaceholderText="Nome do cliente" KeyDown="OnCustomerKey" />
+        </DockPanel>
+        <TextBlock Classes="muted" Text="Nenhuma compra encontrada"
+                   IsVisible="{Binding Purchases, Converter={x:Static v:Is.Empty}}" />
+        <ItemsControl x:Name="Rows" ItemsSource="{Binding Purchases}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="m:AdminPurchaseRow">
+              <Button Classes="purchase-card" Click="OnOpen">
+                <Grid ColumnDefinitions="70,*,100,Auto">
+                  <TextBlock Classes="muted" Text="{Binding NumberLabel}" />
+                  <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Text="{Binding CustomerLabel}" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" Text="{Binding ItemsLabel}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="2">
+                    <TextBlock Classes="muted" Text="{Binding DateLabel}" TextAlignment="Right" />
+                    <TextBlock Classes="price" Text="{Binding TotalLabel}" TextAlignment="Right" />
+                  </StackPanel>
+                  <Border Grid.Column="3" Classes="chip" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{Binding Corrected}">
+                    <TextBlock Text="corrigida" />
+                  </Border>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <DockPanel>
+          <Button DockPanel.Dock="Left" Content="◀ Anterior" IsEnabled="{Binding HasPrevious}" Click="OnPrevious" />
+          <Button DockPanel.Dock="Right" Content="Próxima ▶" IsEnabled="{Binding HasNext}" Click="OnNext" />
+          <TextBlock Text="{Binding PageLabel}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </DockPanel>
+        <Button Classes="outlined" Content="Voltar" HorizontalAlignment="Right" Click="OnBack" />
+      </StackPanel>
+    </Border>
+  </Panel>
+</cube:ScopeView>

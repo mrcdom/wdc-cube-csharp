@@ -22,6 +22,9 @@
               <TextBlock x:Name="CartBadge" Text="{Binding CartCount}" Foreground="White" FontSize="11" />
             </Border>
           </Panel>
+          <Button x:Name="AdminButton" Classes="onPrimary" Click="OnAdmin" IsVisible="{Binding ShowAdmin}">
+            <TextBlock Text="Administração" FontWeight="SemiBold" />
+          </Button>
           <Button Classes="onPrimary" Click="OnExit"><TextBlock Text="Sair" FontWeight="SemiBold" /></Button>
         </StackPanel>
         <TextBlock x:Name="Greeting" Text="{Binding Greeting}" Foreground="White" VerticalAlignment="Center"

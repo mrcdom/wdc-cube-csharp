@@ -4,6 +4,10 @@
     <header class="app-header">
         <button class="logo" @onclick="Scope.OnHome">🛍 Shopping</button>
         <span class="greeting">@Scope.Greeting</span>
+        @if (Scope.ShowAdmin)
+        {
+            <button class="admin-button" @onclick="Scope.OnOpenAdmin">Administração</button>
+        }
         <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="Carrinho">
             🛒
             @if (Scope.CartCount > 0)

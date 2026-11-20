@@ -1,0 +1,14 @@
+@inherits ScopeView<AmendLineScope>
+
+<tr class="amend-line">
+    <td class="name">@Scope.Name</td>
+    <td class="value">@Scope.PriceLabel</td>
+    <td class="qty">@Scope.Quantity</td>
+    <td class="qty">
+        <span class="quantity">
+            <button class="minus" disabled="@(Scope.NewQuantity <= 0)" @onclick="() => Scope.OnChangeNewQuantity(Scope.NewQuantity - 1)">−</button>
+            <span class="value new">@Scope.NewQuantity</span>
+            <button class="plus" disabled="@(Scope.NewQuantity >= Scope.Quantity)" @onclick="() => Scope.OnChangeNewQuantity(Scope.NewQuantity + 1)">+</button>
+        </span>
+    </td>
+</tr>

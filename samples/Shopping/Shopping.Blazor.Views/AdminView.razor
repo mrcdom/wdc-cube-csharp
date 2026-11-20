@@ -1,0 +1,59 @@
+@inherits ScopeView<AdminScope>
+
+@if (Scope.Content is { } content)
+{
+    <ViewSlot Scope="content" />
+}
+else
+{
+    <section class="card admin-page">
+        <h2>Administração <span class="chip">@Scope.CountLabel</span></h2>
+        <form class="admin-filter" @onsubmit="() => Scope.OnFilter(_customer)" @onsubmit:preventDefault>
+            <input class="customer" placeholder="Nome do cliente" value="@_customer"
+                   @oninput="e => _customer = e.Value?.ToString() ?? string.Empty" />
+            <button class="outlined filter" type="submit">Filtrar</button>
+        </form>
+        @if (!Scope.Loading && Scope.Purchases.Count == 0)
+        {
+            <p class="muted">Nenhuma compra encontrada</p>
+        }
+        @foreach (var purchase in Scope.Purchases)
+        {
+            <button @key="purchase.Id" class="admin-row" @onclick="() => Scope.OnOpenPurchase(purchase.Id)">
+                <span class="number">@purchase.NumberLabel</span>
+                <span class="customer">@purchase.CustomerLabel</span>
+                <span class="date">@purchase.DateLabel</span>
+                <span class="items">@purchase.ItemsLabel</span>
+                <span class="price">@purchase.TotalLabel</span>
+                @if (purchase.Corrected)
+                {
+                    <span class="chip corrected">corrigida</span>
+                }
+            </button>
+        }
+        <nav class="pager">
+            <button class="previous" disabled="@(!Scope.HasPrevious)" @onclick="Scope.OnPrevious">◀ Anterior</button>
+            <span class="page">@Scope.PageLabel</span>
+            <button class="next" disabled="@(!Scope.HasNext)" @onclick="Scope.OnNext">Próxima ▶</button>
+        </nav>
+        <div class="actions">
+            <button class="outlined back" @onclick="Scope.OnBack">Voltar</button>
+        </div>
+    </section>
+}
+
+@code {
+    // What is being typed: view plumbing; the presenter receives it on submit.
+    private string _customer = string.Empty;
+    private string? _shown;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (_shown != Scope.CustomerFilter)
+        {
+            _shown = Scope.CustomerFilter; // the filter that came from the address
+            _customer = Scope.CustomerFilter;
+        }
+    }
+}

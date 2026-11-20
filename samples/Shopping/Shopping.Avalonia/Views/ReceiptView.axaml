@@ -3,6 +3,7 @@
                 xmlns:cube="using:Wdc.Cube.Avalonia"
                 xmlns:m="using:Shopping.Presentation.Modules.Home.Receipt"
                 xmlns:v="using:Shopping.Avalonia.Views"
+                xmlns:sys="using:System"
                 x:Class="Shopping.Avalonia.Views.ReceiptView"
                 x:DataType="m:ReceiptScope">
   <Border Classes="card">
@@ -40,6 +41,15 @@
         <TextBlock Text="Total: " FontSize="18" />
         <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="18" FontWeight="Bold" />
       </StackPanel>
+      <ItemsControl x:Name="Corrections" ItemsSource="{Binding Corrections}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="sys:String">
+            <Border Classes="chip" Padding="10,6" Margin="0,4,0,0" HorizontalAlignment="Stretch">
+              <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
       <Button Classes="primary" Content="Continuar Comprando" HorizontalAlignment="Right" Click="OnContinue" />
     </StackPanel>
   </Border>

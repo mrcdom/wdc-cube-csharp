@@ -176,6 +176,48 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
     });
 
     [Fact]
+    public Task Admin_FiltersByCustomer_AndCorrectsAPurchase() => Headless.Run(async () =>
+    {
+        var desktop = await Open();
+        await Login(desktop, "admin");
+        Desktop.Click(desktop.Find<Button>("AdminButton"));
+        await desktop.Until(() => desktop.All<AdminView>().Any() && desktop.All<Button>().Any(b => b.Classes.Contains("purchase-card")
+                                                                                                && b.IsEffectivelyVisible), "the administration");
+        desktop.Find<TextBox>("CustomerBox").Text = "Silva";
+        Desktop.Click(desktop.ButtonWith("Filtrar"));
+        await desktop.Until(() => AdminRows(desktop) is { Count: > 0 } rows && rows.All(r => r.CustomerLabel == "João da Silva"),
+            "only the admin's purchases");
+        desktop.Capture("6-admin");
+
+        // The demo purchase of 2011: a ball and a tape. The tape was not delivered.
+        Desktop.Click(desktop.All<Button>().First(b => b is { IsEffectivelyVisible: true, DataContext: Presentation.Modules.Home.Admin.AdminPurchaseRow { DateLabel: "03/04/2011" } }));
+        await desktop.Until(() => desktop.All<AmendLineView>().Count() == 2, "the purchase's items");
+        Assert.False(desktop.Find<Button>("ConfirmButton").IsEnabled);
+        var tape = desktop.All<AmendLineView>().Last();
+        Desktop.Click(tape.GetVisualDescendants().OfType<Button>().First(b => (b.Content as string) == "−"));
+        desktop.Find<TextBox>("ReasonBox").Text = "Fita não entregue";
+        await desktop.Until(() => desktop.Find<Button>("ConfirmButton").IsEnabled, "the confirmation offered");
+        desktop.Capture("7-amend");
+
+        Desktop.Click(desktop.Find<Button>("ConfirmButton"));
+        await desktop.Until(() => desktop.Find<TextBlock>("Success").Text == "Correção registrada.", "the correction registered");
+        Assert.Single(desktop.All<AmendLineView>());
+        Assert.Equal(string.Empty, desktop.Find<TextBox>("ReasonBox").Text);
+        Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Fita não entregue" && t.IsEffectivelyVisible);
+        desktop.Capture("8-amended");
+
+        Desktop.Click(desktop.ButtonWith("Voltar"));
+        await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == "corrigida" && t.IsEffectivelyVisible), "the list, marked");
+        Assert.Equal("Silva", desktop.Find<TextBox>("CustomerBox").Text);
+        desktop.Presenter.Release();
+        desktop.Window.Close();
+    });
+
+    private static List<Presentation.Modules.Home.Admin.AdminPurchaseRow> AdminRows(Desktop desktop) =>
+        [.. desktop.All<Button>().Where(b => b.IsEffectivelyVisible).Select(b => b.DataContext)
+            .OfType<Presentation.Modules.Home.Admin.AdminPurchaseRow>()];
+
+    [Fact]
     public Task WrongCredentials_StayOnLogin_WithTheMessage() => Headless.Run(async () =>
     {
         var desktop = await Open();

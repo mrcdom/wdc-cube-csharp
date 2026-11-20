@@ -101,6 +101,11 @@
     <Style Selector="Button.primary TextBlock">
       <Setter Property="Foreground" Value="White" />
     </Style>
+    <!-- Disabled keeps its color, faded: the generic disabled look left the white text on a white button. -->
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource Primary}" />
+      <Setter Property="BorderBrush" Value="{StaticResource Primary}" />
+    </Style>
     <Style Selector="Button.outlined">
       <Setter Property="BorderBrush" Value="{StaticResource Primary}" />
       <Setter Property="Foreground" Value="{StaticResource Primary}" />
@@ -121,6 +126,10 @@
     </Style>
     <Style Selector="Button.buy TextBlock">
       <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.buy:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource Price}" />
+      <Setter Property="BorderBrush" Value="{StaticResource Price}" />
     </Style>
     <Style Selector="Button.remove">
       <Setter Property="BorderBrush" Value="{StaticResource Error}" />

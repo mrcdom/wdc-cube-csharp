@@ -51,6 +51,8 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
 
     private static TimeSpan Wait => TimeSpan.FromSeconds(15);
 
+    private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
+
     private static IRenderedComponent<Shell> LogIn(IRenderedComponent<Shell> page, string user, string password)
     {
         page.WaitForElement(".login-card", Wait);
@@ -100,6 +102,62 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         Assert.StartsWith("home/receipt?_e=", Address, StringComparison.Ordinal);
         Assert.Contains("R$ 135,90", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
         Assert.Empty(page.FindAll(".badge"));
+    }
+
+    [Fact]
+    public async Task Admin_CorrectsAPurchase_AndTheBuyerSeesItOnTheReceipt()
+    {
+        Assert.SkipWhen(_db.Store is null, _db.SkipReason);
+        var store = _db.Store!.Repositories;
+        var fulano = (await store.Users.Fetch(new Domain.Users.UserCriteria().UserName.Eq("fulano"), limit: 1,
+            cancellationToken: Ct))[0];
+        var ball = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Bola de vôlei"), limit: 1,
+            cancellationToken: Ct))[0];
+        var tape = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Fita veda rosca"), limit: 1,
+            cancellationToken: Ct))[0];
+        var purchase = new Domain.Purchases.Purchase
+        {
+            User = new Domain.Users.User { Id = fulano.Id },
+            BuyDate = DateTimeOffset.UtcNow,
+            Items =
+            [
+                new Domain.Purchases.PurchaseItem { Product = new Domain.Products.Product { Id = ball.Id }, Amount = 2, Price = 45.30m },
+                new Domain.Purchases.PurchaseItem { Product = new Domain.Products.Product { Id = tape.Id }, Amount = 1, Price = 2.67m },
+            ],
+        };
+        await store.Purchases.Insert(purchase, cancellationToken: Ct);
+
+        var page = LogIn(Open(), "admin", "admin");
+        page.WaitForElement(".admin-button", Wait).Click();
+        page.WaitForElement(".admin-page", Wait);
+        page.Find(".admin-filter .customer").Input("Fulano");
+        page.Find(".admin-filter").Submit();
+        page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("Fulano de Tal", c.TextContent)), Wait);
+        page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"Nº {purchase.Id}").Click();
+
+        page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".amend-line").Count), Wait);
+        Assert.True(page.Find(".amend-page .confirm").HasAttribute("disabled"));
+        page.FindAll(".amend-line")[0].QuerySelector(".minus")!.Click();
+        page.WaitForAssertion(() => Assert.Equal("1", page.FindAll(".amend-line")[0].QuerySelector(".new")!.TextContent), Wait);
+        page.Find(".amend-page textarea").Input("Uma bola não foi entregue");
+        page.WaitForAssertion(() => Assert.False(page.Find(".amend-page .confirm").HasAttribute("disabled")), Wait);
+        page.Find(".amend-page .confirm").Click();
+
+        page.WaitForAssertion(() => Assert.Equal("Correção registrada.", page.Find(".amend-page .success").TextContent), Wait);
+        Assert.Contains("Uma bola não foi entregue", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
+        Assert.Contains("Bola de vôlei: 2 → 1", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
+
+        page.Find(".amend-page .back").Click();
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".admin-row .corrected")), Wait);
+        Assert.Equal("Fulano", page.Find(".admin-filter .customer").GetAttribute("value"));
+
+        page.Find(".exit").Click();
+        LogIn(page, "fulano", "fulano");
+        page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".purchase-card")), Wait);
+        Assert.Empty(page.FindAll(".admin-button"));
+        page.FindAll(".purchase-card")[0].Click();
+        page.WaitForAssertion(() => Assert.StartsWith("Compra corrigida em ", page.Find(".receipt-page .correction").TextContent, StringComparison.Ordinal), Wait);
+        Assert.Contains("R$ 47,97", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -165,6 +165,6 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
             .ToList();
 
         Assert.Equal(prefixes.Count, prefixes.Distinct().Count());
-        Assert.Equal(["hm", "mn", "pr", "rc"], prefixes.Order());
+        Assert.Equal(["ad", "am", "hm", "mn", "pr", "rc"], prefixes.Order());
     }
 }

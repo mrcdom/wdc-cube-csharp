@@ -73,3 +73,27 @@ button.buy { background: var(--price); color: #fff; border-color: var(--price); 
 
 /* Receipt: number columns aligned with their headers. */
 .receipt-page th:nth-child(n+2) { text-align: right; }
+
+/* Administration (decision D-25). */
+.app-header .admin-button { background: none; color: inherit; border-color: rgba(255,255,255,.5); }
+.admin-filter { display: flex; gap: 8px; margin-bottom: 12px; }
+.admin-filter input { flex: 1; min-width: 0; font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.admin-row { display: grid; grid-template-columns: 70px 1fr 100px 2fr 100px auto; gap: 8px; width: 100%; text-align: left;
+             margin-bottom: 8px; align-items: center; }
+.admin-row .items { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-row .number, .admin-row .date { font-size: 13px; color: var(--muted); }
+@media (max-width: 700px) {
+  .admin-row { grid-template-columns: 1fr auto; }
+  .admin-row .items, .admin-row .date { grid-column: 1 / -1; }
+}
+.amend-page .success { background: var(--success-bg); color: var(--price); padding: 10px; border-radius: 8px; font-weight: 600; }
+.amend-page table { width: 100%; border-collapse: collapse; }
+.amend-page th, .amend-page td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.amend-page th:nth-child(n+2), .amend-page .value, .amend-page .qty { text-align: right; }
+.amend-page .quantity { justify-content: flex-end; margin-top: 0; }
+.amend-page .reason { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.amend-page textarea { font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; }
+.amend-page .history { padding-left: 18px; display: grid; gap: 8px; }
+.amend-page .history li span { display: block; }
+.amend-page h3 { font-size: 16px; margin: 20px 0 8px; }
+.receipt-page .correction { background: var(--primary-container); color: var(--primary); padding: 8px 10px; border-radius: 8px; }

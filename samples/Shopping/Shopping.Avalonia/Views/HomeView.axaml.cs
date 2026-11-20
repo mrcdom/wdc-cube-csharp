@@ -14,5 +14,7 @@ public sealed partial class HomeView : ScopeView
 
     private void OnCart(object? sender, RoutedEventArgs e) => _ = S.OnOpenCart();
 
+    private void OnAdmin(object? sender, RoutedEventArgs e) => _ = S.OnOpenAdmin();
+
     private void OnExit(object? sender, RoutedEventArgs e) => _ = S.OnExit();
 }

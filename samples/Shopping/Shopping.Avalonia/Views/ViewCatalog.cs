@@ -1,4 +1,6 @@
 using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Home.Admin;
+using Shopping.Presentation.Modules.Home.Admin.Amend;
 using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Products;
@@ -22,5 +24,8 @@ public static class ViewCatalog
         .Register<ProductScope>(() => new ProductView())
         .Register<CartScope>(() => new CartView())
         .Register<CartLineScope>(() => new CartLineView())
-        .Register<ReceiptScope>(() => new ReceiptView());
+        .Register<ReceiptScope>(() => new ReceiptView())
+        .Register<AdminScope>(() => new AdminView())
+        .Register<AmendScope>(() => new AmendView())
+        .Register<AmendLineScope>(() => new AmendLineView());
 }

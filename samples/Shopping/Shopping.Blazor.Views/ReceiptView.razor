@@ -16,6 +16,10 @@
         </tbody>
     </table>
     <p class="total">Total: <strong>@Scope.TotalLabel</strong></p>
+    @foreach (var correction in Scope.Corrections)
+    {
+        <p class="correction">@correction</p>
+    }
     <div class="actions">
         <button class="primary continue" @onclick="Scope.OnContinue">Continuar Comprando</button>
     </div>
