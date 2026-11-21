@@ -15,4 +15,12 @@ public static class CascadeGuard
         s_current.Value = guard; // this flow only: the caller's value is back when we return
         return await work().ConfigureAwait(false);
     }
+
+    /// <summary>Runs <paramref name="work"/> with no guard: what it writes in cascade is not reported.</summary>
+    public static async Task Suspend(Func<Task> work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        s_current.Value = null; // this flow only: the caller's guard is back when we return
+        await work().ConfigureAwait(false);
+    }
 }

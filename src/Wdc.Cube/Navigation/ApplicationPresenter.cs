@@ -22,6 +22,7 @@ public abstract class ApplicationPresenter<TScope> : CubeApplication, IActionHos
         Scope = scope;
         UpdateManager = new ScopeUpdateManager(Updates, scope);
         UpdateManager.BeforeScopeUpdate += OnBeforeScopeUpdate;
+        UpdateManager.RequestFirstDraw();
     }
 
     /// <summary>The application's own rendering state.</summary>

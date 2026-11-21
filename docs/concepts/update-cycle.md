@@ -43,7 +43,8 @@ Each presenter has a `ScopeUpdateManager` (its `UpdateManager`) that collects th
   same manager, now or as soon as the holder gets one.
 - A scope that already belongs to another presenter (one published through a slot) keeps its owner; the holder only
   keeps the reference. The child presenter redraws its own scope; the holder redraws only when the reference changes.
-- A presenter marks its root scope dirty when it is constructed, for the first draw.
+- A presenter, the application presenter included, marks its root scope dirty when it is constructed, for the first
+  draw. Built off the dispatcher (an application the host builds before it runs), it asks for it from the dispatcher.
 
 ## The flush window
 

@@ -28,10 +28,16 @@ public sealed class Protection
 
     internal void Add(Type entityType, ICascadePolicy policy) => _policies[entityType] = policy;
 
-    /// <summary>Runs a write in a transaction, with the children it writes in cascade answering to their own policies.</summary>
+    /// <summary>Runs a protected write (its rules and the write itself) in one transaction.</summary>
     internal Task<T> Write<T>(Actor actor, Func<Task<T>> work, CancellationToken cancellationToken) =>
-        Transactions.Execute(Propagation.Required,
-            _ => CascadeGuard.Run(new PolicyCascadeGuard(this, actor), work), cancellationToken);
+        Transactions.Execute(Propagation.Required, _ => work(), cancellationToken);
+
+    /// <summary>
+    /// Runs the write of the raw repository with the children it writes in cascade answering to their own policies.
+    /// Only that write: the rules run outside the guard, so what they write through the raw store stays trusted.
+    /// </summary>
+    internal Task<T> Guarded<T>(Actor actor, Func<Task<T>> write) =>
+        CascadeGuard.Run(new PolicyCascadeGuard(this, actor), write);
 
     private ICascadePolicy PolicyOf(Type entityType) =>
         _policies.GetValueOrDefault(entityType)
@@ -39,14 +45,15 @@ public sealed class Protection
 
     private sealed class PolicyCascadeGuard(Protection protection, Actor actor) : ICascadeGuard
     {
+        // The child's rules run outside the guard, as the parent's do.
         public Task BeforeInsert(Type entityType, object entity, CancellationToken cancellationToken) =>
-            protection.PolicyOf(entityType).CheckInsert(actor, entity, cancellationToken);
+            CascadeGuard.Suspend(() => protection.PolicyOf(entityType).CheckInsert(actor, entity, cancellationToken));
 
         public Task BeforeUpdate(Type entityType, object entity, object projection, CancellationToken cancellationToken) =>
-            protection.PolicyOf(entityType).CheckUpdate(actor, entity, projection, cancellationToken);
+            CascadeGuard.Suspend(() => protection.PolicyOf(entityType).CheckUpdate(actor, entity, projection, cancellationToken));
 
         public Task BeforeDelete(Type entityType, IReadOnlyList<object> keys, CancellationToken cancellationToken) =>
-            protection.PolicyOf(entityType).CheckDelete(actor, keys, cancellationToken);
+            CascadeGuard.Suspend(() => protection.PolicyOf(entityType).CheckDelete(actor, keys, cancellationToken));
     }
 }
 

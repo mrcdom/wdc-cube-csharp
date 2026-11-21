@@ -98,7 +98,7 @@ public class ProtectedRepository<TEntity, TCriteria, TKey> : IRepository<TEntity
                 await before(context, bean, cancellationToken);
             }
 
-            return await Inner.Insert(bean, projection, cancellationToken);
+            return await Protection.Guarded(context.Actor, () => Inner.Insert(bean, projection, cancellationToken));
         }, cancellationToken);
         if (inserted)
         {
@@ -128,7 +128,7 @@ public class ProtectedRepository<TEntity, TCriteria, TKey> : IRepository<TEntity
                 await before(context, newBean, written, cancellationToken);
             }
 
-            return await Inner.Update(newBean, oldBean, projection, cancellationToken);
+            return await Protection.Guarded(context.Actor, () => Inner.Update(newBean, oldBean, projection, cancellationToken));
         }, cancellationToken);
     }
 
@@ -150,7 +150,7 @@ public class ProtectedRepository<TEntity, TCriteria, TKey> : IRepository<TEntity
                 await before(context, criteria, cancellationToken);
             }
 
-            return await Inner.Delete(criteria, cancellationToken);
+            return await Protection.Guarded(context.Actor, () => Inner.Delete(criteria, cancellationToken));
         }, cancellationToken);
     }
 

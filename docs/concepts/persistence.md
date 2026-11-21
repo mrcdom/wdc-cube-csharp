@@ -190,7 +190,7 @@ public interface ICascadeGuard
 }
 ```
 
-- `CascadeGuard.Run(guard, work)` installs a guard for the calling flow; `CascadeGuard.Current` reads it. Like the ambient transaction it lives in an `AsyncLocal` and follows `await`.
+- `CascadeGuard.Run(guard, work)` installs a guard for the calling flow; `CascadeGuard.Current` reads it; `CascadeGuard.Suspend(work)` runs `work` with none. Like the ambient transaction it lives in an `AsyncLocal` and follows `await`.
 - The repository calls the guard before each child it inserts, updates or deletes in cascade: referenced rows, collection children, orphans and `cascadeDelete` children.
 - The entity the caller wrote directly is not reported: its own rules already ran.
 - The guard may complete the child (a price taken from the product) or refuse by throwing, which rolls the whole write back.

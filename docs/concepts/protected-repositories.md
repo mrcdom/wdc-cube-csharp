@@ -65,13 +65,15 @@ Exceptions, and the HTTP status they become when the call goes over [REST](remot
 A write can reach other entities through its projection: a purchase inserted with its items, a full-state update that deletes orphans. Those children are written by the raw repository, but they do not escape the rules.
 
 - `Protection` is what the protected repositories of one session share: the `IActorSource`, the `ITransactionService`, and a registry of the protected repositories by entity type. Each `ProtectedRepository` registers itself in its constructor.
-- During a protected write, a cascade guard (`ICascadeGuard`, carried by `CascadeGuard` in an `AsyncLocal`) is active. The raw repository reports each child it inserts, updates or deletes in cascade; the guard finds the child's protected repository and runs *its* policy with `InCascade: true`:
+- During the raw write of a protected write, a cascade guard (`ICascadeGuard`, carried by `CascadeGuard` in an `AsyncLocal`) is active. The raw repository reports each child it inserts, updates or deletes in cascade; the guard finds the child's protected repository and runs *its* policy with `InCascade: true`:
   - insert: `Authorize(Insert)` → `BeforeInsert`;
   - update: `Authorize(Update)` → within reach → `BeforeUpdate`;
   - delete: `Authorize(Delete)` → for each key, within reach → `BeforeDelete` with that key's criteria.
 - A child whose entity has no protected repository in the session is refused with `AccessDeniedException` ("not protected here"): it cannot be written through another entity.
 - The entity the caller wrote directly is not reported again; its own rules already ran.
-- The guard belongs to the calling flow only. The raw repositories stay free outside a protected write.
+- The guard belongs to the calling flow only, and watches only the raw write itself. The rules (the parent's hooks
+  and each child's) run outside it: what a rule writes through the raw store stays trusted, cascades included. Outside
+  a protected write the raw repositories are free.
 
 ```mermaid
 sequenceDiagram

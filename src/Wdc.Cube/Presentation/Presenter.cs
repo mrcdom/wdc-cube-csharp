@@ -22,10 +22,7 @@ public abstract class Presenter<TApp, TScope> : IActionHost
         Scope = scope;
         UpdateManager = new ScopeUpdateManager(app.Updates, scope);
         UpdateManager.BeforeScopeUpdate += OnBeforeScopeUpdate;
-        if (app.Dispatcher.CheckAccess())
-        {
-            UpdateManager.Update(); // the first draw
-        }
+        UpdateManager.RequestFirstDraw();
     }
 
     /// <summary>The application.</summary>

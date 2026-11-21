@@ -340,4 +340,52 @@ public sealed class ProtectedRepositoryTests(PostgreSqlFixture fixture) : IAsync
 
         Assert.Equal(1, await ItemsOf(raw));
     }
+
+    [Fact]
+    public async Task Cascade_WhatARuleWritesThroughTheRawStore_StaysTrusted()
+    {
+        var ana = await NewUser("ana");
+        var product = await NewProduct();
+        var items = FreeItems();
+        items.BeforeInsert = (_, _, _) => throw new AccessDeniedException("No items for the actor.");
+        var purchases = PurchasesOfTheBuyer();
+        Purchase? written = null;
+        purchases.BeforeInsert = async (_, _, ct) => written = await NewPurchase(ana, product, 3); // a correction
+        var side = Protect(purchases, items).As(ana);
+
+        await side.Purchases.Insert(new Purchase { User = ana, BuyDate = DateTimeOffset.UtcNow }, cancellationToken: Ct);
+
+        Assert.Equal(1, await ItemsOf(written!));
+    }
+
+    [Fact]
+    public async Task Cascade_WhatAChildsRuleWritesThroughTheRawStore_StaysTrusted()
+    {
+        var ana = await NewUser("ana");
+        var product = await NewProduct();
+        var items = FreeItems();
+        var checks = 0;
+        Purchase? written = null;
+        items.BeforeInsert = async (p, _, ct) =>
+        {
+            if (++checks > 1)
+            {
+                throw new AccessDeniedException("Checked again: the raw write was guarded.");
+            }
+
+            written = await NewPurchase(ana, product, 4);
+        };
+        var side = Protect(items: items).As(ana);
+
+        await side.Purchases.Insert(new Purchase
+        {
+            User = ana,
+            BuyDate = DateTimeOffset.UtcNow,
+            Items = [new PurchaseItem { Product = product, Amount = 1, Price = 1m }],
+        }, cancellationToken: Ct);
+
+        Assert.Equal(1, checks);
+        Assert.Equal(1, await ItemsOf(written!));
+        Assert.Equal(2, await Local.Purchases.Count(new PurchaseCriteria(), Ct));
+    }
 }

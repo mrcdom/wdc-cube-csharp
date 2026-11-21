@@ -77,6 +77,24 @@ public sealed class ScopeUpdateManager
 
     internal void VerifyAccess() => _scheduler.Dispatcher.VerifyAccess();
 
+    // A presenter built off the dispatcher (an application the host builds before it runs) asks from there.
+    internal void RequestFirstDraw()
+    {
+        if (Dispatcher.CheckAccess())
+        {
+            Update();
+            return;
+        }
+
+        Dispatcher.Post(() =>
+        {
+            if (!_released)
+            {
+                Update();
+            }
+        });
+    }
+
     internal void Enqueue(Scope scope)
     {
         if (_released)
