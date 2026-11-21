@@ -145,19 +145,22 @@ public class CubeApplication
     }
 
     /// <summary>
-    /// An intent read from an address. An unknown path resolves to the last place (or the root); an empty address
-    /// to the last place with no parameters.
+    /// An intent read from an address. An empty path (the address of the application itself) resolves to the root,
+    /// with the parameters the address carries; an unknown path to the last place (or the root before any
+    /// navigation).
     /// </summary>
     public FlipIntent NewIntentFromString(string? address)
     {
         Dispatcher.VerifyAccess();
-        var fallback = LastPlace;
         var intent = string.IsNullOrEmpty(address)
-            ? new FlipIntent(fallback)
-            : FlipIntent.Parse(address, path => _placesByPath.GetValueOrDefault(path) ?? fallback);
+            ? new FlipIntent(RootPlace)
+            : FlipIntent.Parse(address, ResolvePath);
         intent.CopyAttributesFrom(_flip?.TargetIntent.Attributes);
         return intent;
     }
+
+    private Place ResolvePath(string path) =>
+        _placesByPath.GetValueOrDefault(path) ?? (path.Length == 0 ? RootPlace : LastPlace);
 
     /// <summary>Asks every live presenter, root first, to write the identity of its state.</summary>
     protected virtual void PublishAllParameters(FlipIntent intent)

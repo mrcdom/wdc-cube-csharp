@@ -63,12 +63,12 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
         var current = _current.Value is { Active: true } frame ? frame : null;
         return propagation switch
         {
-            Propagation.Required => current is null ? RunNew(work, cancellationToken) : work(new Context(current)),
+            Propagation.Required => current is null ? RunNew(work, cancellationToken) : Join(current, work),
             Propagation.RequiresNew => RunNew(work, cancellationToken),
             Propagation.Mandatory => current is null
                 ? throw new TransactionSystemException("MANDATORY: no transaction is open.")
-                : work(new Context(current)),
-            Propagation.Supports => current is null ? RunWithout(work) : work(new Context(current)),
+                : Join(current, work),
+            Propagation.Supports => current is null ? RunWithout(work) : Join(current, work),
             Propagation.NotSupported => RunWithout(work),
             Propagation.Never => current is not null
                 ? throw new TransactionSystemException("NEVER: a transaction is open.")
@@ -142,7 +142,15 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
     {
         if (_current.Value is { Active: true } frame)
         {
-            return await work(frame.Connection, frame.Transaction).ConfigureAwait(false);
+            try
+            {
+                return await work(frame.Connection, frame.Transaction).ConfigureAwait(false);
+            }
+            catch
+            {
+                frame.Failed = true; // as a write: a statement that failed leaves the transaction unusable on some databases
+                throw;
+            }
         }
 
         await using var connection = await _open(cancellationToken).ConfigureAwait(false);
@@ -243,6 +251,12 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
                 throw; // the work's exception, unchanged
             }
 
+            if (frame.Failed)
+            {
+                await SafeRollback(transaction).ConfigureAwait(false);
+                throw new TransactionSystemException("The transaction was rolled back: a call inside it failed.");
+            }
+
             if (frame.RollbackOnly)
             {
                 await SafeRollback(transaction).ConfigureAwait(false);
@@ -275,6 +289,21 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
         }
 
         return result;
+    }
+
+    // A participant that fails dooms the whole transaction, even when its caller catches the exception: the writes it
+    // made before failing are not a unit of work of their own.
+    private static async Task<T> Join<T>(Frame frame, Func<ITransactionContext, Task<T>> work)
+    {
+        try
+        {
+            return await work(new Context(frame)).ConfigureAwait(false);
+        }
+        catch
+        {
+            frame.Failed = true;
+            throw;
+        }
     }
 
     private async Task<T> RunWithout<T>(Func<ITransactionContext, Task<T>> work)
@@ -310,37 +339,84 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
         }
     }
 
+    // One connection runs one statement at a time: a Run excludes another Run and the commit. A rollback asked
+    // during a Run (a timeout, a disposal) happens when that Run ends.
     private sealed class Detached(Database database, Frame frame) : IDetachedTransaction
     {
-        private int _finished;
+        private readonly Lock _gate = new();
+        private bool _running;
+        private bool _finished;
+        private bool _rollbackWhenIdle;
 
-        public bool IsRollbackOnly => frame.RollbackOnly;
+        public bool IsRollbackOnly => frame.IsRollbackOnly;
 
         public void SetRollbackOnly() => frame.RollbackOnly = true;
 
         public async Task<T> Run<T>(Func<Task<T>> work)
         {
             ArgumentNullException.ThrowIfNull(work);
-            if (!frame.Active)
+            lock (_gate)
             {
-                throw new TransactionConflictException("The transaction is already finished.");
+                if (_finished)
+                {
+                    throw Finished();
+                }
+
+                if (_running)
+                {
+                    throw new TransactionConflictException("Another request is running in this transaction.");
+                }
+
+                _running = true;
             }
 
-            database._current.Value = frame; // this flow only: the caller's value is back when we return
-            return await work().ConfigureAwait(false);
+            try
+            {
+                database._current.Value = frame; // this flow only: the caller's value is back when we return
+                return await work().ConfigureAwait(false);
+            }
+            catch
+            {
+                frame.Failed = true; // a failed request never leaves half its writes to commit
+                throw;
+            }
+            finally
+            {
+                bool rollback;
+                lock (_gate)
+                {
+                    _running = false;
+                    rollback = _rollbackWhenIdle;
+                }
+
+                if (rollback)
+                {
+                    await Rollback().ConfigureAwait(false);
+                }
+            }
         }
 
         public async Task<bool> Commit(CancellationToken cancellationToken = default)
         {
-            if (!Finish())
+            lock (_gate)
             {
-                throw new TransactionConflictException("The transaction is already finished.");
+                if (_finished)
+                {
+                    throw Finished();
+                }
+
+                if (_running)
+                {
+                    throw new TransactionConflictException("A request is still running in this transaction.");
+                }
+
+                Finish();
             }
 
             var committed = false;
             try
             {
-                if (frame.RollbackOnly)
+                if (frame.IsRollbackOnly)
                 {
                     await database.SafeRollback(frame.Transaction!).ConfigureAwait(false);
                 }
@@ -373,9 +449,21 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 
         public async Task Rollback(CancellationToken cancellationToken = default)
         {
-            if (!Finish())
+            lock (_gate)
             {
-                return;
+                if (_finished)
+                {
+                    return;
+                }
+
+                if (_running)
+                {
+                    frame.RollbackOnly = true;
+                    _rollbackWhenIdle = true;
+                    return;
+                }
+
+                Finish();
             }
 
             try
@@ -390,15 +478,12 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 
         public ValueTask DisposeAsync() => new(Rollback());
 
-        private bool Finish()
-        {
-            if (Interlocked.Exchange(ref _finished, 1) != 0)
-            {
-                return false;
-            }
+        private static TransactionConflictException Finished() => new("The transaction is already finished.");
 
+        private void Finish()
+        {
+            _finished = true;
             frame.Active = false;
-            return true;
         }
 
         private async Task Release()
@@ -418,6 +503,11 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 
         public bool RollbackOnly { get; set; }
 
+        /// <summary>A call inside the transaction failed: it can only roll back.</summary>
+        public bool Failed { get; set; }
+
+        public bool IsRollbackOnly => RollbackOnly || Failed;
+
         public List<Func<Task>> AfterCommit { get; } = [];
 
         public Frame Root => this;
@@ -435,7 +525,7 @@ public sealed class Database : ITransactionService, IDetachedTransactionSource
 
         public bool IsActive => _frame is { Active: true };
 
-        public bool IsRollbackOnly => _frame?.RollbackOnly ?? false;
+        public bool IsRollbackOnly => _frame?.IsRollbackOnly ?? false;
 
         public void SetRollbackOnly()
         {

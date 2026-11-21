@@ -132,6 +132,32 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     }
 
     [Fact]
+    public async Task Fetch_TheKeyComesAtEveryLevel_EvenWhenTheProjectionDoesNotMarkIt()
+    {
+        var user = await NewUser("dora", "Dora");
+        var product = await NewProduct("Fita", 2m);
+        var purchase = await NewPurchase(user, (product, 3));
+        var projection = new Purchase
+        {
+            BuyDate = Mark.Instant,
+            User = new User { Name = Mark.String },
+            Items = Mark.List(new PurchaseItem { Amount = Mark.Int32, Product = new Product { Name = Mark.String } }),
+        };
+
+        var fetched = (await Db.Purchases.Fetch(new PurchaseCriteria().WithProjection(projection), cancellationToken: Ct)).Single();
+        var byId = (await Db.Purchases.FetchById(purchase.Id!.Value, projection, Ct))!;
+
+        foreach (var stored in new[] { fetched, byId })
+        {
+            Assert.Equal(purchase.Id, stored.Id);
+            Assert.Equal(user.Id, stored.User!.Id);
+            var item = Assert.Single(stored.Items!);
+            Assert.Equal(purchase.Items![0].Id, item.Id);
+            Assert.Equal(product.Id, item.Product!.Id);
+        }
+    }
+
+    [Fact]
     public async Task Relation_TheChildRepositorysConditionsFilterTheCollection_WithAndWithoutASlice()
     {
         var user = await NewUser("eva", "Eva");
@@ -494,6 +520,20 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     }
 
     [Fact]
+    public async Task Update_WithNeitherProjectionNorOldBean_WritesWhatHoldsAValue_AndLeavesTheRest()
+    {
+        var product = await NewProduct("Bola", 10m, "redonda");
+        var narrow = (await Db.Products.FetchById(product.Id!.Value, new Product { Name = Mark.String }, Ct))!;
+        Assert.Null(narrow.Price); // read without it
+
+        narrow.Name = "Bola nova";
+        Assert.True(await Db.Products.Update(narrow, cancellationToken: Ct));
+
+        var stored = await Db.Products.FetchById(product.Id!.Value, cancellationToken: Ct);
+        Assert.Equal(("Bola nova", 10m, "redonda"), (stored!.Name, stored.Price, stored.Description));
+    }
+
+    [Fact]
     public async Task Update_WithTheOldBean_WritesOnlyWhatChanged_AndNothingChangedIsFalse()
     {
         var product = await NewProduct("Bola", 10m, "redonda");
@@ -634,6 +674,93 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             }, Ct);
         }, Ct);
 
+        Assert.Equal(0, await Db.Products.Count(new ProductCriteria().Name.IsNotNull(), Ct));
+    }
+
+    [Fact]
+    public async Task Transaction_AParticipantThatFails_UndoesTheWhole_EvenWhenItsCallerCatches()
+    {
+        await Assert.ThrowsAsync<TransactionSystemException>(() => Db.Tx.Required(async tx =>
+        {
+            await NewProduct("one", 1m);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Db.Tx.Required<int>(async _ =>
+            {
+                await NewProduct("two", 2m);
+                throw new InvalidOperationException("boom");
+            }, Ct));
+
+            Assert.True(tx.IsRollbackOnly);
+        }, Ct)); // not a success: what the work wrote is gone
+
+        Assert.Equal(0, await Db.Products.Count(new ProductCriteria().Name.IsNotNull(), Ct));
+    }
+
+    [Fact]
+    public async Task Detached_TwoRunsAtOnce_TheSecondIsRefused_AndTheCommitWaitsForNone()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "the detached transaction of the SQL side");
+        await using var tx = await fixture.Shopping!.Database.BeginDetached(Ct);
+        var inside = new TaskCompletionSource();
+        var release = new TaskCompletionSource();
+
+        var first = tx.Run(async () =>
+        {
+            await NewProduct("first", 1m);
+            inside.SetResult();
+            await release.Task;
+            return 1;
+        });
+        await inside.Task;
+
+        await Assert.ThrowsAsync<TransactionConflictException>(() => tx.Run(() => Task.FromResult(2)));
+        await Assert.ThrowsAsync<TransactionConflictException>(() => tx.Commit(Ct));
+
+        release.SetResult();
+        Assert.Equal(1, await first);
+        Assert.True(await tx.Commit(Ct));
+        Assert.Equal(1, await Db.Products.Count(new ProductCriteria().Name.Eq("first"), Ct));
+    }
+
+    [Fact]
+    public async Task Detached_ARollbackAskedDuringARun_HappensWhenTheRunEnds()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "the detached transaction of the SQL side");
+        var tx = await fixture.Shopping!.Database.BeginDetached(Ct);
+        var inside = new TaskCompletionSource();
+        var release = new TaskCompletionSource();
+
+        var run = tx.Run(async () =>
+        {
+            await NewProduct("doomed", 1m);
+            inside.SetResult();
+            await release.Task;
+            await NewProduct("still-inside", 2m); // the connection is still the transaction's
+            return 1;
+        });
+        await inside.Task;
+
+        await tx.Rollback(Ct);
+        release.SetResult();
+        await run;
+
+        await Assert.ThrowsAsync<TransactionConflictException>(() => tx.Run(() => Task.FromResult(2)));
+        Assert.Equal(0, await Db.Products.Count(new ProductCriteria().Name.IsNotNull(), Ct));
+    }
+
+    [Fact]
+    public async Task Detached_ARunThatFails_LeavesNothingToCommit()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "the detached transaction of the SQL side");
+        await using var tx = await fixture.Shopping!.Database.BeginDetached(Ct);
+        await tx.Run(() => NewProduct("kept?", 1m));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => tx.Run<int>(async () =>
+        {
+            await NewProduct("half", 2m);
+            throw new InvalidOperationException("boom");
+        }));
+
+        Assert.False(await tx.Commit(Ct));
         Assert.Equal(0, await Db.Products.Count(new ProductCriteria().Name.IsNotNull(), Ct));
     }
 

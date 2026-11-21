@@ -47,7 +47,7 @@ public static class AuthRoutes
         var fields = ReadFields(await RestHttp.ReadBody(context));
         var tokens = await Tokens(context).Login(Field(fields, "userName"), Field(fields, "nonce"), Field(fields, "digest"),
             context.RequestAborted);
-        return Answer(tokens ?? throw new AuthenticationException("Usuário ou senha não reconhecido."));
+        return Answer(tokens ?? throw new AuthenticationException("User name or password not recognized."));
     });
 
     private static Task Refresh(HttpContext context) => RestHttp.Respond(context, async () =>

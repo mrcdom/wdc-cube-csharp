@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Wdc.Domain;
 
 namespace Wdc.Rest.Client;
@@ -11,6 +13,9 @@ internal sealed class RemoteTransactionState(string id)
     public bool Active { get; set; } = true;
 
     public bool RollbackOnly { get; set; }
+
+    /// <summary>A call inside the transaction failed: it can only roll back.</summary>
+    public bool Failed { get; set; }
 
     public List<Func<Task>> AfterCommit { get; } = [];
 }
@@ -31,12 +36,17 @@ public sealed class RemoteTransactionService : ITransactionService
 {
     private readonly RestClient _client;
     private readonly string _base;
+    private readonly ILogger _logger;
 
-    public RemoteTransactionService(RestClient client, string basePath = RestNames.TransactionBase)
+    /// <param name="client">The client whose calls carry the transaction.</param>
+    /// <param name="basePath">Where the server serves its transaction routes.</param>
+    /// <param name="logger">Receives after-commit failures.</param>
+    public RemoteTransactionService(RestClient client, string basePath = RestNames.TransactionBase, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         _client = client;
         _base = basePath.TrimEnd('/');
+        _logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>Whether the calling flow is inside a remote transaction.</summary>
@@ -49,12 +59,12 @@ public sealed class RemoteTransactionService : ITransactionService
         var current = _client.Ambient.Value is { Active: true } state ? state : null;
         return propagation switch
         {
-            Propagation.Required => current is null ? RunNew(work, cancellationToken) : work(new Context(current)),
+            Propagation.Required => current is null ? RunNew(work, cancellationToken) : Join(current, work),
             Propagation.RequiresNew => RunNew(work, cancellationToken),
             Propagation.Mandatory => current is null
                 ? throw new TransactionSystemException("MANDATORY: no transaction is open.")
-                : work(new Context(current)),
-            Propagation.Supports => current is null ? RunWithout(work) : work(new Context(current)),
+                : Join(current, work),
+            Propagation.Supports => current is null ? RunWithout(work) : Join(current, work),
             Propagation.NotSupported => RunWithout(work),
             Propagation.Never => current is not null
                 ? throw new TransactionSystemException("NEVER: a transaction is open.")
@@ -72,7 +82,7 @@ public sealed class RemoteTransactionService : ITransactionService
             return Task.CompletedTask;
         }
 
-        return task();
+        return RunAfterCommit([task]);
     }
 
     private async Task<T> RunNew<T>(Func<ITransactionContext, Task<T>> work, CancellationToken cancellationToken)
@@ -93,6 +103,12 @@ public sealed class RemoteTransactionService : ITransactionService
         }
 
         state.Active = false;
+        if (state.Failed)
+        {
+            await SafeRollback(state.Id).ConfigureAwait(false);
+            throw new TransactionSystemException("The transaction was rolled back: a call inside it failed.");
+        }
+
         if (state.RollbackOnly)
         {
             await Finish(state.Id, "rollback", CancellationToken.None).ConfigureAwait(false);
@@ -106,19 +122,28 @@ public sealed class RemoteTransactionService : ITransactionService
                 "The transaction was rolled back on the server: a request inside it failed.");
         }
 
-        foreach (var task in state.AfterCommit)
+        if (state.AfterCommit.Count > 0)
+        {
+            await RunAfterCommit(state.AfterCommit).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
+    // As locally: an after-commit failure does not undo the commit, and does not reach the caller.
+    private async Task RunAfterCommit(IEnumerable<Func<Task>> tasks)
+    {
+        foreach (var task in tasks)
         {
             try
             {
                 await task().ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception caught)
             {
-                // As locally: an after-commit failure does not undo the commit. Nothing to log with here.
+                _logger.LogError(caught, "An after-commit task failed; the transaction stays committed.");
             }
         }
-
-        return result;
     }
 
     private async Task<string> Commit(string id)
@@ -175,6 +200,20 @@ public sealed class RemoteTransactionService : ITransactionService
         }
     }
 
+    // A participant that fails dooms the whole transaction, even when its caller catches the exception.
+    private static async Task<T> Join<T>(RemoteTransactionState state, Func<ITransactionContext, Task<T>> work)
+    {
+        try
+        {
+            return await work(new Context(state)).ConfigureAwait(false);
+        }
+        catch
+        {
+            state.Failed = true;
+            throw;
+        }
+    }
+
     private async Task<T> RunWithout<T>(Func<ITransactionContext, Task<T>> work)
     {
         _client.Ambient.Value = null; // suspends the caller's transaction for this flow only
@@ -211,7 +250,7 @@ public sealed class RemoteTransactionService : ITransactionService
 
         public bool IsActive => _state is { Active: true };
 
-        public bool IsRollbackOnly => _state?.RollbackOnly ?? false;
+        public bool IsRollbackOnly => _state is { } state && (state.RollbackOnly || state.Failed);
 
         public void SetRollbackOnly()
         {

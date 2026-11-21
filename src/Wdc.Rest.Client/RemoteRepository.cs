@@ -110,7 +110,7 @@ public class RemoteRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, T
         }
 
         // The same choice of fields as the local repository; the server writes exactly the ones sent.
-        var marks = projection ?? (oldBean is null ? OwnFieldsProjection() : Model.ChangedFields(newBean, oldBean));
+        var marks = projection ?? (oldBean is null ? Model.HeldFields(newBean) : Model.ChangedFields(newBean, oldBean));
         var fields = Model.New();
         var any = false;
         foreach (var field in Model.Fields)

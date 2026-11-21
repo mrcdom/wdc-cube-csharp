@@ -119,7 +119,7 @@ public class ProtectedRepository<TEntity, TCriteria, TKey> : IRepository<TEntity
         }
 
         var written = projection
-            ?? (oldBean is null ? Inner.OwnFieldsProjection() : Policy.Model.ChangedFields(newBean, oldBean));
+            ?? (oldBean is null ? Policy.Model.HeldFields(newBean) : Policy.Model.ChangedFields(newBean, oldBean));
         return Protection.Write(context.Actor, async () =>
         {
             await RequireWithinReach(context, (TKey)key, cancellationToken);

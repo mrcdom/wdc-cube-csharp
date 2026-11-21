@@ -22,8 +22,9 @@ home?hm-page=2                home, second page of the purchase history
   first. Attributes never reach the address.
 - **Address to state.** `app.NewIntentFromString(address)` parses the text. The path is looked up among the places
   given to the application; the query becomes parameters.
+  - An empty path (`""`, or only a query such as `?theme=dark`) is the application itself: it resolves to the root,
+    with the parameters it carries. Back to the address the browser started at returns to the root.
   - An unknown path resolves to `LastPlace` (or the root before any navigation), carrying the parameters it had.
-  - An empty address resolves to `LastPlace` with no parameters.
 - **When it is written.** At the end of every flip (on success and on rollback), and at the end of every guarded
   action unless a flip is still running. After changing something that `PublishParameters` writes outside of an
   action, call `UpdateHistory()` yourself.

@@ -20,7 +20,8 @@ public interface IRepository<TEntity, in TCriteria, in TKey> : IReadOnlyReposito
 
     /// <summary>
     /// Updates the fields <paramref name="projection"/> marks; with <paramref name="oldBean"/>, only the ones that
-    /// changed. A marked field holding null clears the column. Returns false when nothing was written.
+    /// changed. A marked field holding null clears the column. Without either, the fields that hold a value (as an
+    /// insert): clearing a column takes a projection that marks it. Returns false when nothing was written.
     /// </summary>
     Task<bool> Update(TEntity newBean, TEntity? oldBean = null, TEntity? projection = null,
         CancellationToken cancellationToken = default);

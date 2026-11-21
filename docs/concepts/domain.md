@@ -194,7 +194,8 @@ Which fields `Update` writes:
 
 - With a projection: the marked fields. With `oldBean` too: only marked fields whose value changed.
 - Without a projection, with `oldBean`: `ChangedFields(newBean, oldBean)`.
-- With neither: every field of the default projection, nulls included.
+- With neither: `HeldFields(newBean)`, the fields that hold a value, as an insert. A null field is left alone, so a
+  bean read with a narrow projection does not clear what it did not read; to clear a column, mark it in a projection.
 - Collections and referenced rows are written only when a projection marks them.
 
 Repositories never open or close transactions: they join the ambient one, and a write called with none runs in a transaction of its own. See [transactions](transactions.md).

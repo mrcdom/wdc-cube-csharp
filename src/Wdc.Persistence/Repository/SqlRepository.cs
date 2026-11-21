@@ -232,7 +232,7 @@ public class SqlRepository<TEntity, TCriteria, TKey> : IRepository<TEntity, TCri
     private Task<bool> UpdateOwnRow(TEntity newBean, TEntity? oldBean, TEntity? projection, CancellationToken cancellationToken)
     {
         var key = Model.Key!.ScalarKind!.ToDatabaseObject(Model.KeyOf(newBean));
-        var marks = projection ?? (oldBean is null ? OwnFieldsProjection() : Model.ChangedFields(newBean, oldBean));
+        var marks = projection ?? (oldBean is null ? Model.HeldFields(newBean) : Model.ChangedFields(newBean, oldBean));
 
         var sets = new List<(string Column, object? Value)>();
         foreach (var binding in TableMapping.Bindings)

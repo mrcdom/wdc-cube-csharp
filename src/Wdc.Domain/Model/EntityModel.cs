@@ -96,6 +96,26 @@ public sealed class EntityModel<TEntity> : IEntityModel
     public object? KeyOf(TEntity entity) => Key?.GetValue(entity);
 
     /// <summary>
+    /// A projection marking every field (own scalars and references) that holds a value in <paramref name="bean"/>:
+    /// what a write without a projection touches. A null field is left alone, so a bean read with a narrow projection
+    /// does not clear the columns it did not read. The key is always marked.
+    /// </summary>
+    public TEntity HeldFields(TEntity bean)
+    {
+        ArgumentNullException.ThrowIfNull(bean);
+        var projection = New();
+        foreach (var field in Fields)
+        {
+            if (field.IsKey || (field.Kind != FieldKind.Collection && field.HasValue(bean)))
+            {
+                field.MarkOwnFields(projection);
+            }
+        }
+
+        return projection;
+    }
+
+    /// <summary>
     /// A projection marking every field (own scalars and references) that differs between <paramref name="next"/>
     /// and <paramref name="previous"/>: what an update must write. The key is always marked.
     /// </summary>

@@ -60,13 +60,17 @@ For the scope that opened the transaction:
 
 - A normal return commits, unless the transaction is rollback-only, in which case it rolls back without throwing.
 - Any exception rolls back and is rethrown unchanged (the same instance).
+- A normal return after a call inside the transaction failed (a participant, a statement) rolls back and throws
+  `TransactionSystemException`: the work did not happen, even if its exception was caught.
 - A failure to open the connection, begin or commit surfaces as `TransactionSystemException`, with the cause as inner exception. A failure while rolling back is logged and does not hide the original exception.
 
 For a scope that joined an open transaction (`Required`, `Mandatory`, `Supports` inside one):
 
 - It neither commits nor rolls back; the outcome belongs to the scope that opened the transaction.
 - `SetRollbackOnly()` in a participant makes the whole transaction roll back at the end.
-- An exception thrown by a participant does not by itself mark the transaction. If the caller catches it and carries on, what was written before still commits. Call `SetRollbackOnly()` when you swallow such an exception and do not want that.
+- An exception thrown by a participant, or by a statement run in the transaction, dooms it: `IsRollbackOnly` becomes
+  true, and the scope that opened it rolls back. Catching the exception does not save the writes made before it. To
+  try something that may fail without losing the rest, run it in `RequiresNew`.
 
 ## After commit
 
@@ -75,7 +79,8 @@ For a scope that joined an open transaction (`Required`, `Mandatory`, `Supports`
 - Inside a transaction, the task is queued on the transaction that is open in the flow (for `RequiresNew`, its own) and run after it commits, in scheduling order, outside the transaction, with the connection already returned.
 - On rollback the queued tasks are dropped.
 - With no transaction open, the task runs immediately, and the returned `Task` completes when it ends.
-- A failing task is logged and never changes the outcome of the transaction.
+- A failing task is logged (on the client, through the logger given to `RemoteTransactionService`) and never changes
+  the outcome of the transaction, nor reaches the caller.
 
 ## Reads and writes inside and outside a transaction
 
@@ -100,7 +105,8 @@ bool committed = await tx.Commit(ct);
 ```
 
 - `BeginDetached` opens a connection and a transaction not bound to the caller's flow.
-- `Run(work)` makes it the ambient transaction for the duration of `work`; repositories and `ITransactionService` calls inside join it. Only one `Run` may be in progress at a time; the caller enforces that.
+- `Run(work)` makes it the ambient transaction for the duration of `work`; repositories and `ITransactionService` calls inside join it. Only one `Run` may be in progress at a time: another one, or a `Commit`, throws `TransactionConflictException` meanwhile. A `Rollback` asked during a `Run` (a timeout, a disposal) happens when that `Run` ends.
+- A `Run` that throws makes the transaction rollback-only.
 - `Commit` commits, or rolls back when rollback-only, releases the connection, runs the after-commit tasks, and returns whether it committed.
 - `Rollback` rolls back and releases the connection. `DisposeAsync` rolls back if nothing finished the transaction.
 - After it has finished, `Run` and a second `Commit` throw `TransactionConflictException`; a second `Rollback` does nothing.

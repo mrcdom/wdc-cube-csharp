@@ -176,6 +176,51 @@ public sealed class ApplicationPresenterTests
     }
 
     [Fact]
+    public async Task BackToTheEmptyAddress_ReturnsToTheRoot()
+    {
+        var app = new MainApp(new TestHistoryManager());
+        await app.KickStart(MainPlaces.Home);
+        await app.Flip(MainPlaces.Orders, i => i.SetParameter("oid", 1L));
+        var orders = app.PresenterOf<OrdersPresenter>(MainPlaces.Orders);
+
+        app.History.Navigate(""); // the browser back at the address it started from
+        await app.Settle();
+
+        Assert.Same(app.RootPlace, app.LastPlace);
+        Assert.Equal(0, app.PresenterCount);
+        Assert.True(orders.IsReleased);
+        Assert.Null(app.Scope.Body);
+    }
+
+    [Fact]
+    public async Task AddressWithOnlyTheApplicationsParameters_ResolvesToTheRoot()
+    {
+        var app = new MainApp(new TestHistoryManager());
+        await app.KickStart(MainPlaces.Home);
+        await app.Flip(MainPlaces.Home);
+
+        app.History.Navigate("?mt=dark");
+        await app.Settle();
+
+        Assert.Same(app.RootPlace, app.LastPlace);
+        Assert.Equal(0, app.PresenterCount);
+        Assert.Equal("dark", app.Theme);
+    }
+
+    [Fact]
+    public async Task UnknownPath_StillResolvesToTheLastPlace()
+    {
+        var app = new MainApp(new TestHistoryManager());
+        await app.KickStart(MainPlaces.Home);
+        await app.Flip(MainPlaces.Orders, i => i.SetParameter("oid", 1L));
+
+        await app.FlipToIntentString("nowhere?oid=3");
+
+        Assert.Same(MainPlaces.Orders, app.LastPlace);
+        Assert.Equal(3, app.PresenterOf<OrdersPresenter>(MainPlaces.Orders).OrderId);
+    }
+
+    [Fact]
     public async Task Codec_SwappedAtRunTime_RepublishesTheForm()
     {
         var history = new TestHistoryManager();

@@ -289,11 +289,12 @@ public sealed class RepositoryWire<TEntity, TCriteria>
 
     public static int ReadCount(ReadOnlySpan<byte> body) => ReadScalar(body, "count", (ref Utf8JsonReader r) => r.GetInt32());
 
+    /// <summary>The answer to a fetch: the fields <paramref name="projection"/> marks, and the key at every level, as a local fetch returns them.</summary>
     public byte[] WriteItems(IReadOnlyList<TEntity> items, TEntity? projection, int? totalItems = null) => RestJson.Write(w =>
     {
         w.WriteStartObject();
         w.WritePropertyName("items");
-        Codec.WriteList(w, items, projection);
+        Codec.WriteList(w, items, Keyed(projection));
         if (totalItems is { } total)
         {
             w.WriteNumber("totalItems", total);
@@ -330,7 +331,8 @@ public sealed class RepositoryWire<TEntity, TCriteria>
         return (items, total);
     }
 
-    public byte[] WriteEntity(TEntity entity, TEntity? projection) => RestJson.Write(w => Codec.Write(w, entity, projection));
+    /// <summary>The answer to a fetch by key: the fields <paramref name="projection"/> marks, and the key at every level.</summary>
+    public byte[] WriteEntity(TEntity entity, TEntity? projection) => RestJson.Write(w => Codec.Write(w, entity, Keyed(projection)));
 
     public TEntity ReadEntity(ReadOnlySpan<byte> body)
     {
@@ -346,6 +348,8 @@ public sealed class RepositoryWire<TEntity, TCriteria>
     /// with the shape of its children.
     /// </summary>
     private TEntity ForWriting(TEntity projection) => Model.WriteProjection(projection);
+
+    private TEntity? Keyed(TEntity? projection) => projection is null ? null : Model.WriteProjection(projection);
 
     private static void WriteKey(Utf8JsonWriter writer, FieldModel<TEntity> keyField, object key)
     {
