@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
 using Shopping.Domain.Users;
@@ -31,7 +32,7 @@ public sealed class AmendPresenter(MainPresenter app) : CubePresenter<MainPresen
         _admin = keys.Admin;
         if (keys.PurchaseId is not { } purchaseId)
         {
-            await App.FlipToIntent(intent.Redirect(Places.Admin));
+            await App.FlipToIntent(intent.Redirect(AdminKeys.Place));
             return false;
         }
 

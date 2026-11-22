@@ -29,27 +29,77 @@ Until the packages are published, reference the projects of this repository.
 The data comes from a small contract the presenters use, `IContactBook` (`All()` and `Find(id)`), with an in-memory
 implementation, `ContactBook`. A real app would call a repository or an API there.
 
-## 2. Places: the map of the app
+## 2. Places and keys: the map of the app
 
 A **place** is a node of the navigation tree, and an address is a path through it. The app has two places: the
-list, and a contact below it. Each place says which presenter is born there.
+list, and a contact below it. Each place is declared by its **keys class**, together with the presenter born there.
+A keys class is also the only code that knows the names the place reads and writes in an **intent** (the request
+to go somewhere, which becomes the address). Keys of a deeper place extend the keys of the place above, so the
+class tree is the place tree.
 
-<!-- snippet: places -->
+The application's keys hold the root place and a **slot**, explained in the next section. `CubeKeys`, from the
+framework, adds the intent and `Flip()`:
+
+<!-- snippet: app-keys -->
 ```csharp
-/// <summary>The cube: every place an address can name. <c>contacts/contact?ct-id=2</c> is the detail of contact 2.</summary>
-public static class Places
+/// <summary>
+/// The application level: its place (the root) and the names it reads and writes in an intent. The keys of each
+/// deeper place extend the keys of the place above, and own a prefix, so names never clash.
+/// </summary>
+public class AppKeys : CubeKeys
 {
-    public static readonly Place Contacts = Place.Create<ContactsApp>("contacts", app => new ContactListPresenter(app));
+    public const string Prefix = "ap";
 
-    public static readonly Place Contact = Contacts.Child<ContactsApp>("contact", app => new ContactDetailPresenter(app));
+    /// <summary>The application itself.</summary>
+    public static Place Place { get; } = Place.Root;
 
-    public static IReadOnlyList<Place> All { get; } = [Contacts, Contact];
+    private const string ParentSlotName = $"{Prefix}-parent-slot";
+
+    public AppKeys(CubeApplication app, FlipIntent? intent = null)
+        : this(app, intent, Place)
+    {
+    }
+
+    protected AppKeys(CubeApplication app, FlipIntent? intent, Place place)
+        : base(app, intent, place)
+    {
+    }
+
+    /// <summary>Where the level below publishes its scope.</summary>
+    public ScopeSlot ParentSlot
+    {
+        get => Intent.GetScopeSlot(ParentSlotName);
+        set => Intent.SetScopeSlot(ParentSlotName, value);
+    }
 }
 ```
 
-`Place.Root` is the application itself. `contacts` is a child of the root, `contacts/contact` a child of `contacts`.
-Going to `contacts/contact` keeps the list's presenter alive and adds the contact's: a deeper place is drawn *inside*
-the places above it.
+The list is a child of the root. It has no names of its own yet, but it declares its place:
+
+<!-- snippet: list-keys -->
+```csharp
+/// <summary>The list: a child of the application. It has no names of its own; the contact's keys extend these.</summary>
+public class ContactListKeys : AppKeys
+{
+    public new const string Prefix = "cl";
+
+    public static new Place Place { get; } = AppKeys.Place.Child<ContactsApp>("contacts", app => new ContactListPresenter(app));
+
+    public ContactListKeys(CubeApplication app, FlipIntent? intent = null)
+        : this(app, intent, Place)
+    {
+    }
+
+    protected ContactListKeys(CubeApplication app, FlipIntent? intent, Place place)
+        : base(app, intent, place)
+    {
+    }
+}
+```
+
+`Place.Root` is the application itself. `contacts` is a child of the root, `contacts/contact` (declared by the
+contact's keys, in step 5) a child of `contacts`. Going to `contacts/contact` keeps the list's presenter alive and
+adds the contact's: a deeper place is drawn *inside* the places above it.
 
 ## 3. The application presenter
 
@@ -67,58 +117,22 @@ public sealed class AppScope : Scope
 ```
 
 Presenters do not reach into each other to show their screens. A level hands the level below a **slot**: a function
-that receives the child's scope. The slot travels in the **intent** of the navigation, and a **keys** class is the
-only code that knows the names used in an intent:
+that receives the child's scope. The slot travels in the intent of the navigation, under the name `AppKeys` gives it
+(`ParentSlot`).
 
-<!-- snippet: app-keys -->
-```csharp
-/// <summary>
-/// The names the application reads and writes in an intent. Deeper places extend it; each keys class owns a prefix,
-/// so names never clash.
-/// </summary>
-public class AppKeys
-{
-    public const string Prefix = "ap";
-
-    private const string ParentSlotName = $"{Prefix}-parent-slot";
-
-    public AppKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Place.Root)
-    {
-    }
-
-    protected AppKeys(CubeApplication app, FlipIntent? intent, Place place)
-    {
-        App = app;
-        Intent = intent ?? app.NewFlipIntent(place);
-    }
-
-    protected CubeApplication App { get; }
-
-    protected FlipIntent Intent { get; }
-
-    /// <summary>Navigates to the place this object was built for, with what was set on it.</summary>
-    public Task<bool> Flip() => App.FlipToIntent(Intent);
-
-    /// <summary>Where the level below publishes its scope.</summary>
-    public ScopeSlot ParentSlot
-    {
-        get => Intent.GetScopeSlot(ParentSlotName);
-        set => Intent.SetScopeSlot(ParentSlotName, value);
-    }
-}
-```
-
-The application republishes its slot for the place below it and starts from the address:
+The application lists its places, republishes its slot for the place below it, and starts from the address:
 
 <!-- snippet: app -->
 ```csharp
 /// <summary>The application presenter: the page frame, and the services the presenters below it use.</summary>
 public sealed class ContactsApp : ApplicationPresenter<AppScope>
 {
+    /// <summary>Every place an address can name, each declared by its keys.</summary>
+    public static IReadOnlyList<Place> AllPlaces { get; } = [ContactListKeys.Place, ContactKeys.Place];
+
     public ContactsApp(HistoryManager history, IContactBook book, PresentationDispatcher? dispatcher = null,
         ILogger? logger = null)
-        : base(new AppScope(), history, Places.All, logger, dispatcher)
+        : base(new AppScope(), history, AllPlaces, logger, dispatcher)
     {
         Book = book;
     }
@@ -128,10 +142,10 @@ public sealed class ContactsApp : ApplicationPresenter<AppScope>
     /// <summary>Starts from the address; an empty one shows the list.</summary>
     public Task Start() => InvokeAsync(async () =>
     {
-        await KickStart(Places.Contacts);
+        await KickStart(ContactListKeys.Place);
         if (!HasNavigated)
         {
-            await Flip(Places.Contacts);
+            await new ContactListKeys(this).Flip();
         }
     });
 
@@ -182,7 +196,7 @@ public sealed class ContactListPresenter(ContactsApp app)
 {
     public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
-        var keys = new AppKeys(App, intent);
+        var keys = new ContactListKeys(App, intent);
         keys.ParentSlot(Scope); // into the application's body
 
         if (initialization)
@@ -214,19 +228,23 @@ public sealed class ContactListPresenter(ContactsApp app)
 
 ## 5. The contact
 
-The contact's keys add a **parameter**, the contact's id. Parameters go to the address; attributes (like the slots)
-travel only within the app.
+The contact's keys extend the list's, declare the place below it, and add a **parameter**, the contact's id.
+Parameters go to the address; attributes (like the slots) travel only within the app.
 
 <!-- snippet: contact-keys -->
 ```csharp
-public sealed class ContactKeys : AppKeys
+public sealed class ContactKeys : ContactListKeys
 {
     public new const string Prefix = "ct";
+
+    /// <summary>A child of the list: <c>contacts/contact?ct-id=2</c> is the detail of contact 2.</summary>
+    public static new Place Place { get; } =
+        ContactListKeys.Place.Child<ContactsApp>("contact", app => new ContactDetailPresenter(app));
 
     private const string ContactIdName = $"{Prefix}-id";
 
     public ContactKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.Contact)
+        : base(app, intent, Place)
     {
     }
 
@@ -267,13 +285,13 @@ public sealed class ContactDetailPresenter(ContactsApp app)
         if (contact is null)
         {
             // Nothing to show: go to the list instead, within this same navigation.
-            await App.FlipToIntent(intent.Redirect(Places.Contacts));
+            await App.FlipToIntent(intent.Redirect(ContactListKeys.Place));
             return false;
         }
 
         if (initialization)
         {
-            Scope.OnClose = Action(() => Flip(Places.Contacts));
+            Scope.OnClose = Action(() => new ContactListKeys(App).Flip());
         }
 
         _contactId = contact.Id;

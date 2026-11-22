@@ -6,7 +6,7 @@
 @inject ILoggerFactory Loggers
 
 @* Every path is the same page: the address belongs to Cube, which turns it into a face of the cube. *@
-<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.KickStart(Places.Main)">
+<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.KickStart(MainKeys.Place)">
     <ViewSlot Scope="context.Scope" />
 </CubeHost>
 

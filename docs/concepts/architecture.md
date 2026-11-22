@@ -10,29 +10,42 @@ Avalonia or anything else.
 ## Places and the place tree
 
 A `Place` is an immutable node of the tree. It has a name, a parent, and optionally a factory that creates its
-presenter. Places are usually declared once, as static fields:
+presenter. Each place is declared once, by its [keys class](#keys-classes), from the place of the keys it extends:
 
 ```csharp
-public static class Places
+public class MainKeys : CubeKeys
 {
-    public static readonly Place Main = Place.Root; // the application itself
+    public static Place Place { get; } = Place.Root; // the application itself
+    ...
+}
 
-    public static readonly Place Login = Place.Create<MainPresenter>("login", app => new LoginPresenter(app));
-    public static readonly Place Home = Place.Create<MainPresenter>("home", app => new HomePresenter(app));
-    public static readonly Place Product = Home.Child<MainPresenter>("product", app => new ProductPresenter(app));
-    public static readonly Place Cart = Home.Child<MainPresenter>("cart", app => new CartPresenter(app));
+public class HomeKeys : MainKeys
+{
+    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("home", app => new HomePresenter(app));
+    ...
+}
 
-    public static IReadOnlyList<Place> All { get; } = [Login, Home, Product, Cart];
+public sealed class ProductKeys : HomeKeys
+{
+    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+    ...
 }
 ```
 
-- `Place.Create` makes a top-level place (a child of `Place.Root`); `Child` nests one under another.
-- `PathName` joins the names from the top: `Product.PathName` is `home/product`. This is the path part of the address.
+The application presenter lists them for the navigation:
+
+```csharp
+public static IReadOnlyList<Place> AllPlaces { get; } =
+    [LoginKeys.Place, HomeKeys.Place, ProductKeys.Place, CartKeys.Place, ReceiptKeys.Place, AdminKeys.Place, AmendKeys.Place];
+```
+
+- `Child` nests a place under another (`Place.Create` is the same as `Place.Root.Child`).
+- `PathName` joins the names from the top: `ProductKeys.Place.PathName` is `home/product`. This is the path part of the address.
 - A name cannot contain `/`, `?`, `&`, `#` or `=`.
 - A place created without a factory is *structural*: the navigation walks through it without creating anything.
 - `Place.Root` is detached (not part of any path); its address is the empty string. The application presenter
   stands for it.
-- The list passed to the application (`Places.All`) is every place an address can name. Two places with the same
+- The list passed to the application (`AllPlaces`) is every place an address can name. Two places with the same
   path are rejected with `ArgumentException`.
 - Because places are immutable, they can be shared by every application instance in the process. What is alive at
   run time belongs to each `CubeApplication`.
@@ -63,15 +76,19 @@ unique across the whole application, each with a single owner.
 
 ## Keys classes
 
-Reading and writing names by hand in every presenter would scatter those names. Instead, each module has a **keys
-class**: the only code that knows its names, with typed properties over the intent. Each keys class owns a short
-prefix, and every name it declares starts with it. Keys of deeper places usually inherit from the keys of the place
-above, to read what it hands down.
+Reading and writing names by hand in every presenter would scatter those names. Instead, each place has a **keys
+class**: it declares the place, and it is the only code that knows the place's names, with typed properties over the
+intent. Each keys class owns a short prefix, and every name it declares starts with it. Keys of a deeper place
+extend the keys of the place above, so the class tree is the place tree, and a deeper presenter reads what the
+levels above hand down. A place with no names of its own still has its keys (they declare the place and navigate to
+it).
 
 ```csharp
 public sealed class ProductKeys : HomeKeys
 {
     public new const string Prefix = "pr";
+
+    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
 
     private static class P
     {
@@ -79,7 +96,7 @@ public sealed class ProductKeys : HomeKeys
     }
 
     public ProductKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.Product)
+        : base(app, intent, Place)
     {
     }
 
@@ -92,9 +109,13 @@ public sealed class ProductKeys : HomeKeys
 }
 ```
 
-The base class (in the samples, `MainKeys`) builds `app.NewFlipIntent(place)` when no intent is given and exposes
-`Flip()`, so a navigation reads as `await new ProductKeys(App) { ProductId = id }.Flip();`. Keys convert and validate
-on the way in: garbage in the address reads as "absent", never as an exception.
+The framework's `CubeKeys` is the base: it builds `app.NewFlipIntent(place)` when no intent is given (so a trip
+starts from the current state) and exposes `Flip()`. Every navigation reads the same way:
+`await new ProductKeys(App) { ProductId = id }.Flip();`, `await new CartKeys(App).Flip();`. Inside `ApplyParameters`
+the keys are built over the intent in transit (`new ProductKeys(App, intent)`), and a redirect uses that intent too
+(`intent.Redirect(HomeKeys.Place)`). Keys convert and validate on the way in: garbage in the address reads as
+"absent", never as an exception. A test can check that each place has one keys class, child of the keys of its
+parent, and that prefixes do not repeat (`KeysTests` in the samples).
 
 ## Presenters
 
@@ -125,14 +146,14 @@ public override async Task<bool> ApplyParameters(FlipIntent intent, bool initial
     var keys = new ProductKeys(App, intent);
     if (keys.ProductId is not { } productId)
     {
-        await App.FlipToIntent(intent.Redirect(Places.Home)); // nothing to show
+        await App.FlipToIntent(intent.Redirect(HomeKeys.Place)); // nothing to show
         return false;
     }
 
     if (initialization)
     {
         Scope.OnAddToCart = Action<int>(OnAddToCart);
-        Scope.OnBack = Action(() => Flip(Places.Home));
+        Scope.OnBack = Action(() => new HomeKeys(App).Flip());
     }
 
     if (productId != _productId)

@@ -1,3 +1,4 @@
+using Contacts.List;
 using Wdc.Cube;
 
 namespace Contacts.Detail;
@@ -15,13 +16,13 @@ public sealed class ContactDetailPresenter(ContactsApp app)
         if (contact is null)
         {
             // Nothing to show: go to the list instead, within this same navigation.
-            await App.FlipToIntent(intent.Redirect(Places.Contacts));
+            await App.FlipToIntent(intent.Redirect(ContactListKeys.Place));
             return false;
         }
 
         if (initialization)
         {
-            Scope.OnClose = Action(() => Flip(Places.Contacts));
+            Scope.OnClose = Action(() => new ContactListKeys(App).Flip());
         }
 
         _contactId = contact.Id;

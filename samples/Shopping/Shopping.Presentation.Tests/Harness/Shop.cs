@@ -1,3 +1,8 @@
+using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Home.Admin;
+using Shopping.Presentation.Modules.Home.Admin.Amend;
+using Shopping.Presentation.Modules.Home.Cart;
+using Shopping.Presentation.Modules.Login;
 using Microsoft.Extensions.Time.Testing;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Main;
@@ -54,7 +59,7 @@ internal sealed class Shop
 
     public async Task Login(string user, string password)
     {
-        var login = PresenterOf<Modules.Login.LoginPresenter>(Places.Login);
+        var login = PresenterOf<Modules.Login.LoginPresenter>(LoginKeys.Place);
         await login.Scope.OnEnter(user, password);
         await Settle();
     }
@@ -79,12 +84,12 @@ internal sealed class Shop
 
     private bool IsBusy()
     {
-        var home = Maybe<Modules.Home.HomePresenter>(Places.Home);
+        var home = Maybe<Modules.Home.HomePresenter>(HomeKeys.Place);
         return home is not null && (home.Scope.Products?.Loading == true || home.Scope.Purchases?.Loading == true)
-               || Maybe<Modules.Login.LoginPresenter>(Places.Login)?.Scope.Loading == true
-               || Maybe<Modules.Home.Cart.CartPresenter>(Places.Cart)?.Scope.Buying == true
-               || Maybe<Modules.Home.Admin.AdminPresenter>(Places.Admin)?.Scope.Loading == true
-               || Maybe<Modules.Home.Admin.Amend.AmendPresenter>(Places.Amend)?.Scope.Saving == true;
+               || Maybe<Modules.Login.LoginPresenter>(LoginKeys.Place)?.Scope.Loading == true
+               || Maybe<Modules.Home.Cart.CartPresenter>(CartKeys.Place)?.Scope.Buying == true
+               || Maybe<Modules.Home.Admin.AdminPresenter>(AdminKeys.Place)?.Scope.Loading == true
+               || Maybe<Modules.Home.Admin.Amend.AmendPresenter>(AmendKeys.Place)?.Scope.Saving == true;
     }
 
     public async Task Do(Func<Task> action)

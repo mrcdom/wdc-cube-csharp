@@ -169,7 +169,7 @@ application, starts it and draws its root scope:
 - `CreateApplication` receives a `CubeHostContext` with two things the application must use: `Dispatcher` (Blazor's
   renderer dispatcher, adapted with `BlazorPresentation.CreateDispatcher`) and `History` (a
   `NavigationHistoryManager` over Blazor's `NavigationManager`).
-- `Start` runs once, after the application is created; it is usually `app => app.KickStart(Places.Main)`, or an
+- `Start` runs once, after the application is created; it is usually `app => app.KickStart(MainKeys.Place)`, or an
   entry point of your own that calls it (`app.Start()` in Shopping and GettingStarted).
 - `ChildContent` receives the application as `context`; `<ViewSlot Scope="context.Scope" />` draws its root scope.
 - When the component goes away (the circuit closes, the page unloads), `CubeHost` releases the application on its
@@ -302,10 +302,10 @@ public Task Start() => InvokeAsync(async () =>
     // The session first: with it comes the key that opens a sealed address (F5 on one).
     Subject = await ResumeSession();
     InstallCodec(Subject);
-    await KickStart(Places.Home);
+    await KickStart(HomeKeys.Place);
     if (!HasNavigated)
     {
-        await Flip(Places.Home);
+        await new HomeKeys(this).Flip();
     }
 });
 ```

@@ -35,9 +35,9 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
 
     private static async Task<AmendPresenter> Open(Shop shop, long purchaseId)
     {
-        await shop.Do(() => shop.PresenterOf<HomePresenter>(Places.Home).Scope.OnOpenAdmin());
-        await shop.Do(() => shop.PresenterOf<AdminPresenter>(Places.Admin).Scope.OnOpenPurchase(purchaseId));
-        return shop.PresenterOf<AmendPresenter>(Places.Amend);
+        await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnOpenAdmin());
+        await shop.Do(() => shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.OnOpenPurchase(purchaseId));
+        return shop.PresenterOf<AmendPresenter>(AmendKeys.Place);
     }
 
     // :: Who is offered it
@@ -50,7 +50,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
     {
         var shop = await Shop.LoggedIn(db, user);
 
-        Assert.Equal(offered, shop.PresenterOf<HomePresenter>(Places.Home).Scope.ShowAdmin);
+        Assert.Equal(offered, shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.ShowAdmin);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
 
         Assert.Equal("home", typed.History.Token);
         Assert.Equal(AdminPresenter.NotAllowed, typed.App.Scope.ErrorMessage);
-        Assert.Null(typed.Maybe<AdminPresenter>(Places.Admin));
+        Assert.Null(typed.Maybe<AdminPresenter>(AdminKeys.Place));
     }
 
     // :: The list
@@ -72,8 +72,8 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
     {
         var purchaseId = await FulanoBuys(1);
         var shop = await Shop.LoggedIn(db, "admin");
-        await shop.Do(() => shop.PresenterOf<HomePresenter>(Places.Home).Scope.OnOpenAdmin());
-        var admin = shop.PresenterOf<AdminPresenter>(Places.Admin).Scope;
+        await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnOpenAdmin());
+        var admin = shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope;
 
         Assert.Contains(admin.Purchases, p => p.CustomerLabel == "Fulano de Tal");
         Assert.Contains(admin.Purchases, p => p.CustomerLabel == "João da Silva");
@@ -85,7 +85,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         Assert.Equal("fulano", admin.CustomerFilter);
         Assert.Equal("home/admin?ad-customer=fulano", shop.History.Token);
         var again = await Shop.Start(db, shop.History.Token, shop.Session);
-        Assert.All(again.PresenterOf<AdminPresenter>(Places.Admin).Scope.Purchases, p => Assert.Equal("Fulano de Tal", p.CustomerLabel));
+        Assert.All(again.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => Assert.Equal("Fulano de Tal", p.CustomerLabel));
     }
 
     // :: The correction
@@ -115,11 +115,11 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         Assert.Equal(("Gerente de Loja", "Entregue a menos"), (entry.AuthorLabel, entry.Reason));
         Assert.Equal(["Bola de vôlei: 3 → 1", "Cafeteira design italiano: 2 → 0"], entry.Changes);
         Assert.Equal(string.Empty, form.Reason);
-        Assert.Contains(shop.PresenterOf<AdminPresenter>(Places.Admin).Scope.Purchases, p => p.Id == purchaseId && p.Corrected);
+        Assert.Contains(shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => p.Id == purchaseId && p.Corrected);
 
         var buyer = await Shop.LoggedIn(db, "fulano");
-        await buyer.Do(() => buyer.PresenterOf<HomePresenter>(Places.Home).Scope.Purchases!.OnOpenReceipt(purchaseId));
-        var receipt = buyer.PresenterOf<ReceiptPresenter>(Places.Receipt).Scope;
+        await buyer.Do(() => buyer.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!.OnOpenReceipt(purchaseId));
+        var receipt = buyer.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place).Scope;
         Assert.Equal("R$ 45,30", receipt.TotalLabel);
         Assert.Equal(["Compra corrigida em " + Infra.Formats.Date(DateTimeOffset.UtcNow) + ": Entregue a menos"], receipt.Corrections);
     }
@@ -183,14 +183,14 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
     {
         var purchaseId = await FulanoBuys(2);
         var shop = await Shop.LoggedIn(db, "admin");
-        await shop.Do(() => shop.PresenterOf<HomePresenter>(Places.Home).Scope.OnOpenAdmin());
-        var admin = shop.PresenterOf<AdminPresenter>(Places.Admin);
+        await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnOpenAdmin());
+        var admin = shop.PresenterOf<AdminPresenter>(AdminKeys.Place);
         await shop.Do(() => admin.Scope.OnFilter("Fulano"));
         await shop.Do(() => admin.Scope.OnOpenPurchase(purchaseId));
         Assert.StartsWith("home/admin/amend?", shop.History.Token, StringComparison.Ordinal);
-        Assert.Same(shop.PresenterOf<AmendPresenter>(Places.Amend).Scope, admin.Scope.Content);
+        Assert.Same(shop.PresenterOf<AmendPresenter>(AmendKeys.Place).Scope, admin.Scope.Content);
 
-        await shop.Do(shop.PresenterOf<AmendPresenter>(Places.Amend).Scope.OnBack);
+        await shop.Do(shop.PresenterOf<AmendPresenter>(AmendKeys.Place).Scope.OnBack);
 
         Assert.Equal("home/admin?ad-customer=Fulano", shop.History.Token);
         Assert.Null(admin.Scope.Content);

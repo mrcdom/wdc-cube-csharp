@@ -186,7 +186,7 @@ public sealed class TodoMvcTests
     public async Task StressMode_GoesInAndBackOutThroughTheAddress_WithoutFlippingToItself()
     {
         var h = await Harness.Start("todos");
-        var presenter = h.PresenterOf<TodoMvcPresenter>(Places.Todos);
+        var presenter = h.PresenterOf<TodoMvcPresenter>(TodoMvcKeys.Place);
 
         await h.Do(Todo(h).OnToggleStress);
         Assert.True(Todo(h).StressMode);
@@ -198,7 +198,7 @@ public sealed class TodoMvcTests
         Assert.False(Todo(h).StressMode);
         Assert.Null(Todo(h).List!.Clock);
         Assert.Equal("todos", h.History.Token);
-        Assert.Same(presenter, h.PresenterOf<TodoMvcPresenter>(Places.Todos)); // the same place, not a new flip
+        Assert.Same(presenter, h.PresenterOf<TodoMvcPresenter>(TodoMvcKeys.Place)); // the same place, not a new flip
     }
 
     [Fact]

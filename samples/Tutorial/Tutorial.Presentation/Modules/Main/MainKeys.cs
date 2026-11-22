@@ -6,9 +6,12 @@ namespace Tutorial.Presentation.Modules.Main;
 /// Typed reading of the intent for the application level. The only class that knows these names; every name starts
 /// with the file's own prefix so names stay unique across the application.
 /// </summary>
-public class MainKeys
+public class MainKeys : CubeKeys
 {
     public const string Prefix = "mn";
+
+    /// <summary>The application itself (the page frame).</summary>
+    public static Place Place { get; } = Place.Root;
 
     private static class A
     {
@@ -20,23 +23,14 @@ public class MainKeys
     }
 
     public MainKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Places.Main)
+        : this(app, intent, Place)
     {
     }
 
     protected MainKeys(CubeApplication app, FlipIntent? intent, Place place)
+        : base(app, intent, place)
     {
-        ArgumentNullException.ThrowIfNull(app);
-        App = app;
-        Intent = intent ?? app.NewFlipIntent(place);
     }
-
-    protected CubeApplication App { get; }
-
-    protected FlipIntent Intent { get; }
-
-    /// <summary>Navigates to the intent this keys object was built for (from the state).</summary>
-    public Task<bool> Flip() => App.FlipToIntent(Intent);
 
     public ScopeSlot ParentSlot
     {

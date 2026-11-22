@@ -60,7 +60,7 @@ private static async Task<(ContactsApp App, TestHistoryManager History)> Start(s
 - No dispatcher is passed, so the application creates its default `SerialDispatcher`. The test awaits the async
   entry points and everything runs in order on that dispatcher.
 - `Start()` is the sample's own entry point; it calls `KickStart(safePlace)`. An application without one calls
-  `KickStart` directly: `await app.KickStart(Places.Main);`.
+  `KickStart` directly: `await app.KickStart(MainKeys.Place);`.
 - Install a history codec, if the application uses one, before `KickStart`: it reads the address first.
 
 As the tests grow, move this into a small harness class. The one in
@@ -89,7 +89,7 @@ internal sealed class Harness
     public static async Task<Harness> Start(string address = "", ITutorialService? service = null)
     {
         var harness = new Harness(address, service ?? new TutorialService());
-        await harness.App.KickStart(Places.Main);
+        await harness.App.KickStart(MainKeys.Place);
         await harness.App.Settle();
         return harness;
     }
@@ -196,7 +196,7 @@ To reach the presenter mounted at a place:
 await h.Do(h.Scope.OnOpenSubscriptions);
 
 Assert.True(todos.IsReleased);
-Assert.Null(h.App.GetPresenter(Places.Todos));
+Assert.Null(h.App.GetPresenter(TodoMvcKeys.Place));
 Assert.IsType<SubscriptionsScope>(h.Scope.Body);
 ```
 
@@ -247,7 +247,7 @@ Assert.StartsWith("home/product?_e=", shop.History.EncodedToken, StringCompariso
 Assert.DoesNotContain("pr-id", shop.History.EncodedToken, StringComparison.Ordinal);
 
 var reloaded = await Shop.Start(db, shop.History.EncodedToken, shop.Session); // F5 on the sealed address
-Assert.Equal(productId, reloaded.PresenterOf<ProductPresenter>(Places.Product).Scope.Id);
+Assert.Equal(productId, reloaded.PresenterOf<ProductPresenter>(ProductKeys.Place).Scope.Id);
 ```
 
 ## 7. Back, Forward and links from outside
@@ -367,7 +367,7 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
     public async Task ProductsPanel_ListsTheCatalogueByName_WithPrices()
     {
         var shop = await Shop.LoggedIn(db, "admin");
-        var products = shop.PresenterOf<HomePresenter>(Places.Home).Scope.Products!;
+        var products = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Products!;
         // ...
     }
 }

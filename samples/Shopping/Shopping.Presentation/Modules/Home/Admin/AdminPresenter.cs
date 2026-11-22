@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Home;
 using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
 using Shopping.Domain.Users;
@@ -36,7 +37,7 @@ public sealed class AdminPresenter(MainPresenter app) : CubePresenter<MainPresen
         if (App.Subject?.Can(Permission) != true)
         {
             App.ShowError(NotAllowed);
-            await App.FlipToIntent(intent.Redirect(Places.Home));
+            await App.FlipToIntent(intent.Redirect(HomeKeys.Place));
             return false;
         }
 
@@ -48,7 +49,7 @@ public sealed class AdminPresenter(MainPresenter app) : CubePresenter<MainPresen
             Scope.OnPrevious = Action(() => ShowPage(Page - 1, Customer));
             Scope.OnNext = Action(() => ShowPage(Page + 1, Customer));
             Scope.OnOpenPurchase = Action<long>(OpenPurchase);
-            Scope.OnBack = Action(() => Flip(Places.Home));
+            Scope.OnBack = Action(() => new HomeKeys(App).Flip());
         }
 
         if (last)

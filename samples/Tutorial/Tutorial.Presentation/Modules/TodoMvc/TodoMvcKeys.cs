@@ -7,6 +7,8 @@ public sealed class TodoMvcKeys : MainKeys
 {
     public new const string Prefix = "tm";
 
+    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("todos", app => new TodoMvcPresenter(app));
+
     private static class P
     {
         /// <summary>Which list: 0 the sample, a negative id the 1000-item generator, a positive id a user's.</summary>
@@ -17,7 +19,7 @@ public sealed class TodoMvcKeys : MainKeys
     }
 
     public TodoMvcKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.Todos)
+        : base(app, intent, Place)
     {
     }
 

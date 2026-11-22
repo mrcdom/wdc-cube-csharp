@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Home;
 using Shopping.Domain;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Main;
@@ -32,7 +33,7 @@ public sealed class CartPresenter(MainPresenter app) : CubePresenter<MainPresent
         if (initialization)
         {
             Scope.OnBuy = Action(OnBuy);
-            Scope.OnContinue = Action(() => Flip(Places.Home));
+            Scope.OnContinue = Action(() => new HomeKeys(App).Flip());
         }
 
         Refresh();
@@ -93,7 +94,7 @@ public sealed class CartPresenter(MainPresenter app) : CubePresenter<MainPresent
     {
         if (Cart.Remove(productId) && Cart.Lines.Count == 0)
         {
-            await Flip(Places.Home); // nothing left to buy
+            await new HomeKeys(App).Flip(); // nothing left to buy
         }
     }
 

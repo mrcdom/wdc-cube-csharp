@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Main;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Receipt;
@@ -5,6 +6,8 @@ namespace Shopping.Presentation.Modules.Home.Receipt;
 public sealed class ReceiptKeys : HomeKeys
 {
     public new const string Prefix = "rc";
+
+    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("receipt", app => new ReceiptPresenter(app));
 
     private static class P
     {
@@ -19,7 +22,7 @@ public sealed class ReceiptKeys : HomeKeys
     }
 
     public ReceiptKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.Receipt)
+        : base(app, intent, Place)
     {
     }
 

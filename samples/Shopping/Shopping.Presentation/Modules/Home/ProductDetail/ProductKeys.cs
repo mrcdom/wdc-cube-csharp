@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Main;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.ProductDetail;
@@ -6,6 +7,8 @@ public sealed class ProductKeys : HomeKeys
 {
     public new const string Prefix = "pr";
 
+    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+
     private static class P
     {
         /// <summary>The product shown.</summary>
@@ -13,7 +16,7 @@ public sealed class ProductKeys : HomeKeys
     }
 
     public ProductKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.Product)
+        : base(app, intent, Place)
     {
     }
 

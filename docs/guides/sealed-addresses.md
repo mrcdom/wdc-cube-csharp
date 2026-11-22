@@ -45,7 +45,7 @@ opened. Install it before `KickStart`:
 var history = new MemoryHistoryManager(address);
 history.Codec = new AesHistoryCodec(key);   // key: 32 bytes; sealed as version 1
 var app = new MainPresenter(history /* , ... */);
-await app.KickStart(Places.Main);           // reads the address: the codec is already there
+await app.KickStart(MainKeys.Place);           // reads the address: the codec is already there
 ```
 
 `HistoryManager.Codec` can be changed at any moment: set it to `null` to stop sealing. After changing it outside a
@@ -89,10 +89,10 @@ public Task Start() => InvokeAsync(async () =>
     // The session first: with it comes the key that opens a sealed address (F5 on one).
     Subject = await ResumeSession();
     InstallCodec(Subject);
-    await KickStart(Places.Home);
+    await KickStart(HomeKeys.Place);
     if (!HasNavigated)
     {
-        await Flip(Places.Home);
+        await new HomeKeys(this).Flip();
     }
 });
 ```
@@ -147,7 +147,7 @@ id, which sends the reader back to home:
 var beotrano = await Shop.LoggedIn(db, "beotrano");
 var opened = await Shop.Start(db, sealedLink, beotrano.Session);
 
-Assert.NotEqual(productId, opened.Maybe<ProductPresenter>(Places.Product)?.Scope.Id); // the parameters are dropped
+Assert.NotEqual(productId, opened.Maybe<ProductPresenter>(ProductKeys.Place)?.Scope.Id); // the parameters are dropped
 ```
 
 Two related cases:
@@ -237,7 +237,7 @@ Assert.StartsWith("home/product?_e=", shop.History.EncodedToken, StringCompariso
 Assert.DoesNotContain("pr-id", shop.History.EncodedToken, StringComparison.Ordinal);
 
 var reloaded = await Shop.Start(db, shop.History.EncodedToken, shop.Session); // F5 on the sealed address
-Assert.Equal(productId, reloaded.PresenterOf<ProductPresenter>(Places.Product).Scope.Id);
+Assert.Equal(productId, reloaded.PresenterOf<ProductPresenter>(ProductKeys.Place).Scope.Id);
 ```
 
 The same tests run with the key derived in process (`SealedAddressTests`) and with the key handed out by the server's

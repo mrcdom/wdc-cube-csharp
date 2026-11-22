@@ -1,3 +1,6 @@
+using Tutorial.Presentation.Modules.TodoMvc;
+using Tutorial.Presentation.Modules.Subscriptions;
+using Tutorial.Presentation.Modules.Restricted;
 using Microsoft.Extensions.Logging;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
@@ -7,13 +10,20 @@ namespace Tutorial.Presentation.Modules.Main;
 /// <summary>The application presenter: the page frame (menu, body, dialog, alert) and the services.</summary>
 public sealed class MainPresenter : ApplicationPresenter<MainScope>
 {
+    /// <summary>
+    /// Every place an address can name, each declared by its keys (whose class tree is the place tree). The folder
+    /// tree mirrors it.
+    /// </summary>
+    public static IReadOnlyList<Place> AllPlaces { get; } =
+        [TodoMvcKeys.Place, SubscriptionsKeys.Place, SubscriptionsDetailKeys.Place, RestrictedKeys.Place];
+
     private readonly BodyScope _bodyScope = new();
     private readonly ScopeSlot _bodySlot;
     private readonly ScopeSlot _dialogSlot;
 
     public MainPresenter(HistoryManager history, ITutorialService service, PresentationDispatcher? dispatcher = null,
         TimeProvider? timeProvider = null, ILogger? logger = null)
-        : base(new MainScope(), history, Places.All, logger, dispatcher, timeProvider)
+        : base(new MainScope(), history, AllPlaces, logger, dispatcher, timeProvider)
     {
         ArgumentNullException.ThrowIfNull(service);
         Service = service;
@@ -88,9 +98,9 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
 
     private Task OnHome() => Flip(RootPlace);
 
-    private Task OnOpenTodos() => Flip(Places.Todos);
+    private Task OnOpenTodos() => new TodoMvcKeys(this).Flip();
 
-    private Task OnOpenSubscriptions() => Flip(Places.Subscriptions);
+    private Task OnOpenSubscriptions() => new SubscriptionsKeys(this).Flip();
 
     private void OnLogin() => Alert(AlertSeverity.Info, "Work in progress...", "No implementation to this action, yet.");
 

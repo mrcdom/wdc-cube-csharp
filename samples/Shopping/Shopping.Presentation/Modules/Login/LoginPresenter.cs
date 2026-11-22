@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Main;
 using Wdc.Cube;
 
@@ -35,7 +36,7 @@ public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresen
             }
 
             await App.SignIn(subject);
-            await Flip(Places.Home);
+            await new HomeKeys(App).Flip();
         }
         catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException or TimeoutException)
         {

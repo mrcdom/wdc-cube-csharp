@@ -57,18 +57,27 @@ a rendering technology or a database. It sees `ShoppingRepositories` (a set of r
 
 ## The place tree
 
-```csharp
-// samples/Shopping/Shopping.Presentation/Places.cs
-public static readonly Place Login = Place.Create<MainPresenter>("login", app => new LoginPresenter(app));
-public static readonly Place Home = Place.Create<MainPresenter>("home", app => new HomePresenter(app));
-public static readonly Place Product = Home.Child<MainPresenter>("product", app => new ProductPresenter(app));
-public static readonly Place Cart = Home.Child<MainPresenter>("cart", app => new CartPresenter(app));
-public static readonly Place Receipt = Home.Child<MainPresenter>("receipt", app => new ReceiptPresenter(app));
-public static readonly Place Admin = Home.Child<MainPresenter>("admin", app => new AdminPresenter(app));
-public static readonly Place Amend = Admin.Child<MainPresenter>("amend", app => new AmendPresenter(app));
+Each place is declared by its keys class, from the place of the keys it extends, so the class tree is the place
+tree:
+
+```text
+MainKeys      (root)        Modules/Main
+├─ LoginKeys  login         Modules/Login
+└─ HomeKeys   home          Modules/Home
+   ├─ ProductKeys  home/product   Modules/Home/ProductDetail
+   ├─ CartKeys     home/cart      Modules/Home/Cart
+   ├─ ReceiptKeys  home/receipt   Modules/Home/Receipt
+   └─ AdminKeys    home/admin     Modules/Home/Admin
+      └─ AmendKeys home/admin/amend   Modules/Home/Admin/Amend
 ```
 
-The folders of `Shopping.Presentation/Modules` mirror this tree. `MainPresenter` is the application presenter: it
+```csharp
+// samples/Shopping/Shopping.Presentation/Modules/Home/ProductDetail/ProductKeys.cs
+public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+```
+
+`MainPresenter.AllPlaces` lists them for the navigation, and the folders of `Shopping.Presentation/Modules` mirror
+the tree. `MainPresenter` is the application presenter: it
 holds the session (`Subject`), the repositories, the error toast, and installs the address codec. `HomePresenter` is
 the guard of everything under `home` (no session: redirect to `login`) and the shell: header, cart badge, and the
 catalogue and purchase panels. It also owns the cart (`CartManager`), which lives as long as Home does.
@@ -78,7 +87,7 @@ catalogue and purchase panels. It also owns the cart (`CartManager`), which live
 ### 1. The address and the keys
 
 Opening a product is a flip to `home/product?pr-id=7`. The names of the parameters belong to keys classes, one per
-module, each with its own prefix:
+place, each with its own prefix:
 
 ```csharp
 // samples/Shopping/Shopping.Presentation/Modules/Home/ProductDetail/ProductKeys.cs
@@ -110,7 +119,7 @@ private async Task OnAddToCart(int quantity)
 
     var cart = _home?.Cart ?? throw new InvalidOperationException("The product is shown outside Home.");
     cart.Add(_productId!.Value, Scope.Name, _price, quantity);
-    await Flip(Places.Cart);
+    await new CartKeys(App).Flip();
 }
 ```
 
@@ -199,9 +208,9 @@ var shop = await Shop.LoggedIn(db, "beotrano");
 var product = await OpenProduct(shop, "Cafeteira design italiano");
 await shop.Do(() => product.Scope.OnAddToCart(2));
 
-await shop.Do(shop.PresenterOf<CartPresenter>(Places.Cart).Scope.OnBuy);
+await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
 
-var receipt = shop.PresenterOf<ReceiptPresenter>(Places.Receipt);
+var receipt = shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place);
 Assert.True(receipt.Scope.NotifySuccess);
 Assert.Equal("R$ 399,98", receipt.Scope.TotalLabel);
 Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);

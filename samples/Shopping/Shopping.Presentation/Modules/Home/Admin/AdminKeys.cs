@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Main;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Admin;
@@ -6,6 +7,9 @@ namespace Shopping.Presentation.Modules.Home.Admin;
 public class AdminKeys : HomeKeys
 {
     public new const string Prefix = "ad";
+
+    /// <summary>The purchases of every customer: only for whoever may correct them.</summary>
+    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("admin", app => new AdminPresenter(app));
 
     private static class P
     {
@@ -23,7 +27,7 @@ public class AdminKeys : HomeKeys
     }
 
     public AdminKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Places.Admin)
+        : this(app, intent, Place)
     {
     }
 

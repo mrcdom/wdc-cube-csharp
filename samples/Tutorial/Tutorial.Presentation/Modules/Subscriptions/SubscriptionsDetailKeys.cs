@@ -4,9 +4,13 @@ using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.Subscriptions;
 
-public sealed class SubscriptionsDetailKeys : MainKeys
+public sealed class SubscriptionsDetailKeys : SubscriptionsKeys
 {
     public new const string Prefix = "sd";
+
+    /// <summary>A dialog over the list: a place below it, shown in the dialog slot.</summary>
+    public static new Place Place { get; } =
+        SubscriptionsKeys.Place.Child<MainPresenter>("detail", app => new SubscriptionsDetailPresenter(app));
 
     private static class P
     {
@@ -21,7 +25,7 @@ public sealed class SubscriptionsDetailKeys : MainKeys
     }
 
     public SubscriptionsDetailKeys(CubeApplication app, FlipIntent? intent = null)
-        : base(app, intent, Places.SubscriptionsDetail)
+        : base(app, intent, Place)
     {
     }
 

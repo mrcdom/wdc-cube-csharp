@@ -71,7 +71,7 @@ public abstract class HistoryManager
 @page "/"
 @page "/{*path}"
 
-<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.KickStart(Places.Main)">
+<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.KickStart(MainKeys.Place)">
     <ViewSlot Scope="context.Scope" />
 </CubeHost>
 ```
@@ -108,7 +108,7 @@ private void OnKey(object? sender, KeyEventArgs e)
 ```csharp
 var history = new TestHistoryManager("todos?tm-showing=1");
 var app = new MainPresenter(history, new TutorialService());
-await app.KickStart(Places.Main);
+await app.KickStart(MainKeys.Place);
 await app.Settle();
 
 Assert.Equal(["todos?tm-showing=1"], history.Tokens);

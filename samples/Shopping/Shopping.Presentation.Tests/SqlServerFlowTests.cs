@@ -12,7 +12,7 @@ public sealed class SqlServerFlowTests(ShoppingSqlServerFixture db) : IClassFixt
     public async Task LoginCatalogueHistoryBuyAndReceipt()
     {
         var shop = await Shop.LoggedIn(db, "admin");
-        var home = shop.PresenterOf<HomePresenter>(Places.Home);
+        var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
 
         Assert.Equal("Olá, João da Silva", home.Scope.Greeting);
         Assert.Equal(["Bola de vôlei", "Cafeteira design italiano", "Fita veda rosca", "Pen Drive 2GB"],
@@ -20,13 +20,13 @@ public sealed class SqlServerFlowTests(ShoppingSqlServerFixture db) : IClassFixt
         Assert.Equal(["R$ 47,97", "R$ 200,00"], home.Scope.Purchases!.Purchases.Select(p => p.TotalLabel));
 
         await shop.Do(() => home.Scope.Products!.OnOpenProduct(home.Scope.Products!.Products[0].Id));
-        var product = shop.PresenterOf<ProductPresenter>(Places.Product);
+        var product = shop.PresenterOf<ProductPresenter>(ProductKeys.Place);
         Assert.Equal(3, product.Scope.DescriptionItems.Count);
 
         await shop.Do(() => product.Scope.OnAddToCart(3));
-        await shop.Do(shop.PresenterOf<CartPresenter>(Places.Cart).Scope.OnBuy);
+        await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
 
-        var receipt = shop.PresenterOf<ReceiptPresenter>(Places.Receipt);
+        var receipt = shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place);
         Assert.Equal("R$ 135,90", receipt.Scope.TotalLabel);
         Assert.Equal("R$ 135,90", home.Scope.Purchases!.Purchases[0].TotalLabel);
         Assert.Equal(2, await db.Store!.Repositories.Purchases.Count( // the 2011 demo purchase also has the ball

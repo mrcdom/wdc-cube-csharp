@@ -4,32 +4,27 @@ namespace Contacts;
 
 // <snippet:app-keys>
 /// <summary>
-/// The names the application reads and writes in an intent. Deeper places extend it; each keys class owns a prefix,
-/// so names never clash.
+/// The application level: its place (the root) and the names it reads and writes in an intent. The keys of each
+/// deeper place extend the keys of the place above, and own a prefix, so names never clash.
 /// </summary>
-public class AppKeys
+public class AppKeys : CubeKeys
 {
     public const string Prefix = "ap";
+
+    /// <summary>The application itself.</summary>
+    public static Place Place { get; } = Place.Root;
 
     private const string ParentSlotName = $"{Prefix}-parent-slot";
 
     public AppKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Place.Root)
+        : this(app, intent, Place)
     {
     }
 
     protected AppKeys(CubeApplication app, FlipIntent? intent, Place place)
+        : base(app, intent, place)
     {
-        App = app;
-        Intent = intent ?? app.NewFlipIntent(place);
     }
-
-    protected CubeApplication App { get; }
-
-    protected FlipIntent Intent { get; }
-
-    /// <summary>Navigates to the place this object was built for, with what was set on it.</summary>
-    public Task<bool> Flip() => App.FlipToIntent(Intent);
 
     /// <summary>Where the level below publishes its scope.</summary>
     public ScopeSlot ParentSlot

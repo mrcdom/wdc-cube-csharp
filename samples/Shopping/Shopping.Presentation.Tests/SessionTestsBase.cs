@@ -14,8 +14,8 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
         {
             var shop = await Shop.Start(db, address);
 
-            Assert.NotNull(shop.Maybe<LoginPresenter>(Places.Login));
-            Assert.Null(shop.Maybe<HomePresenter>(Places.Home));
+            Assert.NotNull(shop.Maybe<LoginPresenter>(LoginKeys.Place));
+            Assert.Null(shop.Maybe<HomePresenter>(HomeKeys.Place));
             Assert.Equal("login", shop.History.Token);
         }
     }
@@ -27,7 +27,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
 
         await shop.Login("admin", "wrong");
 
-        var login = shop.PresenterOf<LoginPresenter>(Places.Login);
+        var login = shop.PresenterOf<LoginPresenter>(LoginKeys.Place);
         Assert.Equal(LoginPresenter.NotRecognized, login.Scope.ErrorMessage);
         Assert.False(login.Scope.Loading);
         Assert.Null(shop.App.Subject);
@@ -40,7 +40,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
 
         await shop.Login("admin", "admin");
 
-        var home = shop.PresenterOf<HomePresenter>(Places.Home);
+        var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
         Assert.Equal("Olá, João da Silva", home.Scope.Greeting);
         Assert.Equal("home", shop.History.Token);
         Assert.NotNull(await shop.Session.Get(SubjectSession.Key));
@@ -53,7 +53,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
 
         var reloaded = await Shop.Start(db, "home", first.Session); // F5: same tab, same session storage
 
-        Assert.Equal("Olá, Fulano de Tal", reloaded.PresenterOf<HomePresenter>(Places.Home).Scope.Greeting);
+        Assert.Equal("Olá, Fulano de Tal", reloaded.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
     {
         var shop = await Shop.LoggedIn(db, "beotrano");
 
-        await shop.Do(shop.PresenterOf<HomePresenter>(Places.Home).Scope.OnExit);
+        await shop.Do(shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnExit);
 
         Assert.Null(shop.App.Subject);
         Assert.Null(await shop.Session.Get(SubjectSession.Key));

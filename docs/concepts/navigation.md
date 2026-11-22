@@ -9,8 +9,8 @@ a whole, rolls back as a whole, and never leaks or double-releases a presenter.
 ## Starting a flip
 
 ```csharp
-await App.Flip(Places.Cart);                                          // from the current state
-await App.Flip(Places.Product, i => i.SetParameter("pr-id", 7L));     // with something set
+await App.Flip(CartKeys.Place);                                          // from the current state
+await App.Flip(ProductKeys.Place, i => i.SetParameter("pr-id", 7L));     // with something set
 await new ProductKeys(App) { ProductId = 7 }.Flip();                  // the same, through a keys class
 await App.FlipToIntent(intent);                                       // an intent built elsewhere
 await App.FlipToIntentString("home/product?pr-id=7");                 // an address
@@ -80,7 +80,7 @@ navigation and returns `false`:
 ```csharp
 if (keys.ProductId is not { } productId)
 {
-    await App.FlipToIntent(intent.Redirect(Places.Home)); // nothing to show: back to the panels
+    await App.FlipToIntent(intent.Redirect(HomeKeys.Place)); // nothing to show: back to the panels
     return false;
 }
 ```
@@ -119,10 +119,10 @@ public Task Start() => InvokeAsync(async () =>
 {
     Subject = await ResumeSession();
     InstallCodec(Subject);        // before KickStart: it reads the address first
-    await KickStart(Places.Home);
+    await KickStart(HomeKeys.Place);
     if (!HasNavigated)
     {
-        await Flip(Places.Home);  // an empty address
+        await new HomeKeys(this).Flip();  // an empty address
     }
 });
 ```
@@ -167,7 +167,7 @@ public override async Task<bool> ApplyParameters(FlipIntent intent, bool initial
     // Nothing under home without a session. Redirect with the intent in transit.
     if (App.Subject is not { } subject)
     {
-        await App.FlipToIntent(intent.Redirect(Places.Login));
+        await App.FlipToIntent(intent.Redirect(LoginKeys.Place));
         return false;
     }
 

@@ -27,13 +27,15 @@ Each record has the same sections: **Status**, **Context**, **Decision**, **Alte
 | [0013](0013-writes-in-cascade.md) | Writes in cascade, guided by the projection | Accepted |
 | [0014](0014-rules-per-role-in-protected-repository.md) | Rules per role, in the protected repository | Accepted |
 | [0015](0015-http-contract-compatible-with-kotlin.md) | An HTTP contract compatible with the Kotlin implementation | Accepted |
-| [0016](0016-remote-transactions.md) | Remote transactions held across requests | Accepted |
+| [0016](0016-remote-transactions.md) | Remote transactions held across requests | Accepted (amended) |
+| [0017](0017-keys-classes-declare-their-places.md) | Keys classes declare their places | Accepted |
 
 ## Reading order
 
 - **Foundations:** 0001–0002.
 - **Presentation:** 0003–0008, in the order a navigation meets them: the dispatcher it runs on, the walk, concurrent
-  requests, how scopes reach the screen, the renderers, and sealed addresses.
+  requests, how scopes reach the screen, the renderers, and sealed addresses; 0017, how an application declares its
+  places.
 - **Data:** 0009–0014, from the model shared by every layer to the SQL engine, transactions, cascades and the rules
   per role.
 - **Remote:** 0015–0016, the same contracts over HTTP.

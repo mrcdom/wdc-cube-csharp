@@ -12,7 +12,7 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
     public async Task ProductsPanel_ListsTheCatalogueByName_WithPrices()
     {
         var shop = await Shop.LoggedIn(db, "admin");
-        var products = shop.PresenterOf<HomePresenter>(Places.Home).Scope.Products!;
+        var products = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Products!;
 
         Assert.Equal(["Bola de vôlei", "Cafeteira design italiano", "Fita veda rosca", "Pen Drive 2GB"], products.Products.Select(p => p.Name));
         Assert.Equal("R$ 45,30", products.Products[0].PriceLabel);
@@ -24,7 +24,7 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
     public async Task PurchasesPanel_MostRecentFirst_WithDateItemsAndTotal()
     {
         var shop = await Shop.LoggedIn(db, "admin");
-        var purchases = shop.PresenterOf<HomePresenter>(Places.Home).Scope.Purchases!;
+        var purchases = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!;
 
         Assert.Equal(
             [("03/04/2011", "Bola de vôlei, Fita veda rosca", "R$ 47,97"), ("01/01/2010", "Cafeteira design italiano", "R$ 200,00")],
@@ -43,7 +43,7 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
             await BuyOne(shop);
         }
 
-        var purchases = shop.PresenterOf<HomePresenter>(Places.Home).Scope.Purchases!;
+        var purchases = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!;
         Assert.True(purchases.HasNext);
         await shop.Do(purchases.OnNext);
         Assert.Equal("2 / 2", purchases.PageLabel);
@@ -51,16 +51,16 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
         Assert.Equal("home?hm-page=2", shop.History.Token);
 
         var deep = await Shop.Start(db, "home?hm-page=99", shop.Session); // past the end: the last page that exists
-        Assert.Equal("2 / 2", deep.PresenterOf<HomePresenter>(Places.Home).Scope.Purchases!.PageLabel);
-        Assert.Equal(2, deep.PresenterOf<HomePresenter>(Places.Home).Scope.Purchases!.Purchases.Count);
+        Assert.Equal("2 / 2", deep.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!.PageLabel);
+        Assert.Equal(2, deep.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!.Purchases.Count);
     }
 
     private static async Task BuyOne(Shop shop)
     {
-        var home = shop.PresenterOf<HomePresenter>(Places.Home);
+        var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
         await shop.Do(() => home.Scope.Products!.OnOpenProduct(home.Scope.Products!.Products[2].Id));
-        await shop.Do(() => shop.PresenterOf<ProductPresenter>(Places.Product).Scope.OnAddToCart(1));
-        await shop.Do(shop.PresenterOf<CartPresenter>(Places.Cart).Scope.OnBuy);
-        await shop.Do(shop.PresenterOf<ReceiptPresenter>(Places.Receipt).Scope.OnContinue);
+        await shop.Do(() => shop.PresenterOf<ProductPresenter>(ProductKeys.Place).Scope.OnAddToCart(1));
+        await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
+        await shop.Do(shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place).Scope.OnContinue);
     }
 }

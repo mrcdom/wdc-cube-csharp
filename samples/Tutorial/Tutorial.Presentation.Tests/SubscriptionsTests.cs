@@ -176,7 +176,7 @@ public sealed class SubscriptionsTests
         var h = await Harness.Start("subscriptions/detail?sd-site=1", service);
 
         h.History.Navigate("subscriptions/detail?sd-site=2"); // the reader moved on before site 1 arrived
-        await WaitUntil(() => h.History.Location == "subscriptions/detail?sd-site=2" && h.App.LastPlace == Places.SubscriptionsDetail);
+        await WaitUntil(() => h.History.Location == "subscriptions/detail?sd-site=2" && h.App.LastPlace == SubscriptionsDetailKeys.Place);
         await h.App.Settle();
 
         service.SiteGates[2].SetResult(); // the newer answer first...

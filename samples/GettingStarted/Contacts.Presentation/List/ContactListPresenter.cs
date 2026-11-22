@@ -9,7 +9,7 @@ public sealed class ContactListPresenter(ContactsApp app)
 {
     public override async Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
-        var keys = new AppKeys(App, intent);
+        var keys = new ContactListKeys(App, intent);
         keys.ParentSlot(Scope); // into the application's body
 
         if (initialization)

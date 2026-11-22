@@ -1,3 +1,10 @@
+using Shopping.Presentation.Modules.Login;
+using Shopping.Presentation.Modules.Home.ProductDetail;
+using Shopping.Presentation.Modules.Home.Cart;
+using Shopping.Presentation.Modules.Home.Receipt;
+using Shopping.Presentation.Modules.Home.Admin;
+using Shopping.Presentation.Modules.Home.Admin.Amend;
+using Shopping.Presentation.Modules.Home;
 using Microsoft.Extensions.Logging;
 using Shopping.Domain;
 using Shopping.Presentation.Infra;
@@ -12,6 +19,13 @@ namespace Shopping.Presentation.Modules.Main;
 /// </summary>
 public sealed class MainPresenter : ApplicationPresenter<MainScope>
 {
+    /// <summary>
+    /// The places of the application, each declared by its keys (whose class tree is the place tree). The folder tree
+    /// mirrors it.
+    /// </summary>
+    public static IReadOnlyList<Place> AllPlaces { get; } =
+        [LoginKeys.Place, HomeKeys.Place, ProductKeys.Place, CartKeys.Place, ReceiptKeys.Place, AdminKeys.Place, AmendKeys.Place];
+
     /// <summary>How long the error toast stays.</summary>
     public static readonly TimeSpan ErrorToastDuration = TimeSpan.FromSeconds(4);
 
@@ -20,7 +34,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     public MainPresenter(HistoryManager history, ShoppingRepositories repositories, ISessionStore session,
         PresentationDispatcher? dispatcher = null, TimeProvider? timeProvider = null, ILogger? logger = null,
         IAuthentication? authentication = null)
-        : base(new MainScope(), history, Places.All, logger, dispatcher, timeProvider)
+        : base(new MainScope(), history, AllPlaces, logger, dispatcher, timeProvider)
     {
         ArgumentNullException.ThrowIfNull(repositories);
         ArgumentNullException.ThrowIfNull(session);
@@ -46,10 +60,10 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
         // The session first: with it comes the key that opens a sealed address (F5 on one).
         Subject = await ResumeSession();
         InstallCodec(Subject);
-        await KickStart(Places.Home);
+        await KickStart(HomeKeys.Place);
         if (!HasNavigated)
         {
-            await Flip(Places.Home);
+            await new HomeKeys(this).Flip();
         }
     });
 
@@ -65,7 +79,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
         {
             if (!initialization)
             {
-                await FlipToIntent(intent.Redirect(Places.Home)); // the application itself means home
+                await FlipToIntent(intent.Redirect(HomeKeys.Place)); // the application itself means home
                 return false;
             }
 

@@ -3,9 +3,12 @@ using Wdc.Cube;
 namespace Shopping.Presentation.Modules.Main;
 
 /// <summary>Names the application level reads and writes. Every keys file owns a two-letter prefix.</summary>
-public class MainKeys
+public class MainKeys : CubeKeys
 {
     public const string Prefix = "mn";
+
+    /// <summary>The application itself; going there means going home.</summary>
+    public static Place Place { get; } = Place.Root;
 
     private static class A
     {
@@ -14,22 +17,14 @@ public class MainKeys
     }
 
     public MainKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Places.Main)
+        : this(app, intent, Place)
     {
     }
 
     protected MainKeys(CubeApplication app, FlipIntent? intent, Place place)
+        : base(app, intent, place)
     {
-        ArgumentNullException.ThrowIfNull(app);
-        App = app;
-        Intent = intent ?? app.NewFlipIntent(place);
     }
-
-    protected CubeApplication App { get; }
-
-    protected FlipIntent Intent { get; }
-
-    public Task<bool> Flip() => App.FlipToIntent(Intent);
 
     public ScopeSlot ParentSlot
     {

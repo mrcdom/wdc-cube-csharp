@@ -1,3 +1,5 @@
+using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Main;
 using Wdc.Cube;
@@ -21,14 +23,14 @@ public sealed class ProductPresenter(MainPresenter app) : CubePresenter<MainPres
 
         if (keys.ProductId is not { } productId)
         {
-            await App.FlipToIntent(intent.Redirect(Places.Home)); // nothing to show: back to the panels
+            await App.FlipToIntent(intent.Redirect(HomeKeys.Place)); // nothing to show: back to the panels
             return false;
         }
 
         if (initialization)
         {
             Scope.OnAddToCart = Action<int>(OnAddToCart);
-            Scope.OnBack = Action(() => Flip(Places.Home));
+            Scope.OnBack = Action(() => new HomeKeys(App).Flip());
         }
 
         if (productId != _productId)
@@ -69,6 +71,6 @@ public sealed class ProductPresenter(MainPresenter app) : CubePresenter<MainPres
 
         var cart = _home?.Cart ?? throw new InvalidOperationException("The product is shown outside Home.");
         cart.Add(_productId!.Value, Scope.Name, _price, quantity);
-        await Flip(Places.Cart);
+        await new CartKeys(App).Flip();
     }
 }

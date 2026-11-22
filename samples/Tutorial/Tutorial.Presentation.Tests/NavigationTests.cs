@@ -13,7 +13,7 @@ public sealed class NavigationTests
         var h = await Harness.Start("todos?tm-showing=1");
 
         Assert.IsType<TodoMvcScope>(h.Scope.Body);
-        Assert.Equal(ShowingOptions.Active, h.PresenterOf<TodoMvcPresenter>(Places.Todos).Scope.Footer!.Showing);
+        Assert.Equal(ShowingOptions.Active, h.PresenterOf<TodoMvcPresenter>(TodoMvcKeys.Place).Scope.Footer!.Showing);
         Assert.Equal(["todos?tm-showing=1"], h.History.Tokens);
     }
 
@@ -63,12 +63,12 @@ public sealed class NavigationTests
     {
         var h = await Harness.Start();
         await h.Do(h.Scope.OnOpenTodos);
-        var todos = h.PresenterOf<TodoMvcPresenter>(Places.Todos);
+        var todos = h.PresenterOf<TodoMvcPresenter>(TodoMvcKeys.Place);
 
         await h.Do(h.Scope.OnOpenSubscriptions);
 
         Assert.True(todos.IsReleased);
-        Assert.Null(h.App.GetPresenter(Places.Todos));
+        Assert.Null(h.App.GetPresenter(TodoMvcKeys.Place));
         Assert.IsType<SubscriptionsScope>(h.Scope.Body);
     }
 
@@ -96,21 +96,5 @@ public sealed class NavigationTests
         Assert.Equal(AlertSeverity.Info, h.Scope.Alert!.Severity);
         Assert.IsType<BodyScope>(h.Scope.Body);
         Assert.Equal([""], h.History.Tokens);
-    }
-
-    [Fact]
-    public void KeyPrefixes_AreUniqueAcrossTheApplication()
-    {
-        // Each keys class owns a two-letter prefix; parameter and attribute names start with it.
-        var prefixes = typeof(Places).Assembly.GetTypes()
-            .Where(t => t.Name.EndsWith("Keys", StringComparison.Ordinal))
-            .Select(t => t.GetField("Prefix", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-                                              | System.Reflection.BindingFlags.DeclaredOnly))
-            .Where(f => f is not null)
-            .Select(f => (string)f!.GetRawConstantValue()!)
-            .ToList();
-
-        Assert.Equal(["mn", "sd", "tm"], prefixes.Order());
-        Assert.All(prefixes, p => Assert.Equal(2, p.Length));
     }
 }

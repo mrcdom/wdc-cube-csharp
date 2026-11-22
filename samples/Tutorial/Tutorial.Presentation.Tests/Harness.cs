@@ -29,7 +29,7 @@ internal sealed class Harness
     public static async Task<Harness> Start(string address = "", ITutorialService? service = null)
     {
         var harness = new Harness(address, service ?? new TutorialService());
-        await harness.App.KickStart(Places.Main);
+        await harness.App.KickStart(MainKeys.Place);
         await harness.App.Settle();
         return harness;
     }

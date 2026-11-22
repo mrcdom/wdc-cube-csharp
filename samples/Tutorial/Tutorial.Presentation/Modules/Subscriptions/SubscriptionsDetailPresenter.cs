@@ -30,7 +30,7 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
         if (keys.SiteId is not { } siteId)
         {
             // Redirecting inside our own flip: with the intent in transit.
-            await App.FlipToIntent(intent.Redirect(Places.Subscriptions));
+            await App.FlipToIntent(intent.Redirect(SubscriptionsKeys.Place));
             return false;
         }
 
@@ -125,7 +125,7 @@ public sealed class SubscriptionsDetailPresenter(MainPresenter app)
         }
         else
         {
-            await Flip(Places.Subscriptions);
+            await new SubscriptionsKeys(App).Flip();
         }
     }
 }

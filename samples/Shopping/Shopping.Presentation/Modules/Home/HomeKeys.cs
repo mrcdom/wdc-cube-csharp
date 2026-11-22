@@ -8,6 +8,9 @@ public class HomeKeys : MainKeys
 {
     public new const string Prefix = "hm";
 
+    /// <summary>The session guard and the shell (header, cart badge) of everything below it.</summary>
+    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("home", app => new HomePresenter(app));
+
     private static class P
     {
         /// <summary>The page of the purchase history (1-based; the first stays out of the address).</summary>
@@ -21,7 +24,7 @@ public class HomeKeys : MainKeys
     }
 
     public HomeKeys(CubeApplication app, FlipIntent? intent = null)
-        : this(app, intent, Places.Home)
+        : this(app, intent, Place)
     {
     }
 

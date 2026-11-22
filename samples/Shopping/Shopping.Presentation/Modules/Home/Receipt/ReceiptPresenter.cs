@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules.Home;
 using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Main;
@@ -18,13 +19,13 @@ public sealed class ReceiptPresenter(MainPresenter app) : CubePresenter<MainPres
         var keys = new ReceiptKeys(App, intent);
         if (keys.PurchaseId is not { } purchaseId)
         {
-            await App.FlipToIntent(intent.Redirect(Places.Home));
+            await App.FlipToIntent(intent.Redirect(HomeKeys.Place));
             return false;
         }
 
         if (initialization)
         {
-            Scope.OnContinue = Action(() => Flip(Places.Home));
+            Scope.OnContinue = Action(() => new HomeKeys(App).Flip());
         }
 
         Scope.NotifySuccess = keys.PurchaseMade; // the attribute only comes with the flip from the cart

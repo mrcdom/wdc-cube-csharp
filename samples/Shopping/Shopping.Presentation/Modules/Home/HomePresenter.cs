@@ -1,3 +1,6 @@
+using Shopping.Presentation.Modules.Home.Admin;
+using Shopping.Presentation.Modules.Home.Cart;
+using Shopping.Presentation.Modules.Login;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Products;
@@ -35,7 +38,7 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
         // Guard: nothing here without a session. Redirect with the intent in transit.
         if (App.Subject is not { } subject)
         {
-            await App.FlipToIntent(intent.Redirect(Places.Login));
+            await App.FlipToIntent(intent.Redirect(LoginKeys.Place));
             return false;
         }
 
@@ -45,11 +48,11 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
         if (initialization)
         {
             Scope.Greeting = $"Olá, {subject.NickName}";
-            Scope.OnOpenCart = Action(() => Flip(Places.Cart));
+            Scope.OnOpenCart = Action(() => new CartKeys(App).Flip());
             Scope.OnExit = Action(OnExit);
-            Scope.OnHome = Action(() => Flip(Places.Home));
+            Scope.OnHome = Action(() => new HomeKeys(App).Flip());
             Scope.ShowAdmin = subject.Can(Admin.AdminPresenter.Permission);
-            Scope.OnOpenAdmin = Action(() => Flip(Places.Admin));
+            Scope.OnOpenAdmin = Action(() => new AdminKeys(App).Flip());
 
             _products = new ProductsPanelPresenter(App, OpenProduct);
             _purchases = new PurchasesPanelPresenter(App, OpenReceipt);
@@ -128,6 +131,6 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
     {
         Cart.Clear();
         await App.SignOut();
-        await Flip(Places.Login);
+        await new LoginKeys(App).Flip();
     }
 }
