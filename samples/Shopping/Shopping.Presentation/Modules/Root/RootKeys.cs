@@ -1,11 +1,11 @@
 using Wdc.Cube;
 
-namespace Shopping.Presentation.Modules.Main;
+namespace Shopping.Presentation.Modules.Root;
 
 /// <summary>Names the application level reads and writes. Every keys file owns a two-letter prefix.</summary>
-public class MainKeys : CubeKeys
+public class RootKeys : CubeKeys
 {
-    public const string Prefix = "mn";
+    public const string Prefix = "rt";
 
     /// <summary>The application itself; going there means going home.</summary>
     public static Place Place { get; } = Place.Root;
@@ -16,12 +16,12 @@ public class MainKeys : CubeKeys
         public const string ParentSlot = $"{Prefix}-parent-slot";
     }
 
-    public MainKeys(CubeApplication app, FlipIntent? intent = null)
+    public RootKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)
     {
     }
 
-    protected MainKeys(CubeApplication app, FlipIntent? intent, Place place)
+    protected RootKeys(CubeApplication app, FlipIntent? intent, Place place)
         : base(app, intent, place)
     {
     }

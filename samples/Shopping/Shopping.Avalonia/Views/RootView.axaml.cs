@@ -1,13 +1,13 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube.Avalonia;
 
 namespace Shopping.Avalonia.Views;
 
-public sealed partial class MainView : ScopeView
+public sealed partial class RootView : ScopeView
 {
-    public MainView() => InitializeComponent();
+    public RootView() => InitializeComponent();
 
-    private MainScope S => (MainScope)Scope!;
+    private RootScope S => (RootScope)Scope!;
 
     private void OnDismiss(object? sender, global::Avalonia.Input.PointerPressedEventArgs e) => _ = S.OnDismissError();
 }

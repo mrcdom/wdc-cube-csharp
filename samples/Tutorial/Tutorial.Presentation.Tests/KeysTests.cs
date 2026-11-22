@@ -1,5 +1,5 @@
 using System.Reflection;
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Tests;
@@ -8,7 +8,7 @@ namespace Tutorial.Presentation.Tests;
 public sealed class KeysTests
 {
     private static readonly Type[] s_keys =
-        [.. typeof(MainKeys).Assembly.GetTypes().Where(t => typeof(CubeKeys).IsAssignableFrom(t))];
+        [.. typeof(RootKeys).Assembly.GetTypes().Where(t => typeof(CubeKeys).IsAssignableFrom(t))];
 
     [Fact]
     public void KeyPrefixes_AreUniqueAcrossTheApplication()
@@ -25,8 +25,8 @@ public sealed class KeysTests
         var placeOf = s_keys.ToDictionary(t => t, PlaceOf);
 
         Assert.Equal(placeOf.Count, placeOf.Values.Distinct().Count()); // one keys class per place
-        Assert.True(placeOf.Values.ToHashSet().SetEquals([.. MainPresenter.AllPlaces, Place.Root]));
-        foreach (var (type, place) in placeOf.Where(p => p.Key != typeof(MainKeys)))
+        Assert.True(placeOf.Values.ToHashSet().SetEquals([.. RootPresenter.AllPlaces, Place.Root]));
+        foreach (var (type, place) in placeOf.Where(p => p.Key != typeof(RootKeys)))
         {
             Assert.Same(place.Parent, PlaceOf(type.BaseType!));
         }

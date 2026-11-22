@@ -1,4 +1,4 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Admin;
@@ -9,7 +9,7 @@ public class AdminKeys : HomeKeys
     public new const string Prefix = "ad";
 
     /// <summary>The purchases of every customer: only for whoever may correct them.</summary>
-    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("admin", app => new AdminPresenter(app));
+    public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("admin", app => new AdminPresenter(app));
 
     private static class P
     {

@@ -8,9 +8,9 @@ namespace Wdc.Cube.Blazor;
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;CubeHost TApp="MainPresenter"
-///           CreateApplication="ctx =&gt; new MainPresenter(ctx.History, ctx.Dispatcher)"
-///           Start="app =&gt; app.KickStart(Places.Main)"&gt;
+/// &lt;CubeHost TApp="RootPresenter"
+///           CreateApplication="ctx =&gt; new RootPresenter(ctx.History, ctx.Dispatcher)"
+///           Start="app =&gt; app.KickStart(RootKeys.Place)"&gt;
 ///     &lt;ViewSlot Scope="context.Scope" /&gt;
 /// &lt;/CubeHost&gt;
 /// </code>

@@ -1,4 +1,4 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Admin.Amend;
@@ -8,7 +8,7 @@ public sealed class AmendKeys : AdminKeys
     public new const string Prefix = "am";
 
     /// <summary>Correcting one purchase, below the list it came from.</summary>
-    public static new Place Place { get; } = AdminKeys.Place.Child<MainPresenter>("amend", app => new AmendPresenter(app));
+    public static new Place Place { get; } = AdminKeys.Place.Child<RootPresenter>("amend", app => new AmendPresenter(app));
 
     private static class P
     {

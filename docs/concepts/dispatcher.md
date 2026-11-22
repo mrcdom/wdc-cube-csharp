@@ -122,7 +122,7 @@ var dispatcher = BlazorPresentation.CreateDispatcher(renderHandle.Dispatcher);
 
 // Avalonia: the desktop sample's composition
 var history = new MemoryHistoryManager(address);
-var presenter = new MainPresenter(history, client.Repositories, new MemorySessionStore(),
+var presenter = new RootPresenter(history, client.Repositories, new MemorySessionStore(),
     dispatcher: AvaloniaPresentation.CreateDispatcher(), authentication: client.Authentication);
 ```
 

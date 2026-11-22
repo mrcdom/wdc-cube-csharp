@@ -1,7 +1,7 @@
 using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -11,14 +11,14 @@ namespace Shopping.Presentation.Modules.Home.Purchases;
 /// A child of Home (no place): the user's purchases, most recent first, a page at a time. The page is Home's
 /// parameter (in the address); the page size is fixed here.
 /// </summary>
-public sealed class PurchasesPanelPresenter : Presenter<MainPresenter, PurchasesPanelScope>
+public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, PurchasesPanelScope>
 {
     public const int PageSize = 5;
 
     private int _pending;
     private int _loadedPage;
 
-    public PurchasesPanelPresenter(MainPresenter app, Func<long, Task> openReceipt)
+    public PurchasesPanelPresenter(RootPresenter app, Func<long, Task> openReceipt)
         : base(app, new PurchasesPanelScope())
     {
         Scope.OnOpenReceipt = Action<long>(openReceipt);

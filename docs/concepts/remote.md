@@ -218,7 +218,7 @@ Repositories = new ShoppingRepositories(
 
 ### What changes for the presentation
 
-Nothing. `MainPresenter` receives `ShoppingRepositories` and an `IAuthentication` in every host:
+Nothing. `RootPresenter` receives `ShoppingRepositories` and an `IAuthentication` in every host:
 
 - **Blazor Server**: protected repositories over the database, `LocalAuthentication`.
 - **WebAssembly** (`Shopping.Wasm`): `new ShoppingClient(new HttpClient { BaseAddress = … })`, registering `client.Repositories` and `client.Authentication`; the server that serves the page is the API.

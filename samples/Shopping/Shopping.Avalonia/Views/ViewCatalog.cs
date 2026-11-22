@@ -7,7 +7,7 @@ using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
 using Shopping.Presentation.Modules.Login;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube.Avalonia;
 
 namespace Shopping.Avalonia.Views;
@@ -16,7 +16,7 @@ namespace Shopping.Avalonia.Views;
 public static class ViewCatalog
 {
     public static ScopeViewLocator Create() => new ScopeViewLocator()
-        .Register<MainScope>(() => new MainView())
+        .Register<RootScope>(() => new RootView())
         .Register<LoginScope>(() => new LoginView())
         .Register<HomeScope>(() => new HomeView())
         .Register<ProductsPanelScope>(() => new ProductsPanelView())

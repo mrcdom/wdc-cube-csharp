@@ -44,8 +44,8 @@ opened. Install it before `KickStart`:
 ```csharp
 var history = new MemoryHistoryManager(address);
 history.Codec = new AesHistoryCodec(key);   // key: 32 bytes; sealed as version 1
-var app = new MainPresenter(history /* , ... */);
-await app.KickStart(MainKeys.Place);           // reads the address: the codec is already there
+var app = new RootPresenter(history /* , ... */);
+await app.KickStart(RootKeys.Place);           // reads the address: the codec is already there
 ```
 
 `HistoryManager.Codec` can be changed at any moment: set it to `null` to stop sealing. After changing it outside a
@@ -79,11 +79,11 @@ public static string Derive(byte[] master, long userId)
 - On the REST server, the login and refresh answers carry it as `historyKey` (`Shopping.Server/AuthRoutes.cs`), and
   `RemoteAuthentication` in `Shopping.Client` reads it into the `Subject`. The desktop app gets its key this way.
 
-**Install it whenever the session changes.** `MainPresenter` installs the codec when a session is resumed (before
+**Install it whenever the session changes.** `RootPresenter` installs the codec when a session is resumed (before
 `KickStart`, so a reload on a sealed address opens), when the user logs in, and removes it on logout:
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Main/MainPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
 public Task Start() => InvokeAsync(async () =>
 {
     // The session first: with it comes the key that opens a sealed address (F5 on one).
@@ -98,7 +98,7 @@ public Task Start() => InvokeAsync(async () =>
 ```
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Main/MainPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
 private void InstallCodec(Subject? subject)
 {
     if (subject?.HistoryKey is not { } key)

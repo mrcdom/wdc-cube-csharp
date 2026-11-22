@@ -1,13 +1,13 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.TodoMvc;
 
-public sealed class TodoMvcKeys : MainKeys
+public sealed class TodoMvcKeys : RootKeys
 {
     public new const string Prefix = "tm";
 
-    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("todos", app => new TodoMvcPresenter(app));
+    public static new Place Place { get; } = RootKeys.Place.Child<RootPresenter>("todos", app => new TodoMvcPresenter(app));
 
     private static class P
     {

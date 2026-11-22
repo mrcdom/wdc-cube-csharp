@@ -40,27 +40,27 @@ class tree is the place tree.
 The application's keys hold the root place and a **slot**, explained in the next section. `CubeKeys`, from the
 framework, adds the intent and `Flip()`:
 
-<!-- snippet: app-keys -->
+<!-- snippet: root-keys -->
 ```csharp
 /// <summary>
 /// The application level: its place (the root) and the names it reads and writes in an intent. The keys of each
 /// deeper place extend the keys of the place above, and own a prefix, so names never clash.
 /// </summary>
-public class AppKeys : CubeKeys
+public class RootKeys : CubeKeys
 {
-    public const string Prefix = "ap";
+    public const string Prefix = "rt";
 
     /// <summary>The application itself.</summary>
     public static Place Place { get; } = Place.Root;
 
     private const string ParentSlotName = $"{Prefix}-parent-slot";
 
-    public AppKeys(CubeApplication app, FlipIntent? intent = null)
+    public RootKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)
     {
     }
 
-    protected AppKeys(CubeApplication app, FlipIntent? intent, Place place)
+    protected RootKeys(CubeApplication app, FlipIntent? intent, Place place)
         : base(app, intent, place)
     {
     }
@@ -79,11 +79,11 @@ The list is a child of the root. It has no names of its own yet, but it declares
 <!-- snippet: list-keys -->
 ```csharp
 /// <summary>The list: a child of the application. It has no names of its own; the contact's keys extend these.</summary>
-public class ContactListKeys : AppKeys
+public class ContactListKeys : RootKeys
 {
     public new const string Prefix = "cl";
 
-    public static new Place Place { get; } = AppKeys.Place.Child<ContactsApp>("contacts", app => new ContactListPresenter(app));
+    public static new Place Place { get; } = RootKeys.Place.Child<ContactsApp>("contacts", app => new ContactListPresenter(app));
 
     public ContactListKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)
@@ -107,9 +107,9 @@ The application presenter is the root of the tree. It owns the page frame's stat
 the presenters below it use. A scope is the state a view draws: properties that notify changes with
 `Set(ref field, value)`.
 
-<!-- snippet: app-scope -->
+<!-- snippet: root-scope -->
 ```csharp
-public sealed class AppScope : Scope
+public sealed class RootScope : Scope
 {
     /// <summary>What the place below the application shows.</summary>
     public Scope? Body { get; set => Set(ref field, value); }
@@ -117,7 +117,7 @@ public sealed class AppScope : Scope
 ```
 
 Presenters do not reach into each other to show their screens. A level hands the level below a **slot**: a function
-that receives the child's scope. The slot travels in the intent of the navigation, under the name `AppKeys` gives it
+that receives the child's scope. The slot travels in the intent of the navigation, under the name `RootKeys` gives it
 (`ParentSlot`).
 
 The application lists its places, republishes its slot for the place below it, and starts from the address:
@@ -125,14 +125,14 @@ The application lists its places, republishes its slot for the place below it, a
 <!-- snippet: app -->
 ```csharp
 /// <summary>The application presenter: the page frame, and the services the presenters below it use.</summary>
-public sealed class ContactsApp : ApplicationPresenter<AppScope>
+public sealed class ContactsApp : ApplicationPresenter<RootScope>
 {
     /// <summary>Every place an address can name, each declared by its keys.</summary>
     public static IReadOnlyList<Place> AllPlaces { get; } = [ContactListKeys.Place, ContactKeys.Place];
 
     public ContactsApp(HistoryManager history, IContactBook book, PresentationDispatcher? dispatcher = null,
         ILogger? logger = null)
-        : base(new AppScope(), history, AllPlaces, logger, dispatcher)
+        : base(new RootScope(), history, AllPlaces, logger, dispatcher)
     {
         Book = book;
     }
@@ -157,7 +157,7 @@ public sealed class ContactsApp : ApplicationPresenter<AppScope>
         }
         else
         {
-            new AppKeys(this, intent).ParentSlot = body => Scope.Body = body;
+            new RootKeys(this, intent).ParentSlot = body => Scope.Body = body;
         }
 
         return Task.FromResult(true);
@@ -324,15 +324,15 @@ changes; `ViewSlot` draws whatever scope is in a slot, using the registry:
 public static class ViewCatalog
 {
     public static void Register(ViewRegistry views) => views
-        .Register<AppScope, AppView>()
+        .Register<RootScope, RootView>()
         .Register<ContactListScope, ContactListView>()
         .Register<ContactDetailScope, ContactDetailView>();
 }
 ```
 
-<!-- snippet: app-view -->
+<!-- snippet: root-view -->
 ```razor
-@inherits ScopeView<AppScope>
+@inherits ScopeView<RootScope>
 
 <header>Contacts</header>
 <main>

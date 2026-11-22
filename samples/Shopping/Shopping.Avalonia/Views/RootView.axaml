@@ -1,10 +1,10 @@
 <cube:ScopeView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:cube="using:Wdc.Cube.Avalonia"
-                xmlns:m="using:Shopping.Presentation.Modules.Main"
+                xmlns:m="using:Shopping.Presentation.Modules.Root"
                 xmlns:v="using:Shopping.Avalonia.Views"
-                x:Class="Shopping.Avalonia.Views.MainView"
-                x:DataType="m:MainScope">
+                x:Class="Shopping.Avalonia.Views.RootView"
+                x:DataType="m:RootScope">
   <Panel Background="{StaticResource Bg}">
     <ContentControl Content="{Binding Body}" />
     <Border Classes="toast" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"

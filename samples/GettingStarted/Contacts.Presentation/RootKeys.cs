@@ -2,26 +2,26 @@ using Wdc.Cube;
 
 namespace Contacts;
 
-// <snippet:app-keys>
+// <snippet:root-keys>
 /// <summary>
 /// The application level: its place (the root) and the names it reads and writes in an intent. The keys of each
 /// deeper place extend the keys of the place above, and own a prefix, so names never clash.
 /// </summary>
-public class AppKeys : CubeKeys
+public class RootKeys : CubeKeys
 {
-    public const string Prefix = "ap";
+    public const string Prefix = "rt";
 
     /// <summary>The application itself.</summary>
     public static Place Place { get; } = Place.Root;
 
     private const string ParentSlotName = $"{Prefix}-parent-slot";
 
-    public AppKeys(CubeApplication app, FlipIntent? intent = null)
+    public RootKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)
     {
     }
 
-    protected AppKeys(CubeApplication app, FlipIntent? intent, Place place)
+    protected RootKeys(CubeApplication app, FlipIntent? intent, Place place)
         : base(app, intent, place)
     {
     }
@@ -33,4 +33,4 @@ public class AppKeys : CubeKeys
         set => Intent.SetScopeSlot(ParentSlotName, value);
     }
 }
-// </snippet:app-keys>
+// </snippet:root-keys>

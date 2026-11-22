@@ -1,10 +1,10 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.TodoMvc;
 
-public sealed class TodoMvcPresenter : CubePresenter<MainPresenter, TodoMvcScope>
+public sealed class TodoMvcPresenter : CubePresenter<RootPresenter, TodoMvcScope>
 {
     private readonly HeaderScope _header = new();
     private readonly TodoListScope _list = new();
@@ -21,7 +21,7 @@ public sealed class TodoMvcPresenter : CubePresenter<MainPresenter, TodoMvcScope
 
     private ITimer? _clockTimer;
 
-    public TodoMvcPresenter(MainPresenter app)
+    public TodoMvcPresenter(RootPresenter app)
         : base(app, new TodoMvcScope())
     {
         _all = new ScopeList<ItemScope>(_list);

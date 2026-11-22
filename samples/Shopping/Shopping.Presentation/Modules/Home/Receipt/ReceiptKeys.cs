@@ -1,4 +1,4 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Receipt;
@@ -7,7 +7,7 @@ public sealed class ReceiptKeys : HomeKeys
 {
     public new const string Prefix = "rc";
 
-    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("receipt", app => new ReceiptPresenter(app));
+    public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("receipt", app => new ReceiptPresenter(app));
 
     private static class P
     {

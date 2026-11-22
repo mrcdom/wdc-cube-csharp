@@ -1,9 +1,9 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.Restricted;
 
-public sealed class RestrictedPresenter(MainPresenter app) : CubePresenter<MainPresenter, RestrictedScope>(app, new RestrictedScope())
+public sealed class RestrictedPresenter(RootPresenter app) : CubePresenter<RootPresenter, RestrictedScope>(app, new RestrictedScope())
 {
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Avalonia.Views;
@@ -15,7 +15,7 @@ public sealed partial class MainWindow : Window
     {
     }
 
-    public MainWindow(MainPresenter presenter, MemoryHistoryManager history)
+    public MainWindow(RootPresenter presenter, MemoryHistoryManager history)
     {
         InitializeComponent();
         _history = history;

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 using Wdc.Cube.Testing;
@@ -13,7 +13,7 @@ internal sealed class Harness
     {
         History = new TestHistoryManager(address);
         Service = service;
-        App = new MainPresenter(History, service, timeProvider: Time);
+        App = new RootPresenter(History, service, timeProvider: Time);
     }
 
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero));
@@ -22,14 +22,14 @@ internal sealed class Harness
 
     public ITutorialService Service { get; }
 
-    public MainPresenter App { get; }
+    public RootPresenter App { get; }
 
-    public MainScope Scope => App.Scope;
+    public RootScope Scope => App.Scope;
 
     public static async Task<Harness> Start(string address = "", ITutorialService? service = null)
     {
         var harness = new Harness(address, service ?? new TutorialService());
-        await harness.App.KickStart(MainKeys.Place);
+        await harness.App.KickStart(RootKeys.Place);
         await harness.App.Settle();
         return harness;
     }

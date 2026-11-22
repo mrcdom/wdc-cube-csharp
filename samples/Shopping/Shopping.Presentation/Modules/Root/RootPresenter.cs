@@ -11,13 +11,13 @@ using Shopping.Presentation.Infra;
 using Wdc.Cube;
 using Home = Shopping.Presentation.Modules.Home;
 
-namespace Shopping.Presentation.Modules.Main;
+namespace Shopping.Presentation.Modules.Root;
 
 /// <summary>
 /// The application presenter: the page frame (body and error toast), the session (who is logged in) and the
 /// repositories. Going to the application itself means going home.
 /// </summary>
-public sealed class MainPresenter : ApplicationPresenter<MainScope>
+public sealed class RootPresenter : ApplicationPresenter<RootScope>
 {
     /// <summary>
     /// The places of the application, each declared by its keys (whose class tree is the place tree). The folder tree
@@ -31,10 +31,10 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
 
     private ITimer? _errorTimer;
 
-    public MainPresenter(HistoryManager history, ShoppingRepositories repositories, ISessionStore session,
+    public RootPresenter(HistoryManager history, ShoppingRepositories repositories, ISessionStore session,
         PresentationDispatcher? dispatcher = null, TimeProvider? timeProvider = null, ILogger? logger = null,
         IAuthentication? authentication = null)
-        : base(new MainScope(), history, AllPlaces, logger, dispatcher, timeProvider)
+        : base(new RootScope(), history, AllPlaces, logger, dispatcher, timeProvider)
     {
         ArgumentNullException.ThrowIfNull(repositories);
         ArgumentNullException.ThrowIfNull(session);
@@ -87,7 +87,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
             return true;
         }
 
-        new MainKeys(this, intent).ParentSlot = body => Scope.Body = body;
+        new RootKeys(this, intent).ParentSlot = body => Scope.Body = body;
         return true;
     }
 

@@ -1,15 +1,15 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home;
 
 /// <summary>Names of the restricted area. Deeper places extend these keys to read what Home hands down.</summary>
-public class HomeKeys : MainKeys
+public class HomeKeys : RootKeys
 {
     public new const string Prefix = "hm";
 
     /// <summary>The session guard and the shell (header, cart badge) of everything below it.</summary>
-    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("home", app => new HomePresenter(app));
+    public static new Place Place { get; } = RootKeys.Place.Child<RootPresenter>("home", app => new HomePresenter(app));
 
     private static class P
     {

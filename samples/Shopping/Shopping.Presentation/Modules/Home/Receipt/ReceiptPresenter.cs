@@ -1,7 +1,7 @@
 using Shopping.Presentation.Modules.Home;
 using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -10,7 +10,7 @@ namespace Shopping.Presentation.Modules.Home.Receipt;
 /// <summary>
 /// A receipt, under Home. Only the logged-in user's purchases: someone else's is the same as one that does not exist.
 /// </summary>
-public sealed class ReceiptPresenter(MainPresenter app) : CubePresenter<MainPresenter, ReceiptScope>(app, new ReceiptScope())
+public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPresenter, ReceiptScope>(app, new ReceiptScope())
 {
     private long? _purchaseId;
 

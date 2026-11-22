@@ -1,11 +1,11 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.Subscriptions;
 
-public sealed class SubscriptionsPresenter(MainPresenter app)
-    : CubePresenter<MainPresenter, SubscriptionsScope>(app, new SubscriptionsScope())
+public sealed class SubscriptionsPresenter(RootPresenter app)
+    : CubePresenter<RootPresenter, SubscriptionsScope>(app, new SubscriptionsScope())
 {
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {

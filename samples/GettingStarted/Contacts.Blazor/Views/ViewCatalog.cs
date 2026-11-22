@@ -9,7 +9,7 @@ namespace Contacts.Blazor.Views;
 public static class ViewCatalog
 {
     public static void Register(ViewRegistry views) => views
-        .Register<AppScope, AppView>()
+        .Register<RootScope, RootView>()
         .Register<ContactListScope, ContactListView>()
         .Register<ContactDetailScope, ContactDetailView>();
 }

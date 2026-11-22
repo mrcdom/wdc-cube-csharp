@@ -1,11 +1,11 @@
 using Shopping.Presentation.Modules.Home;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Login;
 
 /// <summary>Public place: asks for the credentials and, when they match, opens the session and goes home.</summary>
-public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresenter, LoginScope>(app, new LoginScope())
+public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresenter, LoginScope>(app, new LoginScope())
 {
     public const string NotRecognized = "Usuário ou senha não reconhecido!";
     public const string CommunicationFailure = "Falha de comunicação com o servidor. Verifique sua conexão.";
@@ -17,7 +17,7 @@ public sealed class LoginPresenter(MainPresenter app) : CubePresenter<MainPresen
             Scope.OnEnter = Action<string, string>(OnEnter);
         }
 
-        new MainKeys(App, intent).ParentSlot(Scope);
+        new RootKeys(App, intent).ParentSlot(Scope);
         return Task.FromResult(true);
     }
 

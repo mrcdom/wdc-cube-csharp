@@ -37,11 +37,11 @@ The application presenter is built with two host-specific arguments: Avalonia's 
 
 ```csharp
 // samples/Shopping/Shopping.Avalonia/App.axaml.cs
-internal static (MainPresenter Presenter, MemoryHistoryManager History) Compose(ShoppingClient client, string address = "",
+internal static (RootPresenter Presenter, MemoryHistoryManager History) Compose(ShoppingClient client, string address = "",
     Microsoft.Extensions.Logging.ILogger? logger = null)
 {
     var history = new MemoryHistoryManager(address);
-    var presenter = new MainPresenter(history, client.Repositories, new MemorySessionStore(),
+    var presenter = new RootPresenter(history, client.Repositories, new MemorySessionStore(),
         dispatcher: AvaloniaPresentation.CreateDispatcher(), logger: logger, authentication: client.Authentication);
     return (presenter, history);
 }
@@ -99,7 +99,7 @@ Body.Content = presenter?.Scope;
 ```csharp
 // samples/Shopping/Shopping.Avalonia/Views/ViewCatalog.cs
 public static ScopeViewLocator Create() => new ScopeViewLocator()
-    .Register<MainScope>(() => new MainView())
+    .Register<RootScope>(() => new RootView())
     .Register<LoginScope>(() => new LoginView())
     .Register<HomeScope>(() => new HomeView())
     .Register<ProductsPanelScope>(() => new ProductsPanelView())
@@ -130,14 +130,14 @@ A view is a `UserControl` that derives from `ScopeView` instead. Its `DataContex
 locator; declare its type with `x:DataType` so bindings are compiled and checked at build time:
 
 ```xml
-<!-- samples/Shopping/Shopping.Avalonia/Views/MainView.axaml -->
+<!-- samples/Shopping/Shopping.Avalonia/Views/RootView.axaml -->
 <cube:ScopeView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:cube="using:Wdc.Cube.Avalonia"
-                xmlns:m="using:Shopping.Presentation.Modules.Main"
+                xmlns:m="using:Shopping.Presentation.Modules.Root"
                 xmlns:v="using:Shopping.Avalonia.Views"
-                x:Class="Shopping.Avalonia.Views.MainView"
-                x:DataType="m:MainScope">
+                x:Class="Shopping.Avalonia.Views.RootView"
+                x:DataType="m:RootScope">
   <Panel Background="{StaticResource Bg}">
     <ContentControl Content="{Binding Body}" />
     <Border Classes="toast" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"

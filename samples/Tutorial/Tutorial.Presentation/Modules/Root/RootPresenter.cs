@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Main;
+namespace Tutorial.Presentation.Modules.Root;
 
 /// <summary>The application presenter: the page frame (menu, body, dialog, alert) and the services.</summary>
-public sealed class MainPresenter : ApplicationPresenter<MainScope>
+public sealed class RootPresenter : ApplicationPresenter<RootScope>
 {
     /// <summary>
     /// Every place an address can name, each declared by its keys (whose class tree is the place tree). The folder
@@ -21,9 +21,9 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
     private readonly ScopeSlot _bodySlot;
     private readonly ScopeSlot _dialogSlot;
 
-    public MainPresenter(HistoryManager history, ITutorialService service, PresentationDispatcher? dispatcher = null,
+    public RootPresenter(HistoryManager history, ITutorialService service, PresentationDispatcher? dispatcher = null,
         TimeProvider? timeProvider = null, ILogger? logger = null)
-        : base(new MainScope(), history, AllPlaces, logger, dispatcher, timeProvider)
+        : base(new RootScope(), history, AllPlaces, logger, dispatcher, timeProvider)
     {
         ArgumentNullException.ThrowIfNull(service);
         Service = service;
@@ -35,7 +35,7 @@ public sealed class MainPresenter : ApplicationPresenter<MainScope>
 
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
-        var keys = new MainKeys(this, intent);
+        var keys = new RootKeys(this, intent);
         if (initialization)
         {
             Scope.OnHome = Action(OnHome);

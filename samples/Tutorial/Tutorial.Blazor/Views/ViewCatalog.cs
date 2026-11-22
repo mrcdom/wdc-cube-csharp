@@ -1,4 +1,4 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Modules.Restricted;
 using Tutorial.Presentation.Modules.Subscriptions;
 using Tutorial.Presentation.Modules.TodoMvc;
@@ -13,7 +13,7 @@ public static class ViewCatalog
     {
         ArgumentNullException.ThrowIfNull(views);
         views
-            .Register<MainScope, MainView>()
+            .Register<RootScope, RootView>()
             .Register<BodyScope, BodyView>()
             .Register<AlertScope, AlertView>()
             .Register<RestrictedScope, RestrictedView>()

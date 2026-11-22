@@ -6,7 +6,7 @@ using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home;
@@ -15,7 +15,7 @@ namespace Shopping.Presentation.Modules.Home;
 /// The restricted area: the session guard, the shell (greeting, cart badge, exit) and, when nothing is open below
 /// it, the products and purchases panels. It owns the cart and the two panel presenters.
 /// </summary>
-public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
+public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
 {
     public const string ProductNotFound = "Código do produto não localizado.";
     public const string ReceiptNotFound = "Código do recibo não localizado.";
@@ -23,7 +23,7 @@ public sealed class HomePresenter : CubePresenter<MainPresenter, HomeScope>
     private ProductsPanelPresenter? _products;
     private PurchasesPanelPresenter? _purchases;
 
-    public HomePresenter(MainPresenter app)
+    public HomePresenter(RootPresenter app)
         : base(app, new HomeScope())
     {
         Cart = new CartManager(app.Repositories, app.Time);

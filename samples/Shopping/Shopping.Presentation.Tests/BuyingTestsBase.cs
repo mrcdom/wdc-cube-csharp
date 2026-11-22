@@ -147,7 +147,7 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
         await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Products!.OnOpenProduct(999_998));
         Assert.NotNull(shop.App.Scope.ErrorMessage);
 
-        shop.Time.Advance(Modules.Main.MainPresenter.ErrorToastDuration);
+        shop.Time.Advance(Modules.Root.RootPresenter.ErrorToastDuration);
         await shop.Settle();
 
         Assert.Null(shop.App.Scope.ErrorMessage);

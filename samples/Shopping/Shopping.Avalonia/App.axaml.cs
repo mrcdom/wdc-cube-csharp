@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 using Shopping.Avalonia.Views;
 using Shopping.Client;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Cube.Avalonia;
 
@@ -39,11 +39,11 @@ public sealed partial class App : Application
     }
 
     /// <summary>The application over the server: the same presenter as the web, other repositories and dispatcher.</summary>
-    internal static (MainPresenter Presenter, MemoryHistoryManager History) Compose(ShoppingClient client, string address = "",
+    internal static (RootPresenter Presenter, MemoryHistoryManager History) Compose(ShoppingClient client, string address = "",
         Microsoft.Extensions.Logging.ILogger? logger = null)
     {
         var history = new MemoryHistoryManager(address);
-        var presenter = new MainPresenter(history, client.Repositories, new MemorySessionStore(),
+        var presenter = new RootPresenter(history, client.Repositories, new MemorySessionStore(),
             dispatcher: AvaloniaPresentation.CreateDispatcher(), logger: logger, authentication: client.Authentication);
         return (presenter, history);
     }

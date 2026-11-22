@@ -1,14 +1,14 @@
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Main;
+namespace Tutorial.Presentation.Modules.Root;
 
 /// <summary>
 /// Typed reading of the intent for the application level. The only class that knows these names; every name starts
 /// with the file's own prefix so names stay unique across the application.
 /// </summary>
-public class MainKeys : CubeKeys
+public class RootKeys : CubeKeys
 {
-    public const string Prefix = "mn";
+    public const string Prefix = "rt";
 
     /// <summary>The application itself (the page frame).</summary>
     public static Place Place { get; } = Place.Root;
@@ -22,12 +22,12 @@ public class MainKeys : CubeKeys
         public const string DialogSlot = $"{Prefix}-dialog-slot";
     }
 
-    public MainKeys(CubeApplication app, FlipIntent? intent = null)
+    public RootKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)
     {
     }
 
-    protected MainKeys(CubeApplication app, FlipIntent? intent, Place place)
+    protected RootKeys(CubeApplication app, FlipIntent? intent, Place place)
         : base(app, intent, place)
     {
     }

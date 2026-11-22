@@ -28,8 +28,8 @@ A view is a component that inherits `ScopeView<TScope>`. It reads the scope's pr
 scope's actions from event handlers. Where a presenter publishes a child scope, the view puts a `ViewSlot`:
 
 ```razor
-@* samples/Shopping/Shopping.Blazor.Views/MainView.razor *@
-@inherits ScopeView<MainScope>
+@* samples/Shopping/Shopping.Blazor.Views/RootView.razor *@
+@inherits ScopeView<RootScope>
 
 <div class="root">
     <ViewSlot Scope="Scope.Body" />
@@ -111,7 +111,7 @@ public static class ViewCatalog
     {
         ArgumentNullException.ThrowIfNull(views);
         views
-            .Register<MainScope, MainView>()
+            .Register<RootScope, RootView>()
             .Register<LoginScope, LoginView>()
             .Register<HomeScope, HomeView>()
             .Register<ProductScope, ProductView>()
@@ -153,7 +153,7 @@ application, starts it and draws its root scope:
 @inject ILoggerFactory Loggers
 
 @* Every path is the same page: the address belongs to Cube. One application per circuit. *@
-<CubeHost TApp="MainPresenter" CreateApplication="Create" Start="app => app.Start()">
+<CubeHost TApp="RootPresenter" CreateApplication="Create" Start="app => app.Start()">
     <ViewSlot Scope="context.Scope" />
 </CubeHost>
 
@@ -161,15 +161,15 @@ application, starts it and draws its root scope:
     [Parameter]
     public string? Path { get; set; }
 
-    private MainPresenter Create(CubeHostContext host) =>
-        new(host.History, Repositories, Session, host.Dispatcher, Time, Loggers.CreateLogger<MainPresenter>(), Authentication);
+    private RootPresenter Create(CubeHostContext host) =>
+        new(host.History, Repositories, Session, host.Dispatcher, Time, Loggers.CreateLogger<RootPresenter>(), Authentication);
 }
 ```
 
 - `CreateApplication` receives a `CubeHostContext` with two things the application must use: `Dispatcher` (Blazor's
   renderer dispatcher, adapted with `BlazorPresentation.CreateDispatcher`) and `History` (a
   `NavigationHistoryManager` over Blazor's `NavigationManager`).
-- `Start` runs once, after the application is created; it is usually `app => app.KickStart(MainKeys.Place)`, or an
+- `Start` runs once, after the application is created; it is usually `app => app.KickStart(RootKeys.Place)`, or an
   entry point of your own that calls it (`app.Start()` in Shopping and GettingStarted).
 - `ChildContent` receives the application as `context`; `<ViewSlot Scope="context.Scope" />` draws its root scope.
 - When the component goes away (the circuit closes, the page unloads), `CubeHost` releases the application on its
@@ -296,7 +296,7 @@ The application reads the session **before** it reads the address, because the s
 means (a guard) and how to read it (a codec):
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Main/MainPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
 public Task Start() => InvokeAsync(async () =>
 {
     // The session first: with it comes the key that opens a sealed address (F5 on one).

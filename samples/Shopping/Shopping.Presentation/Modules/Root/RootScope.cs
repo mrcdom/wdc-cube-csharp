@@ -1,8 +1,8 @@
 using Wdc.Cube;
 
-namespace Shopping.Presentation.Modules.Main;
+namespace Shopping.Presentation.Modules.Root;
 
-public sealed class MainScope : Scope
+public sealed class RootScope : Scope
 {
     public Scope? Body { get; set => Set(ref field, value); }
 

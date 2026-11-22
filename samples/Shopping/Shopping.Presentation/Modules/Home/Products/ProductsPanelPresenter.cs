@@ -1,19 +1,19 @@
 using Shopping.Domain.Products;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
 namespace Shopping.Presentation.Modules.Home.Products;
 
 /// <summary>A child of Home (no place): the catalogue, by name.</summary>
-public sealed class ProductsPanelPresenter : Presenter<MainPresenter, ProductsPanelScope>
+public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPanelScope>
 {
     public const int MaxProducts = 1000;
 
     private int _pending;
 
-    public ProductsPanelPresenter(MainPresenter app, Func<long, Task> openProduct)
+    public ProductsPanelPresenter(RootPresenter app, Func<long, Task> openProduct)
         : base(app, new ProductsPanelScope())
     {
         Scope.OnOpenProduct = Action<long>(openProduct);

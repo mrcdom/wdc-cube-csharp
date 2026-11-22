@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 using Microsoft.AspNetCore.TestHost;
 using Shopping.Avalonia.Views;
 using Shopping.Client;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Shopping.Presentation.Tests;
 using Wdc.Cube;
 using Wdc.Cube.Avalonia;
@@ -59,11 +59,11 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         }
     }
 
-    private sealed class Desktop(MainWindow window, MainPresenter presenter, MemoryHistoryManager history, ErrorLog log)
+    private sealed class Desktop(MainWindow window, RootPresenter presenter, MemoryHistoryManager history, ErrorLog log)
     {
         public MainWindow Window { get; } = window;
 
-        public MainPresenter Presenter { get; } = presenter;
+        public RootPresenter Presenter { get; } = presenter;
 
         public MemoryHistoryManager History { get; } = history;
 

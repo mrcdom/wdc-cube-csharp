@@ -1,13 +1,13 @@
 using Shopping.Presentation.Modules.Home;
 using Shopping.Domain;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Cart;
 
 /// <summary>The cart, under Home (whose cart it shows). Messages go away after a few seconds.</summary>
-public sealed class CartPresenter(MainPresenter app) : CubePresenter<MainPresenter, CartScope>(app, new CartScope())
+public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresenter, CartScope>(app, new CartScope())
 {
     public static readonly TimeSpan MessageDuration = TimeSpan.FromSeconds(3);
 

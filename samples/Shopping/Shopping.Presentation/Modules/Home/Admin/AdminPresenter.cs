@@ -4,7 +4,7 @@ using Shopping.Domain.Purchases;
 using Shopping.Domain.Users;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -15,7 +15,7 @@ namespace Shopping.Presentation.Modules.Home.Admin;
 /// name; opening one corrects it. Offered only to whoever may correct; the repositories refuse the
 /// others anyway.
 /// </summary>
-public sealed class AdminPresenter(MainPresenter app) : CubePresenter<MainPresenter, AdminScope>(app, new AdminScope())
+public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresenter, AdminScope>(app, new AdminScope())
 {
     public const int PageSize = 10;
 

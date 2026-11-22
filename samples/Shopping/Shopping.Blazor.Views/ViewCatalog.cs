@@ -5,7 +5,7 @@ using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Receipt;
 using Shopping.Presentation.Modules.Login;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube.Blazor;
 
 namespace Shopping.Blazor.Views;
@@ -17,7 +17,7 @@ public static class ViewCatalog
     {
         ArgumentNullException.ThrowIfNull(views);
         views
-            .Register<MainScope, MainView>()
+            .Register<RootScope, RootView>()
             .Register<LoginScope, LoginView>()
             .Register<HomeScope, HomeView>()
             .Register<ProductScope, ProductView>()

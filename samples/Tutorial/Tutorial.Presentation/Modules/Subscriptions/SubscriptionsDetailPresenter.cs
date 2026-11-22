@@ -1,13 +1,13 @@
 using System.Net.Mail;
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.Subscriptions;
 
 /// <summary>A dialog over the list. It owns the address's site id and publishes its scope in the dialog slot.</summary>
-public sealed class SubscriptionsDetailPresenter(MainPresenter app)
-    : CubePresenter<MainPresenter, SubscriptionsDetailScope>(app, new SubscriptionsDetailScope())
+public sealed class SubscriptionsDetailPresenter(RootPresenter app)
+    : CubePresenter<RootPresenter, SubscriptionsDetailScope>(app, new SubscriptionsDetailScope())
 {
     private ScopeSlot _dialogSlot = ScopeSlots.Noop;
 

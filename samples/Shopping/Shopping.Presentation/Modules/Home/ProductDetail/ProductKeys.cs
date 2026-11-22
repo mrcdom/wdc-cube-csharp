@@ -1,4 +1,4 @@
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.ProductDetail;
@@ -7,7 +7,7 @@ public sealed class ProductKeys : HomeKeys
 {
     public new const string Prefix = "pr";
 
-    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+    public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("product", app => new ProductPresenter(app));
 
     private static class P
     {

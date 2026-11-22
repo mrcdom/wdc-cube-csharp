@@ -60,7 +60,7 @@ private static async Task<(ContactsApp App, TestHistoryManager History)> Start(s
 - No dispatcher is passed, so the application creates its default `SerialDispatcher`. The test awaits the async
   entry points and everything runs in order on that dispatcher.
 - `Start()` is the sample's own entry point; it calls `KickStart(safePlace)`. An application without one calls
-  `KickStart` directly: `await app.KickStart(MainKeys.Place);`.
+  `KickStart` directly: `await app.KickStart(RootKeys.Place);`.
 - Install a history codec, if the application uses one, before `KickStart`: it reads the address first.
 
 As the tests grow, move this into a small harness class. The one in
@@ -73,7 +73,7 @@ internal sealed class Harness
     {
         History = new TestHistoryManager(address);
         Service = service;
-        App = new MainPresenter(History, service, timeProvider: Time);
+        App = new RootPresenter(History, service, timeProvider: Time);
     }
 
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero));
@@ -82,14 +82,14 @@ internal sealed class Harness
 
     public ITutorialService Service { get; }
 
-    public MainPresenter App { get; }
+    public RootPresenter App { get; }
 
-    public MainScope Scope => App.Scope;
+    public RootScope Scope => App.Scope;
 
     public static async Task<Harness> Start(string address = "", ITutorialService? service = null)
     {
         var harness = new Harness(address, service ?? new TutorialService());
-        await harness.App.KickStart(MainKeys.Place);
+        await harness.App.KickStart(RootKeys.Place);
         await harness.App.Settle();
         return harness;
     }
@@ -431,7 +431,7 @@ private Shop(ShoppingDatabaseFixture fixture, string address, ISessionStore sess
     History = new TestHistoryManager(address);
     Session = session;
     var (repositories, authentication) = fixture.Connect();
-    App = new MainPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
+    App = new RootPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
 }
 ```
 

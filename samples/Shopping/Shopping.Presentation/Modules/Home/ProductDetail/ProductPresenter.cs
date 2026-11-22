@@ -1,14 +1,14 @@
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
 namespace Shopping.Presentation.Modules.Home.ProductDetail;
 
 /// <summary>A product, under Home. A product that does not exist refuses the navigation.</summary>
-public sealed class ProductPresenter(MainPresenter app) : CubePresenter<MainPresenter, ProductScope>(app, new ProductScope())
+public sealed class ProductPresenter(RootPresenter app) : CubePresenter<RootPresenter, ProductScope>(app, new ProductScope())
 {
     public const string QuantityBelowOne = "A quantidade de itens no carrinho deve ser maior ou igual a 1 (um).";
 

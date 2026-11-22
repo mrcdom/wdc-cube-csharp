@@ -1,6 +1,6 @@
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Main;
+namespace Tutorial.Presentation.Modules.Root;
 
 public enum AlertSeverity
 {
@@ -33,7 +33,7 @@ public sealed class BodyScope : Scope
     public Func<AlertSeverity, Task> OnOpenAlert { get; set; } = ScopeActions.Unbound<AlertSeverity>();
 }
 
-public sealed class MainScope : Scope
+public sealed class RootScope : Scope
 {
     public Scope? Body { get; set => Set(ref field, value); }
 

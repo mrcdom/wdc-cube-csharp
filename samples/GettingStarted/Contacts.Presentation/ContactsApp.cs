@@ -7,14 +7,14 @@ namespace Contacts;
 
 // <snippet:app>
 /// <summary>The application presenter: the page frame, and the services the presenters below it use.</summary>
-public sealed class ContactsApp : ApplicationPresenter<AppScope>
+public sealed class ContactsApp : ApplicationPresenter<RootScope>
 {
     /// <summary>Every place an address can name, each declared by its keys.</summary>
     public static IReadOnlyList<Place> AllPlaces { get; } = [ContactListKeys.Place, ContactKeys.Place];
 
     public ContactsApp(HistoryManager history, IContactBook book, PresentationDispatcher? dispatcher = null,
         ILogger? logger = null)
-        : base(new AppScope(), history, AllPlaces, logger, dispatcher)
+        : base(new RootScope(), history, AllPlaces, logger, dispatcher)
     {
         Book = book;
     }
@@ -39,7 +39,7 @@ public sealed class ContactsApp : ApplicationPresenter<AppScope>
         }
         else
         {
-            new AppKeys(this, intent).ParentSlot = body => Scope.Body = body;
+            new RootKeys(this, intent).ParentSlot = body => Scope.Body = body;
         }
 
         return Task.FromResult(true);

@@ -13,21 +13,21 @@ A `Place` is an immutable node of the tree. It has a name, a parent, and optiona
 presenter. Each place is declared once, by its [keys class](#keys-classes), from the place of the keys it extends:
 
 ```csharp
-public class MainKeys : CubeKeys
+public class RootKeys : CubeKeys
 {
     public static Place Place { get; } = Place.Root; // the application itself
     ...
 }
 
-public class HomeKeys : MainKeys
+public class HomeKeys : RootKeys
 {
-    public static new Place Place { get; } = MainKeys.Place.Child<MainPresenter>("home", app => new HomePresenter(app));
+    public static new Place Place { get; } = RootKeys.Place.Child<RootPresenter>("home", app => new HomePresenter(app));
     ...
 }
 
 public sealed class ProductKeys : HomeKeys
 {
-    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+    public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("product", app => new ProductPresenter(app));
     ...
 }
 ```
@@ -88,7 +88,7 @@ public sealed class ProductKeys : HomeKeys
 {
     public new const string Prefix = "pr";
 
-    public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+    public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("product", app => new ProductPresenter(app));
 
     private static class P
     {
@@ -206,7 +206,7 @@ else
 
 ```mermaid
 flowchart TD
-    A["MainPresenter (root)<br/>MainScope.Body"] -->|ParentSlot = body| H["HomePresenter (home)<br/>HomeScope.Content"]
+    A["RootPresenter (root)<br/>RootScope.Body"] -->|ParentSlot = body| H["HomePresenter (home)<br/>HomeScope.Content"]
     H -->|ParentSlot = content| P["ProductPresenter (home/product)"]
     H -->|ParentSlot = content| C["CartPresenter (home/cart)"]
     A -->|ParentSlot = body| L["LoginPresenter (login)"]

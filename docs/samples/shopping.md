@@ -61,7 +61,7 @@ Each place is declared by its keys class, from the place of the keys it extends,
 tree:
 
 ```text
-MainKeys      (root)        Modules/Main
+RootKeys      (root)        Modules/Root
 ├─ LoginKeys  login         Modules/Login
 └─ HomeKeys   home          Modules/Home
    ├─ ProductKeys  home/product   Modules/Home/ProductDetail
@@ -73,11 +73,11 @@ MainKeys      (root)        Modules/Main
 
 ```csharp
 // samples/Shopping/Shopping.Presentation/Modules/Home/ProductDetail/ProductKeys.cs
-public static new Place Place { get; } = HomeKeys.Place.Child<MainPresenter>("product", app => new ProductPresenter(app));
+public static new Place Place { get; } = HomeKeys.Place.Child<RootPresenter>("product", app => new ProductPresenter(app));
 ```
 
-`MainPresenter.AllPlaces` lists them for the navigation, and the folders of `Shopping.Presentation/Modules` mirror
-the tree. `MainPresenter` is the application presenter: it
+`RootPresenter.AllPlaces` lists them for the navigation, and the folders of `Shopping.Presentation/Modules` mirror
+the tree. `RootPresenter` is the application presenter: it
 holds the session (`Subject`), the repositories, the error toast, and installs the address codec. `HomePresenter` is
 the guard of everything under `home` (no session: redirect to `login`) and the shell: header, cart badge, and the
 catalogue and purchase panels. It also owns the cart (`CartManager`), which lives as long as Home does.
@@ -98,7 +98,7 @@ public long? ProductId
 }
 ```
 
-`ProductKeys` extends `HomeKeys`, which extends `MainKeys`. That is how a product reads what Home hands down: the
+`ProductKeys` extends `HomeKeys`, which extends `RootKeys`. That is how a product reads what Home hands down: the
 `Home` attribute (the `HomePresenter` itself, so the product can reach the cart) and `ParentSlot` (where to put its
 scope). Attributes never reach the address. See [Architecture](../concepts/architecture.md#keys-classes).
 
@@ -216,7 +216,7 @@ Assert.Equal("R$ 399,98", receipt.Scope.TotalLabel);
 Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);
 ```
 
-`Shop` (in `Harness/`) starts `MainPresenter` with a `TestHistoryManager` and a `FakeTimeProvider`, and calls the
+`Shop` (in `Harness/`) starts `RootPresenter` with a `TestHistoryManager` and a `FakeTimeProvider`, and calls the
 scope actions as a view would. The base class runs twice, unchanged:
 
 - `BuyingTests` uses `ShoppingDatabaseFixture`: repositories protected in process and `LocalAuthentication`, as
@@ -294,8 +294,8 @@ dotnet test --solution wdc-cube.slnx
 | A guard that redirects with the intent in transit | `HomePresenter.ApplyParameters` |
 | Panels loaded in parallel, without holding the flip | `ProductsPanelPresenter`, `PurchasesPanelPresenter` |
 | Paging kept in the address | `HomeKeys.Page`, `PurchasesPanelPresenter` |
-| The session surviving a reload | `MainPresenter.Start`, `SubjectSession`, `BrowserSessionStore` |
-| Per-user sealed addresses | `MainPresenter.InstallCodec`, `HistoryKeys`, `SealedAddressTestsBase` |
+| The session surviving a reload | `RootPresenter.Start`, `SubjectSession`, `BrowserSessionStore` |
+| Per-user sealed addresses | `RootPresenter.InstallCodec`, `HistoryKeys`, `SealedAddressTestsBase` |
 | Rules per role | `Shopping.Domain/Security`, `SecurityTestsBase` |
 | Repositories as REST routes | `ShoppingApi.MapRepositories` |
 | Protecting an extra repository member | `ProtectedProductRepository.FetchImage` |

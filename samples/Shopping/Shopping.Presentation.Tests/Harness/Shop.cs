@@ -5,7 +5,7 @@ using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Login;
 using Microsoft.Extensions.Time.Testing;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Cube.Testing;
 
@@ -19,7 +19,7 @@ internal sealed class Shop
         History = new TestHistoryManager(address);
         Session = session;
         var (repositories, authentication) = fixture.Connect();
-        App = new MainPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
+        App = new RootPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
     }
 
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 18, 15, 0, 0, TimeSpan.Zero));
@@ -28,7 +28,7 @@ internal sealed class Shop
 
     public ISessionStore Session { get; }
 
-    public MainPresenter App { get; }
+    public RootPresenter App { get; }
 
     public static async Task<Shop> Start(ShoppingDatabaseFixture fixture, string address = "", ISessionStore? session = null)
     {

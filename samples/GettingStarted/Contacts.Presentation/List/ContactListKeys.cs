@@ -4,11 +4,11 @@ namespace Contacts.List;
 
 // <snippet:list-keys>
 /// <summary>The list: a child of the application. It has no names of its own; the contact's keys extend these.</summary>
-public class ContactListKeys : AppKeys
+public class ContactListKeys : RootKeys
 {
     public new const string Prefix = "cl";
 
-    public static new Place Place { get; } = AppKeys.Place.Child<ContactsApp>("contacts", app => new ContactListPresenter(app));
+    public static new Place Place { get; } = RootKeys.Place.Child<ContactsApp>("contacts", app => new ContactListPresenter(app));
 
     public ContactListKeys(CubeApplication app, FlipIntent? intent = null)
         : this(app, intent, Place)

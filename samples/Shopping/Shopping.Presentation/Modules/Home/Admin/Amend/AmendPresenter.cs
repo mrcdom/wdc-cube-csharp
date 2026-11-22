@@ -3,7 +3,7 @@ using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
 using Shopping.Domain.Users;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Main;
+using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -13,7 +13,7 @@ namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 /// Corrects a purchase already made: a smaller quantity per item (0 removes it), never all of them,
 /// with a reason. The repository checks it all again; what it refuses here means the purchase changed meanwhile.
 /// </summary>
-public sealed class AmendPresenter(MainPresenter app) : CubePresenter<MainPresenter, AmendScope>(app, new AmendScope())
+public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresenter, AmendScope>(app, new AmendScope())
 {
     public const string NothingToCorrect = "Diminua ou remova ao menos um item.";
     public const string ReasonRequired = "Informe o motivo da correção.";

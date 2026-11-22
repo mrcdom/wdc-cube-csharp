@@ -1,4 +1,4 @@
-using Tutorial.Presentation.Modules.Main;
+using Tutorial.Presentation.Modules.Root;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
@@ -10,7 +10,7 @@ public sealed class SubscriptionsDetailKeys : SubscriptionsKeys
 
     /// <summary>A dialog over the list: a place below it, shown in the dialog slot.</summary>
     public static new Place Place { get; } =
-        SubscriptionsKeys.Place.Child<MainPresenter>("detail", app => new SubscriptionsDetailPresenter(app));
+        SubscriptionsKeys.Place.Child<RootPresenter>("detail", app => new SubscriptionsDetailPresenter(app));
 
     private static class P
     {
