@@ -26,8 +26,30 @@ How each part works and why. Read them in order the first time; later, go straig
 | [Protected repositories](concepts/protected-repositories.md) | Rules per role, enforced in the repository every host hands to a session. |
 | [Remote](concepts/remote.md) | The same contracts over HTTP: server, client, and what the presentation sees. |
 
+## Guides
+
+How to do a given task, step by step.
+
+| Guide | What it shows |
+|---|---|
+| [Testing presenters](guides/testing-presenters.md) | Driving an application in tests, with no view, locally and through HTTP. |
+| [Blazor](guides/blazor.md) | Hosting a Cube application in Blazor Server and WebAssembly. |
+| [Avalonia](guides/avalonia.md) | Hosting a Cube application on the desktop, and testing it headless. |
+| [SQL repositories](guides/sql-repositories.md) | Writing a repository for a new entity, on PostgreSQL or SQL Server. |
+| [REST](guides/rest.md) | Serving repositories and transactions over HTTP, and calling them. |
+| [Roles and rules](guides/roles-and-rules.md) | Writing the policy of an entity: who does what, and what reaches whom. |
+| [Sealed addresses](guides/sealed-addresses.md) | Encrypting the addresses, with a key per user. |
+| [Trimming and AOT](guides/trimming-and-aot.md) | What the libraries guarantee and what an application must do. |
+
+## Reference
+
+- [Wire protocol](reference/wire-protocol.md): routes, JSON of entities, projections and criteria, errors, remote
+  transactions and the sealed-address envelope; enough to write a compatible client or server.
+- [Decisions](decisions/README.md): the structural decisions of the framework, with their context and alternatives.
+
 ## Samples
 
+- [A walk through Shopping](samples/shopping.md): one feature followed from the view to the database.
 - [`samples/GettingStarted`](../samples/GettingStarted): the app of the tutorial.
 - [`samples/Tutorial`](../samples/Tutorial/README.md): a page frame, a list with a dialog, TodoMVC.
 - [`samples/Shopping`](../samples/Shopping/README.md): a complete application, from the database to three hosts.

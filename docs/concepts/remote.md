@@ -131,9 +131,9 @@ public sealed class RemoteProductRepository(RestClient client)
 {
     public async Task<byte[]?> FetchImage(long productId, CancellationToken cancellationToken = default)
     {
-        var body = await Client.GetOrNull($"{BasePath}/{productId}/image", cancellationToken)
-                   ?? throw new KeyNotFoundException($"No product {productId}.");
-        return body.Length == 0 ? null : body; // 204: no image
+        // 404: no such product (KeyNotFoundException); 204: a product with no image.
+        var body = await Client.Get($"{BasePath}/{productId}/image", cancellationToken);
+        return body.Length == 0 ? null : body;
     }
 }
 ```

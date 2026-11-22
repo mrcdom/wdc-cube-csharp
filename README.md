@@ -102,6 +102,9 @@ The libraries are trimming- and AOT-compatible: no runtime reflection in the cor
 
 - [Getting started](docs/getting-started.md): build a small app, step by step.
 - [Concepts](docs/README.md#concepts): how each part works and why.
+- [Guides](docs/README.md#guides): testing, Blazor, Avalonia, SQL repositories, REST, rules per role, sealed
+  addresses, trimming.
+- [Wire protocol](docs/reference/wire-protocol.md) and [decisions](docs/decisions/README.md).
 - Samples:
   - [`samples/GettingStarted`](samples/GettingStarted): the app of the tutorial.
   - [`samples/Tutorial`](samples/Tutorial/README.md): a page frame, a restricted area, a list with a detail dialog
