@@ -70,7 +70,7 @@ public sealed class AesHistoryCodecTests
     [Fact]
     public void HidesWhatItCarries_InOneUrlSafeParameter()
     {
-        var payload = new AesHistoryCodec(s_key).Encode("cpf=12345678901")!;
+        var payload = new AesHistoryCodec(s_key).Encode("ssn=12345678901")!;
 
         Assert.DoesNotContain("12345678901", payload, StringComparison.Ordinal);
         Assert.Matches("^[A-Za-z0-9_-]+$", payload);

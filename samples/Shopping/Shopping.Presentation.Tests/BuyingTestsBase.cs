@@ -20,11 +20,11 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
     {
         var shop = await Shop.LoggedIn(db, "fulano");
 
-        var product = await OpenProduct(shop, "Bola de vôlei");
+        var product = await OpenProduct(shop, "Volleyball");
 
-        Assert.Equal(["Tamanho e peso oficiais.", "Garantia contra defeito de fabricação.", "Revestimento sintético."],
+        Assert.Equal(["Volleyball, official size and weight.", "Warranty: against manufacturing defects.", "Origin: imported."],
             product.Scope.DescriptionItems);
-        Assert.Equal("R$ 45,30", product.Scope.PriceLabel);
+        Assert.Equal("$45.30", product.Scope.PriceLabel);
         Assert.Equal($"home/product?pr-id={product.Scope.Id}", shop.History.Token);
         Assert.Same(product.Scope, shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Content);
     }
@@ -48,7 +48,7 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
     public async Task AddingToTheCart_ValidatesTheQuantity_AndTheBadgeCountsQuantities()
     {
         var shop = await Shop.LoggedIn(db, "fulano");
-        var product = await OpenProduct(shop, "Fita veda rosca");
+        var product = await OpenProduct(shop, "Thread Seal Tape");
 
         await shop.Do(() => product.Scope.OnAddToCart(0));
         Assert.Equal(ProductPresenter.QuantityBelowOne, product.Scope.ErrorMessage);
@@ -56,10 +56,10 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
         await shop.Do(() => product.Scope.OnAddToCart(2));
         var cart = shop.PresenterOf<CartPresenter>(CartKeys.Place);
         Assert.Equal(2, cart.Scope.Lines.Single().Quantity);
-        Assert.Equal("R$ 5,34", cart.Scope.TotalLabel);
+        Assert.Equal("$5.34", cart.Scope.TotalLabel);
         Assert.Equal("home/cart", shop.History.Token);
 
-        product = await OpenProduct(shop, "Fita veda rosca");
+        product = await OpenProduct(shop, "Thread Seal Tape");
         await shop.Do(() => product.Scope.OnAddToCart(1)); // the same product again: its quantity grows
         Assert.Equal(3, shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.CartCount); // the badge follows the quantities
     }
@@ -68,7 +68,7 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
     public async Task Cart_QuantityBelowOneIsRefused_AndTheMessageGoesAway()
     {
         var shop = await Shop.LoggedIn(db, "fulano");
-        await shop.Do(() => OpenProduct(shop, "Bola de vôlei").ContinueWith(t => t.Result.Scope.OnAddToCart(1)).Unwrap());
+        await shop.Do(() => OpenProduct(shop, "Volleyball").ContinueWith(t => t.Result.Scope.OnAddToCart(1)).Unwrap());
         var cart = shop.PresenterOf<CartPresenter>(CartKeys.Place);
         var line = cart.Scope.Lines.Single();
 
@@ -82,14 +82,14 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
 
         await shop.Do(() => line.OnChangeQuantity(4));
         Assert.Same(line, cart.Scope.Lines.Single()); // the same line, updated in place
-        Assert.Equal("R$ 181,20", cart.Scope.TotalLabel);
+        Assert.Equal("$181.20", cart.Scope.TotalLabel);
     }
 
     [Fact]
     public async Task Cart_RemovingTheLastLine_GoesHome()
     {
         var shop = await Shop.LoggedIn(db, "fulano");
-        var product = await OpenProduct(shop, "Pen Drive 2GB");
+        var product = await OpenProduct(shop, "USB Flash Drive 2GB");
         await shop.Do(() => product.Scope.OnAddToCart(1));
 
         await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.Lines.Single().OnRemove);
@@ -102,21 +102,21 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
     public async Task Buying_RecordsThePurchase_ShowsTheReceipt_AndRefreshesHome()
     {
         var shop = await Shop.LoggedIn(db, "beotrano");
-        var product = await OpenProduct(shop, "Cafeteira design italiano");
+        var product = await OpenProduct(shop, "Italian Design Coffee Maker");
         await shop.Do(() => product.Scope.OnAddToCart(2));
 
         await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
 
         var receipt = shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place);
         Assert.True(receipt.Scope.NotifySuccess);
-        Assert.Equal([("Cafeteira design italiano", 2, "R$ 199,99")], receipt.Scope.Lines.Select(l => (l.Description, l.Quantity, l.ValueLabel)));
-        Assert.Equal("R$ 399,98", receipt.Scope.TotalLabel);
-        Assert.Equal("18/11/2026", receipt.Scope.DateLabel); // the application's clock
+        Assert.Equal([("Italian Design Coffee Maker", 2, "$199.99")], receipt.Scope.Lines.Select(l => (l.Description, l.Quantity, l.ValueLabel)));
+        Assert.Equal("$399.98", receipt.Scope.TotalLabel);
+        Assert.Equal("11/18/2026", receipt.Scope.DateLabel); // the application's clock
         Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);
 
         var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
         Assert.Equal(0, home.Scope.CartCount);
-        Assert.Equal("R$ 399,98", home.Scope.Purchases!.Purchases[0].TotalLabel);
+        Assert.Equal("$399.98", home.Scope.Purchases!.Purchases[0].TotalLabel);
 
         // The banner belongs to the trip from the cart: the same receipt opened by its address does not show it.
         var reopened = await Shop.Start(db, shop.History.Token, shop.Session);

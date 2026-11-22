@@ -89,7 +89,7 @@ public sealed class ProtectedRepositoryTests(PostgreSqlFixture fixture) : IAsync
 
     private async Task<Product> NewProduct()
     {
-        var product = new Product { Name = "Bola", Price = 10m };
+        var product = new Product { Name = "Ball", Price = 10m };
         await Local.Products.Insert(product, cancellationToken: Ct);
         return product;
     }

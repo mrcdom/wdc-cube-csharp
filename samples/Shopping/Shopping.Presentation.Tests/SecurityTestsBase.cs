@@ -125,7 +125,7 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
         var (fulano, _) = await As("fulano");
 
         await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            fulano.Products.Insert(new Product { Name = "Contrabando", Price = 1m }, cancellationToken: Ct));
+            fulano.Products.Insert(new Product { Name = "Contraband", Price = 1m }, cancellationToken: Ct));
     }
 
     // :: A purchase is made by whoever is acting, at the products' prices
@@ -175,7 +175,7 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
         await Assert.ThrowsAsync<AccessDeniedException>(() => fulano.Purchases.Insert(purchase,
             new Purchase { User = new User { Name = Mark.String }, BuyDate = Mark.Instant }, Ct));
 
-        Assert.Equal("Fulano de Tal", (await Store.Users.FetchById(me, cancellationToken: Ct))!.Name);
+        Assert.Equal("John Doe", (await Store.Users.FetchById(me, cancellationToken: Ct))!.Name);
     }
 
     // :: A purchase already made does not change, for every role of the application

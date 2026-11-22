@@ -41,11 +41,11 @@ public sealed class CriteriaTests
     public void SameField_CombinesWithAnd_OrAfterOr_AndChainingKeepsTheType()
     {
         var c = new ProductCriteria();
-        c.Name.Or().StartingWith("Bola");
+        c.Name.Or().StartingWith("Volley");
         c.Name.Containing("50%_off");
 
         Assert.True(c.Name.Disjunctive);
-        Assert.Equal(["Bola%", "%50\\%\\_off%"], c.Name.Predicates.Select(p => (string)p.Values[0]!));
+        Assert.Equal(["Volley%", "%50\\%\\_off%"], c.Name.Predicates.Select(p => (string)p.Values[0]!));
         Assert.All(c.Name.Predicates, p => Assert.Equal(Operator.ILike, p.Operator));
     }
 
@@ -77,11 +77,11 @@ public sealed class CriteriaTests
             .Price.Between(10.5m, 50.5m)
             .ProductId.Eq(3)
             .WithOrderBy(ProductOrderBy.CheapestFirst);
-        c.Name.Or().Like("Bola%");
-        c.Name.Eq("Fita");
+        c.Name.Or().Like("Volley%");
+        c.Name.Eq("Thread Seal Tape");
 
         Assert.Equal(
-            """{"productId":{"p":[{"o":"EQ","v":[3]}]},"name":{"or":true,"p":[{"o":"LIKE","v":["Bola%"]},{"o":"EQ","v":["Fita"]}]},"price":{"p":[{"o":"BETWEEN","v":[10.5,50.5]}]},"orderBy":"CHEAPEST_FIRST"}""",
+            """{"productId":{"p":[{"o":"EQ","v":[3]}]},"name":{"or":true,"p":[{"o":"LIKE","v":["Volley%"]},{"o":"EQ","v":["Thread Seal Tape"]}]},"price":{"p":[{"o":"BETWEEN","v":[10.5,50.5]}]},"orderBy":"CHEAPEST_FIRST"}""",
             CriteriaCodec.ToJson(c));
     }
 
@@ -91,7 +91,7 @@ public sealed class CriteriaTests
         // The example of wdc-cube-kotlin/docs/architecture-persistence.md
         const string json = """
             { "price": { "p": [ { "o": "GE", "v": [10.5] }, { "o": "LE", "v": [50.5] } ] },
-              "name":  { "or": true, "p": [ { "o": "LIKE", "v": ["Bola%"] }, { "o": "EQ", "v": ["Fita"] } ] },
+              "name":  { "or": true, "p": [ { "o": "LIKE", "v": ["Volley%"] }, { "o": "EQ", "v": ["Thread Seal Tape"] } ] },
               "productId": 3,
               "orderBy": "CHEAPEST_FIRST" }
             """;
@@ -101,7 +101,7 @@ public sealed class CriteriaTests
         Assert.Equal([(Operator.Ge, 10.5m), (Operator.Le, 50.5m)],
             c.Price.TypedPredicates.Select(p => (p.Operator, p.Values[0]!.Value)));
         Assert.True(c.Name.Disjunctive);
-        Assert.Equal([(Operator.Like, "Bola%"), (Operator.Eq, "Fita")], c.Name.TypedPredicates.Select(p => (p.Operator, p.Values[0]!)));
+        Assert.Equal([(Operator.Like, "Volley%"), (Operator.Eq, "Thread Seal Tape")], c.Name.TypedPredicates.Select(p => (p.Operator, p.Values[0]!)));
         Assert.Equal((Operator.Eq, 3L), c.ProductId.TypedPredicates.Select(p => (p.Operator, p.Values[0]!.Value)).Single());
         Assert.Equal(ProductOrderBy.CheapestFirst, c.OrderBy);
     }

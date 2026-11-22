@@ -369,7 +369,7 @@ together in `Required`:
 // samples/Shopping/Shopping.Persistence/ShoppingDemoData.cs (shortened)
 await repositories.Transactions.Required(async _ =>
 {
-    var admin = await NewUser(repositories, "admin", "admin", "João da Silva", "Admin", cancellationToken);
+    var admin = await NewUser(repositories, "admin", "admin", "John Smith", "Admin", cancellationToken);
     // ... products ...
     await repositories.Purchases.Insert(new Purchase
     {

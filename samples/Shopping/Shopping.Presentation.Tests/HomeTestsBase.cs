@@ -14,9 +14,9 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
         var shop = await Shop.LoggedIn(db, "admin");
         var products = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Products!;
 
-        Assert.Equal(["Bola de vôlei", "Cafeteira design italiano", "Fita veda rosca", "Pen Drive 2GB"], products.Products.Select(p => p.Name));
-        Assert.Equal("R$ 45,30", products.Products[0].PriceLabel);
-        Assert.Equal("4 itens", products.CountLabel);
+        Assert.Equal(["Italian Design Coffee Maker", "Thread Seal Tape", "USB Flash Drive 2GB", "Volleyball"], products.Products.Select(p => p.Name));
+        Assert.Equal("$199.99", products.Products[0].PriceLabel);
+        Assert.Equal("4 items", products.CountLabel);
         Assert.Equal($"image/product/{products.Products[0].Id}.png", products.Products[0].ImageUrl);
     }
 
@@ -27,9 +27,9 @@ public abstract class HomeTestsBase(ShoppingDatabaseFixture db)
         var purchases = shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!;
 
         Assert.Equal(
-            [("03/04/2011", "Bola de vôlei, Fita veda rosca", "R$ 47,97"), ("01/01/2010", "Cafeteira design italiano", "R$ 200,00")],
+            [("04/03/2011", "Volleyball, Thread Seal Tape", "$47.97"), ("01/01/2010", "Italian Design Coffee Maker", "$200.00")],
             purchases.Purchases.Select(p => (p.DateLabel, p.ItemsLabel, p.TotalLabel)));
-        Assert.Equal("2 compras", purchases.CountLabel);
+        Assert.Equal("2 purchases", purchases.CountLabel);
         Assert.Equal("1 / 1", purchases.PageLabel);
         Assert.False(purchases.HasNext);
     }

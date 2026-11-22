@@ -1,5 +1,5 @@
 <Project>
-  <!-- Versões centralizadas (Central Package Management). Os .csproj referenciam sem versão. -->
+  <!-- Centralized versions (Central Package Management). The .csproj files reference packages without a version. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>

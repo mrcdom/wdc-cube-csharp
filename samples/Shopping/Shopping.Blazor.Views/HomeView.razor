@@ -6,16 +6,16 @@
         <span class="greeting">@Scope.Greeting</span>
         @if (Scope.ShowAdmin)
         {
-            <button class="admin-button" @onclick="Scope.OnOpenAdmin">Administração</button>
+            <button class="admin-button" @onclick="Scope.OnOpenAdmin">Administration</button>
         }
-        <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="Carrinho">
+        <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="Cart">
             🛒
             @if (Scope.CartCount > 0)
             {
                 <span class="badge">@Scope.CartCount</span>
             }
         </button>
-        <button class="exit" @onclick="Scope.OnExit">Sair</button>
+        <button class="exit" @onclick="Scope.OnExit">Sign out</button>
     </header>
 
     <main class="home-body">

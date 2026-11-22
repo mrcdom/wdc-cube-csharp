@@ -1,14 +1,14 @@
 @inherits ScopeView<ProductsPanelScope>
 
 <section class="card products-panel">
-    <h2>Produtos <span class="chip">@Scope.CountLabel</span></h2>
+    <h2>Products <span class="chip">@Scope.CountLabel</span></h2>
     @if (Scope.Loading && Scope.Products.Count == 0)
     {
-        <p class="muted">Carregando…</p>
+        <p class="muted">Loading…</p>
     }
     else if (Scope.Products.Count == 0)
     {
-        <p class="muted">Nenhum produto disponível</p>
+        <p class="muted">No products available</p>
     }
     <div class="product-grid">
         @foreach (var product in Scope.Products)

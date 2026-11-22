@@ -14,12 +14,13 @@ public sealed class SqlServerFlowTests(ShoppingSqlServerFixture db) : IClassFixt
         var shop = await Shop.LoggedIn(db, "admin");
         var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
 
-        Assert.Equal("Olá, João da Silva", home.Scope.Greeting);
-        Assert.Equal(["Bola de vôlei", "Cafeteira design italiano", "Fita veda rosca", "Pen Drive 2GB"],
+        Assert.Equal("Hello, John Smith", home.Scope.Greeting);
+        Assert.Equal(["Italian Design Coffee Maker", "Thread Seal Tape", "USB Flash Drive 2GB", "Volleyball"],
             home.Scope.Products!.Products.Select(p => p.Name));
-        Assert.Equal(["R$ 47,97", "R$ 200,00"], home.Scope.Purchases!.Purchases.Select(p => p.TotalLabel));
+        Assert.Equal(["$47.97", "$200.00"], home.Scope.Purchases!.Purchases.Select(p => p.TotalLabel));
 
-        await shop.Do(() => home.Scope.Products!.OnOpenProduct(home.Scope.Products!.Products[0].Id));
+        var ball = home.Scope.Products!.Products.Single(p => p.Name == "Volleyball").Id;
+        await shop.Do(() => home.Scope.Products!.OnOpenProduct(ball));
         var product = shop.PresenterOf<ProductPresenter>(ProductKeys.Place);
         Assert.Equal(3, product.Scope.DescriptionItems.Count);
 
@@ -27,10 +28,10 @@ public sealed class SqlServerFlowTests(ShoppingSqlServerFixture db) : IClassFixt
         await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
 
         var receipt = shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place);
-        Assert.Equal("R$ 135,90", receipt.Scope.TotalLabel);
-        Assert.Equal("R$ 135,90", home.Scope.Purchases!.Purchases[0].TotalLabel);
+        Assert.Equal("$135.90", receipt.Scope.TotalLabel);
+        Assert.Equal("$135.90", home.Scope.Purchases!.Purchases[0].TotalLabel);
         Assert.Equal(2, await db.Store!.Repositories.Purchases.Count( // the 2011 demo purchase also has the ball
-            new Domain.Purchases.PurchaseCriteria().ProductId.Eq(home.Scope.Products!.Products[0].Id).UserId.Eq(shop.App.Subject!.Id), TestContext.Current.CancellationToken));
+            new Domain.Purchases.PurchaseCriteria().ProductId.Eq(ball).UserId.Eq(shop.App.Subject!.Id), TestContext.Current.CancellationToken));
     }
 
     [Fact]

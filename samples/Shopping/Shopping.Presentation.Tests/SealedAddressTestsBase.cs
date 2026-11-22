@@ -40,7 +40,7 @@ public abstract class SealedAddressTestsBase(ShoppingDatabaseFixture db)
         var opened = await Shop.Start(db, sealedLink, beotrano.Session);
 
         Assert.NotEqual(productId, opened.Maybe<ProductPresenter>(ProductKeys.Place)?.Scope.Id); // the parameters are dropped
-        Assert.Equal("Olá, Beotrano de Alguma Coisa", opened.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting);
+        Assert.Equal("Hello, Jane Roe", opened.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting);
     }
 
     [Fact]

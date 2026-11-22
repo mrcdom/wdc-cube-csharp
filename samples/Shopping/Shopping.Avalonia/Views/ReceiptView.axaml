@@ -9,18 +9,18 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <Border Classes="success" Margin="0,16,0,0" IsVisible="{Binding NotifySuccess}">
-        <TextBlock Text="Compra realizada com sucesso!" />
+        <TextBlock Text="Purchase completed successfully!" />
       </Border>
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="h2" Text="🧾 Recibo" />
+        <TextBlock Classes="h2" Text="🧾 Receipt" />
         <Border Classes="chip"><TextBlock Text="{Binding DateLabel}" /></Border>
       </StackPanel>
       <StackPanel>
         <Border Classes="row">
           <Grid ColumnDefinitions="*,Auto,370">
             <TextBlock Text="Item" FontWeight="Bold" />
-            <TextBlock Grid.Column="1" Text="Qtd" FontWeight="Bold" TextAlignment="Right" />
-            <TextBlock Grid.Column="2" Text="Valor" FontWeight="Bold" TextAlignment="Right" />
+            <TextBlock Grid.Column="1" Text="Qty" FontWeight="Bold" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="Amount" FontWeight="Bold" TextAlignment="Right" />
           </Grid>
         </Border>
         <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
@@ -50,7 +50,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <Button Classes="primary" Content="Continuar Comprando" HorizontalAlignment="Right" Click="OnContinue" />
+      <Button Classes="primary" Content="Continue Shopping" HorizontalAlignment="Right" Click="OnContinue" />
     </StackPanel>
   </Border>
 </cube:ScopeView>

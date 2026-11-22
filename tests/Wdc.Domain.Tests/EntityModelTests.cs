@@ -20,8 +20,8 @@ public sealed class EntityModelTests
     [Fact]
     public void ChangedFields_MarksWhatDiffers_AndAlwaysTheKey()
     {
-        var before = new Product { Id = 1, Name = "Bola", Price = 10m, Image = [1, 2] };
-        var after = new Product { Id = 1, Name = "Bola", Price = 12m, Image = [1, 2] };
+        var before = new Product { Id = 1, Name = "Ball", Price = 10m, Image = [1, 2] };
+        var after = new Product { Id = 1, Name = "Ball", Price = 12m, Image = [1, 2] };
 
         var changed = Product.Model.ChangedFields(after, before);
 

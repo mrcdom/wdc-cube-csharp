@@ -3,8 +3,8 @@ using System.Runtime.InteropServices;
 namespace Wdc.Cube.Tests;
 
 /// <summary>
-/// Garante que a suíte realmente executa em cada alvo declarado (net10.0 e net11.0),
-/// e não só no runtime mais novo.
+/// Ensures the suite really runs on each declared target (net10.0 and net11.0),
+/// not only on the newest runtime.
 /// </summary>
 public sealed class TargetFrameworkSmokeTest
 {

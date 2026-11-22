@@ -35,7 +35,7 @@ A fetch with a projection, as it goes on the wire:
 POST /api/repo/product/fetch
 {"productId":12,"projection":{"id":1,"name":"~"}}
 
-200 {"items":[{"id":12,"name":"Bola de futebol"}]}
+200 {"items":[{"id":12,"name":"Soccer ball"}]}
 ```
 
 ## The server

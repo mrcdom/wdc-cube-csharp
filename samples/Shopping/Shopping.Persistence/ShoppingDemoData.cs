@@ -14,16 +14,16 @@ public static class ShoppingDemoData
         ArgumentNullException.ThrowIfNull(repositories);
         await repositories.Transactions.Required(async _ =>
         {
-            var admin = await NewUser(repositories, "admin", "admin", "João da Silva", "Admin", cancellationToken);
-            await NewUser(repositories, "fulano", "fulano", "Fulano de Tal", "Customer", cancellationToken);
-            await NewUser(repositories, "beotrano", "beotrano", "Beotrano de Alguma Coisa", "Customer", cancellationToken);
-            await NewUser(repositories, "gerente", "gerente", "Gerente de Loja", "Manager", cancellationToken);
-            await NewUser(repositories, "suporte", "suporte", "Suporte Técnico", "Super", cancellationToken); // maintenance
+            var admin = await NewUser(repositories, "admin", "admin", "John Smith", "Admin", cancellationToken);
+            await NewUser(repositories, "fulano", "fulano", "John Doe", "Customer", cancellationToken);
+            await NewUser(repositories, "beotrano", "beotrano", "Jane Roe", "Customer", cancellationToken);
+            await NewUser(repositories, "gerente", "gerente", "Store Manager", "Manager", cancellationToken);
+            await NewUser(repositories, "suporte", "suporte", "Support Team", "Super", cancellationToken); // maintenance
 
-            var coffee = await NewProduct(repositories, "Cafeteira design italiano", 199.99m, CoffeeMaker, "cafeteira.png", cancellationToken);
-            var ball = await NewProduct(repositories, "Bola de vôlei", 45.30m, VolleyBall, "bola.png", cancellationToken);
-            var tape = await NewProduct(repositories, "Fita veda rosca", 2.67m, ThreadTape, "vedarosca.png", cancellationToken);
-            await NewProduct(repositories, "Pen Drive 2GB", 16.00m, PenDrive, "pendrive2gb.png", cancellationToken);
+            var coffee = await NewProduct(repositories, "Italian Design Coffee Maker", 199.99m, CoffeeMaker, "coffeemaker.png", cancellationToken);
+            var ball = await NewProduct(repositories, "Volleyball", 45.30m, VolleyBall, "volleyball.png", cancellationToken);
+            var tape = await NewProduct(repositories, "Thread Seal Tape", 2.67m, ThreadTape, "threadsealtape.png", cancellationToken);
+            await NewProduct(repositories, "USB Flash Drive 2GB", 16.00m, FlashDrive, "flashdrive2gb.png", cancellationToken);
 
             await repositories.Purchases.Insert(new Purchase
             {
@@ -71,33 +71,36 @@ public static class ShoppingDemoData
 
     private const string CoffeeMaker = """
         <ul>
-        <li>Prepara até 30 xícaras pequenas</li>
-        <li>Jarra de vidro com alça</li>
-        <li>Filtro permanente removível</li>
-        <li>Reservatório de água com marcação de nível</li>
-        <li>Luz indicadora de ligada</li>
-        <li>Peças removíveis fáceis de lavar</li>
+        <li>Capacity for 30 cups (50ml each) or 24 cups (62ml each)</li>
+        <li>Drip-stop system</li>
+        <li>Comes with a removable permanent filter and a measuring spoon</li>
+        <li>Paper filters can also be used</li>
+        <li>Graduated water reservoir</li>
+        <li>Illuminated on/off switch</li>
+        <li>Easy to clean</li>
+        <li>Dishwasher-safe parts (except the motor base)</li>
+        <li>Power: 1000W - equivalent to 1 kWh (kilowatt-hour).</li>
         </ul>
         """;
 
     private const string VolleyBall = """
         <ul>
-        <li>Tamanho e peso oficiais.</li>
-        <li>Garantia contra defeito de fabricação.</li>
-        <li>Revestimento sintético.</li>
+        <li>Volleyball, official size and weight.</li>
+        <li>Warranty: against manufacturing defects.</li>
+        <li>Origin: imported.</li>
         </ul>
         """;
 
     private const string ThreadTape = """
         <ul>
-        <li>Fita de vedação para roscas.</li>
-        <li>Medida: 18 mm x 10 m.</li>
+        <li>Size: 18 mm x 10 m.</li>
         <li>Material: PTFE.</li>
-        <li>Para juntas roscáveis de água e gás.</li>
+        <li>Use: sealing threaded joints.</li>
         </ul>
         """;
 
-    private const string PenDrive =
-        "Pen drive de 2 GB para levar documentos, fotos e músicas no bolso. Leve, com luz que indica o uso e conexão " +
-        "USB.";
+    private const string FlashDrive =
+        "Ideal for carrying data files, audio, video, photos and much more. Best value for storing and transferring " +
+        "information. Portable, easy to use and super light, it keeps your data safe, has an LED that shows when it is " +
+        "in use, and is drop resistant. A flash drive with 2 GB of storage capacity: convenience and quality for your files!";
 }

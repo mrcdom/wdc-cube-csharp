@@ -73,7 +73,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Insert_WithProjection_WritesOnlyTheMarkedFields()
     {
-        var product = new Product { Name = "Bola", Price = 10m, Description = "not written" };
+        var product = new Product { Name = "Ball", Price = 10m, Description = "not written" };
 
         await Db.Products.Insert(product, new Product { Name = Mark.String, Price = Mark.Decimal }, Ct);
 
@@ -86,7 +86,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Fetch_DefaultProjection_OwnFieldsAndReferenceKeys_NoBlobsSecretsOrCollections()
     {
         var user = await NewUser("bia", "Bia");
-        var product = await NewProduct("Bola", 10m);
+        var product = await NewProduct("Ball", 10m);
         await Db.Products.Update(new Product { Id = product.Id, Image = [1, 2, 3] },
             projection: new Product { Image = Mark.Bytes }, cancellationToken: Ct);
         await NewPurchase(user, (product, 1));
@@ -107,9 +107,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Fetch_NestedProjection_ReferencesAndAFilteredOrderedSlicedCollection_InOneStatement()
     {
         var user = await NewUser("caio", "Caio");
-        var cheap = await NewProduct("Fita", 2m);
-        var mid = await NewProduct("Bola", 10m);
-        var dear = await NewProduct("Raquete", 99.9m);
+        var cheap = await NewProduct("Tape", 2m);
+        var mid = await NewProduct("Ball", 10m);
+        var dear = await NewProduct("Racket", 99.9m);
         var purchase = await NewPurchase(user, (cheap, 5), (mid, 2), (dear, 1));
 
         var projection = new Purchase
@@ -128,14 +128,14 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.Equal("Caio", stored.User!.Name);
         var item = Assert.Single(stored.Items!); // amount <= 2, most expensive first, limit 1
         Assert.Equal(99.9m, item.Price);
-        Assert.Equal("Raquete", item.Product!.Name);
+        Assert.Equal("Racket", item.Product!.Name);
     }
 
     [Fact]
     public async Task Fetch_TheKeyComesAtEveryLevel_EvenWhenTheProjectionDoesNotMarkIt()
     {
         var user = await NewUser("dora", "Dora");
-        var product = await NewProduct("Fita", 2m);
+        var product = await NewProduct("Tape", 2m);
         var purchase = await NewPurchase(user, (product, 3));
         var projection = new Purchase
         {
@@ -161,9 +161,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Relation_TheChildRepositorysConditionsFilterTheCollection_WithAndWithoutASlice()
     {
         var user = await NewUser("eva", "Eva");
-        var cheap = await NewProduct("Fita", 2m);
-        var mid = await NewProduct("Bola", 10m);
-        var dear = await NewProduct("Raquete", 99.9m);
+        var cheap = await NewProduct("Tape", 2m);
+        var mid = await NewProduct("Ball", 10m);
+        var dear = await NewProduct("Racket", 99.9m);
         await NewPurchase(user, (cheap, 5), (mid, 2), (dear, 1));
 
         async Task<string[]> Names(ProjectionList<PurchaseItem> items)
@@ -176,32 +176,32 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         var shape = new PurchaseItem { Product = new Product { Name = Mark.String } };
 
         // amount >= 2, translated by the item repository's conditions inside the purchase's query
-        Assert.Equal(["Bola", "Fita"], await Names(Mark.List(shape,
+        Assert.Equal(["Ball", "Tape"], await Names(Mark.List(shape,
             new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst))));
-        Assert.Equal(["Bola"], await Names(Mark.List(shape,
+        Assert.Equal(["Ball"], await Names(Mark.List(shape,
             new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.MostExpensiveFirst), limit: 1)));
     }
 
     // :: Projection of a multivalued field (ProjectionList): criteria, order and range on the children, per parent
 
     /// <summary>
-    /// Bola sold in four purchases (amounts 1, 3, 4, 2) and Fita in three (5, 2, 1); Rede never sold. Returns the
+    /// Ball sold in four purchases (amounts 1, 3, 4, 2) and Tape in three (5, 2, 1); Net never sold. Returns the
     /// products and the purchases, in that order of creation.
     /// </summary>
-    private async Task<(Product Bola, Product Fita, Product Rede, Purchase[] Purchases)> Sales()
+    private async Task<(Product Ball, Product Tape, Product Net, Purchase[] Purchases)> Sales()
     {
         var ana = await NewUser("ana", "Ana");
-        var bola = await NewProduct("Bola", 10m);
-        var fita = await NewProduct("Fita", 2m);
-        var rede = await NewProduct("Rede", 50m);
+        var ball = await NewProduct("Ball", 10m);
+        var tape = await NewProduct("Tape", 2m);
+        var net = await NewProduct("Net", 50m);
         Purchase[] purchases =
         [
-            await NewPurchase(ana, (bola, 1), (fita, 5)),
-            await NewPurchase(ana, (bola, 3), (fita, 2)),
-            await NewPurchase(ana, (bola, 4), (fita, 1)),
-            await NewPurchase(ana, (bola, 2)),
+            await NewPurchase(ana, (ball, 1), (tape, 5)),
+            await NewPurchase(ana, (ball, 3), (tape, 2)),
+            await NewPurchase(ana, (ball, 4), (tape, 1)),
+            await NewPurchase(ana, (ball, 2)),
         ];
-        return (bola, fita, rede, purchases);
+        return (ball, tape, net, purchases);
     }
 
     private static readonly PurchaseItem s_amountOnly = new() { Amount = Mark.Int32 };
@@ -223,9 +223,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         var items = await ItemsOfEachProduct(Mark.List(s_amountOnly,
             new PurchaseItemCriteria().Amount.Ge(2).WithOrderBy(PurchaseItemOrderBy.LargestQuantityFirst), limit: 2, offset: 1));
 
-        Assert.Equal([3, 2], items["Bola"]); // 3, 4, 2 → 4, 3, 2 → [3, 2]
-        Assert.Equal([2], items["Fita"]); // 5, 2 → 5, 2 → [2]
-        Assert.Empty(items["Rede"]); // never sold: an empty list, not a missing product
+        Assert.Equal([3, 2], items["Ball"]); // 3, 4, 2 → 4, 3, 2 → [3, 2]
+        Assert.Equal([2], items["Tape"]); // 5, 2 → 5, 2 → [2]
+        Assert.Empty(items["Net"]); // never sold: an empty list, not a missing product
     }
 
     [Fact]
@@ -235,17 +235,17 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
 
         var ordered = await ItemsOfEachProduct(Mark.List(s_amountOnly,
             new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.LargestQuantityFirst)));
-        Assert.Equal([4, 3, 2, 1], ordered["Bola"]);
-        Assert.Equal([5, 2, 1], ordered["Fita"]);
+        Assert.Equal([4, 3, 2, 1], ordered["Ball"]);
+        Assert.Equal([5, 2, 1], ordered["Tape"]);
 
         var filtered = await ItemsOfEachProduct(Mark.List(s_amountOnly, new PurchaseItemCriteria().Amount.Le(2))); // key order
-        Assert.Equal([1, 2], filtered["Bola"]);
-        Assert.Equal([2, 1], filtered["Fita"]);
+        Assert.Equal([1, 2], filtered["Ball"]);
+        Assert.Equal([2, 1], filtered["Tape"]);
 
         var rangeOnly = await ItemsOfEachProduct(Mark.List(s_amountOnly,
             new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.OldestFirst), limit: 2, offset: 2));
-        Assert.Equal([4, 2], rangeOnly["Bola"]); // 1, 3, 4, 2 → skip 2 → [4, 2]
-        Assert.Equal([1], rangeOnly["Fita"]); // 5, 2, 1 → skip 2 → [1]
+        Assert.Equal([4, 2], rangeOnly["Ball"]); // 1, 3, 4, 2 → skip 2 → [4, 2]
+        Assert.Equal([1], rangeOnly["Tape"]); // 5, 2, 1 → skip 2 → [1]
     }
 
     [Fact]
@@ -281,15 +281,15 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Cascade_Insert_WritesTheMarkedCollection_PointingAtTheParent()
     {
         var ana = await NewUser("ana", "Ana");
-        var bola = await NewProduct("Bola", 10m);
+        var ball = await NewProduct("Ball", 10m);
         var purchase = new Purchase
         {
             User = ana,
             BuyDate = DateTimeOffset.UtcNow,
             Items =
             [
-                new PurchaseItem { Product = bola, Amount = 2, Price = 10m },
-                new PurchaseItem { Product = bola, Amount = 3, Price = 10m },
+                new PurchaseItem { Product = ball, Amount = 2, Price = 10m },
+                new PurchaseItem { Product = ball, Amount = 3, Price = 10m },
             ],
         };
 
@@ -303,8 +303,8 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Cascade_Update_TheMarkedCollectionIsItsFullState()
     {
         var ana = await NewUser("ana", "Ana");
-        var bola = await NewProduct("Bola", 10m);
-        var purchase = await NewPurchase(ana, (bola, 1), (bola, 2), (bola, 3));
+        var ball = await NewProduct("Ball", 10m);
+        var purchase = await NewPurchase(ana, (ball, 1), (ball, 2), (ball, 3));
         var stored = await Db.Items.Fetch(new PurchaseItemCriteria().PurchaseId.Eq(purchase.Id).WithOrderBy(PurchaseItemOrderBy.OldestFirst),
             cancellationToken: Ct);
         var (a, c) = (stored[0], stored[2]);
@@ -320,9 +320,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
             Id = purchase.Id,
             Items =
             [
-                new PurchaseItem { Id = a.Id, Amount = 10, Price = 10m, Product = bola },
-                new PurchaseItem { Id = c.Id, Amount = 3, Price = 10m, Product = bola },
-                new PurchaseItem { Amount = 7, Price = 10m, Product = bola },
+                new PurchaseItem { Id = a.Id, Amount = 10, Price = 10m, Product = ball },
+                new PurchaseItem { Id = c.Id, Amount = 3, Price = 10m, Product = ball },
+                new PurchaseItem { Amount = 7, Price = 10m, Product = ball },
             ],
         }, projection: new Purchase { Items = Mark.List(s_itemWrite) }, cancellationToken: Ct);
 
@@ -339,8 +339,8 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Cascade_AReferenceMarkedBeyondItsKey_WritesTheReferencedRow_OrInsertsIt()
     {
         var ana = await NewUser("ana", "Ana");
-        var bola = await NewProduct("Bola", 10m);
-        var purchase = await NewPurchase(ana, (bola, 1));
+        var ball = await NewProduct("Ball", 10m);
+        var purchase = await NewPurchase(ana, (ball, 1));
 
         // Key only: just the foreign key (nothing of the user is written).
         await Db.Purchases.Update(new Purchase { Id = purchase.Id, User = new User { Id = ana.Id, Name = "ignored" } },
@@ -366,9 +366,9 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Cascade_Delete_TakesTheDeclaredCollection_ButNeverAView()
     {
         var ana = await NewUser("ana", "Ana");
-        var bola = await NewProduct("Bola", 10m);
-        var purchase = await NewPurchase(ana, (bola, 1), (bola, 2));
-        var other = await NewPurchase(ana, (bola, 5));
+        var ball = await NewProduct("Ball", 10m);
+        var purchase = await NewPurchase(ana, (ball, 1), (ball, 2));
+        var other = await NewPurchase(ana, (ball, 5));
 
         Assert.Equal(1, await Db.Purchases.Delete(new PurchaseCriteria().PurchaseId.Eq(purchase.Id), Ct));
 
@@ -376,14 +376,14 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.Equal(new[] { 5 }, await AmountsOf(other.Id!.Value)); // another purchase's did not
 
         // The items of a product are a view (no cascade): a sold product cannot be deleted from under its sales.
-        await Assert.ThrowsAnyAsync<Exception>(() => Db.Products.Delete(new ProductCriteria().ProductId.Eq(bola.Id), Ct));
+        await Assert.ThrowsAnyAsync<Exception>(() => Db.Products.Delete(new ProductCriteria().ProductId.Eq(ball.Id), Ct));
         Assert.Equal(new[] { 5 }, await AmountsOf(other.Id!.Value));
     }
 
     [Fact]
     public async Task Fetch_ValuesRoundTrip_BytesInstantsDecimalsEnums()
     {
-        var product = await NewProduct("Imagem", 1234567.89m);
+        var product = await NewProduct("Image", 1234567.89m);
         await Db.Products.Update(new Product { Id = product.Id, Image = [0, 255, 7, 8] },
             projection: new Product { Image = Mark.Bytes }, cancellationToken: Ct);
         var user = await NewUser("dora", "Dora");
@@ -411,7 +411,7 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.SkipWhen(fixture.IsRemote, "restrictions are set by the server: the REST scope tests cover them");
         var ana = await NewUser("ana", "Ana");
         var bia = await NewUser("bia", "Bia");
-        var product = await NewProduct("Bola", 10m);
+        var product = await NewProduct("Ball", 10m);
         var mine = await NewPurchase(ana, (product, 1));
         await NewPurchase(bia, (product, 1));
 
@@ -431,23 +431,23 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Criteria_EveryOperatorFilters()
     {
-        await NewProduct("Bola de vôlei", 10.5m);
-        await NewProduct("Bola de futebol", 50m);
-        await NewProduct("Fita 50% off", 3m);
-        await NewProduct("Rede", null);
+        await NewProduct("Ball (volleyball)", 10.5m);
+        await NewProduct("Ball (soccer)", 50m);
+        await NewProduct("Tape 50% off", 3m);
+        await NewProduct("Net", null);
 
         async Task<string[]> Names(ProductCriteria c) =>
             [.. (await Db.Products.Fetch(c.WithOrderBy(ProductOrderBy.NameAToZ), cancellationToken: Ct)).Select(p => p.Name!)];
 
-        Assert.Equal(["Bola de vôlei"], await Names(new ProductCriteria().Name.Eq("Bola de vôlei")));
-        Assert.Equal(["Bola de futebol", "Bola de vôlei"], await Names(new ProductCriteria().Name.StartingWith("bola")));
-        Assert.Equal(["Fita 50% off"], await Names(new ProductCriteria().Name.Containing("50%"))); // % taken literally
-        Assert.Equal(["Bola de vôlei", "Fita 50% off"], await Names(new ProductCriteria().Price.Lt(20m)));
-        Assert.Equal(["Bola de futebol", "Bola de vôlei"], await Names(new ProductCriteria().Price.Between(10m, 50m)));
-        Assert.Equal(["Rede"], await Names(new ProductCriteria().Price.IsNull()));
-        Assert.Equal(["Bola de futebol", "Rede"], await Names(new ProductCriteria().Name.Or().Eq("Rede").Name.Eq("Bola de futebol")));
+        Assert.Equal(["Ball (volleyball)"], await Names(new ProductCriteria().Name.Eq("Ball (volleyball)")));
+        Assert.Equal(["Ball (soccer)", "Ball (volleyball)"], await Names(new ProductCriteria().Name.StartingWith("ball")));
+        Assert.Equal(["Tape 50% off"], await Names(new ProductCriteria().Name.Containing("50%"))); // % taken literally
+        Assert.Equal(["Ball (volleyball)", "Tape 50% off"], await Names(new ProductCriteria().Price.Lt(20m)));
+        Assert.Equal(["Ball (soccer)", "Ball (volleyball)"], await Names(new ProductCriteria().Price.Between(10m, 50m)));
+        Assert.Equal(["Net"], await Names(new ProductCriteria().Price.IsNull()));
+        Assert.Equal(["Ball (soccer)", "Net"], await Names(new ProductCriteria().Name.Or().Eq("Net").Name.Eq("Ball (soccer)")));
         Assert.Empty(await Names(new ProductCriteria().ProductId.In())); // an empty list matches nothing
-        Assert.Equal(["Bola de vôlei"], await Names(new ProductCriteria().Name.StartingWith("Bola").Price.Lt(20m))); // fields: AND
+        Assert.Equal(["Ball (volleyball)"], await Names(new ProductCriteria().Name.StartingWith("Ball").Price.Lt(20m))); // fields: AND
     }
 
     [Fact]
@@ -472,8 +472,8 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     public async Task Criteria_AVirtualField_FiltersThroughAnotherTable()
     {
         var user = await NewUser("eva", "Eva");
-        var ball = await NewProduct("Bola", 10m);
-        var net = await NewProduct("Rede", 20m);
+        var ball = await NewProduct("Ball", 10m);
+        var net = await NewProduct("Net", 20m);
         var withBall = await NewPurchase(user, (ball, 1));
         await NewPurchase(user, (net, 1));
 
@@ -509,34 +509,34 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
     [Fact]
     public async Task Update_WithProjection_WritesOnlyTheMarkedFields_AndANullClearsTheColumn()
     {
-        var product = await NewProduct("Bola", 10m, "redonda");
+        var product = await NewProduct("Ball", 10m, "round");
 
         var changed = await Db.Products.Update(new Product { Id = product.Id, Price = 12m, Description = null, Name = "ignored" },
             projection: new Product { Price = Mark.Decimal, Description = Mark.String }, cancellationToken: Ct);
 
         var stored = await Db.Products.FetchById(product.Id!.Value, cancellationToken: Ct);
         Assert.True(changed);
-        Assert.Equal(("Bola", 12m, (string?)null), (stored!.Name, stored.Price, stored.Description));
+        Assert.Equal(("Ball", 12m, (string?)null), (stored!.Name, stored.Price, stored.Description));
     }
 
     [Fact]
     public async Task Update_WithNeitherProjectionNorOldBean_WritesWhatHoldsAValue_AndLeavesTheRest()
     {
-        var product = await NewProduct("Bola", 10m, "redonda");
+        var product = await NewProduct("Ball", 10m, "round");
         var narrow = (await Db.Products.FetchById(product.Id!.Value, new Product { Name = Mark.String }, Ct))!;
         Assert.Null(narrow.Price); // read without it
 
-        narrow.Name = "Bola nova";
+        narrow.Name = "New ball";
         Assert.True(await Db.Products.Update(narrow, cancellationToken: Ct));
 
         var stored = await Db.Products.FetchById(product.Id!.Value, cancellationToken: Ct);
-        Assert.Equal(("Bola nova", 10m, "redonda"), (stored!.Name, stored.Price, stored.Description));
+        Assert.Equal(("New ball", 10m, "round"), (stored!.Name, stored.Price, stored.Description));
     }
 
     [Fact]
     public async Task Update_WithTheOldBean_WritesOnlyWhatChanged_AndNothingChangedIsFalse()
     {
-        var product = await NewProduct("Bola", 10m, "redonda");
+        var product = await NewProduct("Ball", 10m, "round");
         var before = (await Db.Products.FetchById(product.Id!.Value, cancellationToken: Ct))!;
         var after = new Product { Id = before.Id, Name = before.Name, Price = 11m, Description = before.Description };
 

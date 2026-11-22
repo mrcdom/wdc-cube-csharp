@@ -10,7 +10,7 @@ public sealed partial class ProductView : ScopeView
 
     private ProductScope S => (ProductScope)Scope!;
 
-    // The quantity being chosen: view plumbing, sent to the presenter on "Adicionar".
+    // The quantity being chosen: view plumbing, sent to the presenter on "Add to Cart".
     private int _quantity = 1;
 
     private void ChangeQuantity(int delta)

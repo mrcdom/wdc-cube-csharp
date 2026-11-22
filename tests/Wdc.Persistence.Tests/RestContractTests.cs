@@ -88,14 +88,14 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     [Fact]
     public async Task Wire_FetchWithProjection_AnswersTheKotlinShape()
     {
-        var ball = await NewProduct("Bola de futebol", 10m);
+        var ball = await NewProduct("Soccer ball", 10m);
         var host = await Host();
 
         var (status, body) = await Raw(host, HttpMethod.Post, "/api/repo/product/fetch",
             $$$"""{"productId":{{{ball.Id}}},"projection":{"id":1,"name":"~"}}""");
 
         Assert.Equal(HttpStatusCode.OK, status);
-        Assert.Equal($$"""{"items":[{"id":{{ball.Id}},"name":"Bola de futebol"}]}""", body);
+        Assert.Equal($$"""{"items":[{"id":{{ball.Id}},"name":"Soccer ball"}]}""", body);
     }
 
     [Theory]
@@ -105,7 +105,7 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     [InlineData("""{"price":{"p":[{"o":"EQ","v":["abc"]}]}}""")]
     public async Task Wire_ADeleteWhoseFilterCannotFilter_IsRefused_AndNothingIsDeleted(string criteria)
     {
-        await NewProduct("Fica", 1m);
+        await NewProduct("Kept", 1m);
         var host = await Host();
         var before = await Local.Products.Count(new ProductCriteria(), Ct);
 
@@ -120,13 +120,13 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     {
         var host = await Host();
 
-        var (_, inserted) = await Raw(host, HttpMethod.Post, "/api/repo/product/insert", """{"name":"Teclado","price":80.5}""");
+        var (_, inserted) = await Raw(host, HttpMethod.Post, "/api/repo/product/insert", """{"name":"Keyboard","price":80.5}""");
         var id = long.Parse(inserted.Split("\"id\":")[1].Split(',')[0], System.Globalization.CultureInfo.InvariantCulture);
         Assert.StartsWith("""{"success":true,"id":""", inserted, StringComparison.Ordinal);
 
         Assert.Equal((HttpStatusCode.OK, """{"success":true}"""),
-            await Raw(host, HttpMethod.Post, "/api/repo/product/update", $$"""{"id":{{id}},"name":"Teclado 2"}"""));
-        Assert.Equal("Teclado 2", (await Local.Products.FetchById(id, cancellationToken: Ct))!.Name);
+            await Raw(host, HttpMethod.Post, "/api/repo/product/update", $$"""{"id":{{id}},"name":"Keyboard 2"}"""));
+        Assert.Equal("Keyboard 2", (await Local.Products.FetchById(id, cancellationToken: Ct))!.Name);
         Assert.Equal(80.5m, (await Local.Products.FetchById(id, cancellationToken: Ct))!.Price); // absent: untouched
 
         Assert.Equal((HttpStatusCode.OK, """{"count":1}"""),

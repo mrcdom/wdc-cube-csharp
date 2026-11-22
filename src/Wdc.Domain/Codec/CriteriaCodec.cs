@@ -5,7 +5,7 @@ namespace Wdc.Domain;
 /// <summary>Reads and writes criteria in the wire format shared with the Kotlin version.</summary>
 /// <remarks>
 /// <code>{ "price": { "p": [ { "o": "GE", "v": [10.5] }, { "o": "LE", "v": [50.5] } ] },
-///   "name": { "or": true, "p": [ { "o": "LIKE", "v": ["Bola%"] }, { "o": "EQ", "v": ["Fita"] } ] },
+///   "name": { "or": true, "p": [ { "o": "LIKE", "v": ["Volley%"] }, { "o": "EQ", "v": ["Thread Seal Tape"] } ] },
 ///   "productId": 3,
 ///   "orderBy": "CHEAPEST_FIRST" }</code>
 /// A field not set writes nothing. A loose value reads as equality. An unknown operator is dropped (the filter gets

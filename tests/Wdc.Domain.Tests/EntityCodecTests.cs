@@ -9,19 +9,19 @@ public sealed class EntityCodecTests
     [Fact]
     public void WithoutProjection_WritesTheFieldsThatHoldAValue()
     {
-        var json = s_products.ToJson(new Product { Id = 1, Name = "Bola", Price = 10.5m });
+        var json = s_products.ToJson(new Product { Id = 1, Name = "Ball", Price = 10.5m });
 
-        Assert.Equal("""{"id":1,"name":"Bola","price":10.5}""", json);
+        Assert.Equal("""{"id":1,"name":"Ball","price":10.5}""", json);
     }
 
     [Fact]
     public void WithProjection_WritesTheMarkedFields_WithExplicitNulls()
     {
         var json = s_products.ToJson(
-            new Product { Id = 1, Name = "Bola", Description = "ignored" },
+            new Product { Id = 1, Name = "Ball", Description = "ignored" },
             new Product { Id = Mark.Int64, Name = Mark.String, Price = Mark.Decimal });
 
-        Assert.Equal("""{"id":1,"name":"Bola","price":null}""", json); // price: "set to null"
+        Assert.Equal("""{"id":1,"name":"Ball","price":null}""", json); // price: "set to null"
     }
 
     [Fact]

@@ -16,8 +16,8 @@ namespace Shopping.Presentation.Modules.Home;
 /// </summary>
 public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
 {
-    public const string ProductNotFound = "Código do produto não localizado.";
-    public const string ReceiptNotFound = "Código do recibo não localizado.";
+    public const string ProductNotFound = "Product code not found.";
+    public const string ReceiptNotFound = "Receipt code not found.";
 
     private ProductsPanelPresenter? _products;
     private PurchasesPanelPresenter? _purchases;
@@ -46,7 +46,7 @@ public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
 
         if (initialization)
         {
-            Scope.Greeting = $"Olá, {subject.NickName}";
+            Scope.Greeting = $"Hello, {subject.NickName}";
             Scope.OnOpenCart = Action(() => new CartKeys(App).Flip());
             Scope.OnExit = Action(OnExit);
             Scope.OnHome = Action(() => new HomeKeys(App).Flip());

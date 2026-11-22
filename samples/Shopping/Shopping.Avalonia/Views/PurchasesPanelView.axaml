@@ -8,10 +8,10 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="h2" Text="Compras" />
+        <TextBlock Classes="h2" Text="Purchases" />
         <Border Classes="chip"><TextBlock Text="{Binding CountLabel}" /></Border>
       </StackPanel>
-      <TextBlock Classes="muted" Text="Nenhuma compra realizada"
+      <TextBlock Classes="muted" Text="No purchases yet"
                  IsVisible="{Binding Purchases, Converter={x:Static v:Is.Empty}}" />
       <ItemsControl ItemsSource="{Binding Purchases}" Margin="0,0,0,-10">
         <ItemsControl.ItemTemplate>
@@ -27,8 +27,8 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
       <DockPanel>
-        <Button DockPanel.Dock="Left" Content="◀ Anterior" IsEnabled="{Binding HasPrevious}" Click="OnPrevious" />
-        <Button DockPanel.Dock="Right" Content="Próxima ▶" IsEnabled="{Binding HasNext}" Click="OnNext" />
+        <Button DockPanel.Dock="Left" Content="◀ Previous" IsEnabled="{Binding HasPrevious}" Click="OnPrevious" />
+        <Button DockPanel.Dock="Right" Content="Next ▶" IsEnabled="{Binding HasNext}" Click="OnNext" />
         <TextBlock x:Name="PageLabel" Text="{Binding PageLabel}" HorizontalAlignment="Center" VerticalAlignment="Center" />
       </DockPanel>
     </StackPanel>

@@ -1,8 +1,8 @@
 <Project>
-  <!-- Configuração comum a todos os projetos. -->
+  <!-- Settings shared by every project. -->
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
-    <!-- Fixo para o mesmo fonte compilar igual nos dois alvos (net11 usaria C# 15 por padrão). -->
+    <!-- Fixed so the same source compiles the same on both targets (net11 would default to C# 15). -->
     <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -19,17 +19,17 @@
     <PackageProjectUrl>https://github.com/mrcdom/wdc-cube-csharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mrcdom/wdc-cube-csharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <!-- Relativo à raiz do repositório e com '/': as condições abaixo valem em qualquer pasta e no Windows. -->
+    <!-- Relative to the repository root and with '/': the conditions below work in any folder and on Windows. -->
     <WdcProjectPath>$([MSBuild]::MakeRelative($(MSBuildThisFileDirectory), $(MSBuildProjectDirectory)).Replace('\', '/'))/</WdcProjectPath>
   </PropertyGroup>
 
-  <!-- Bibliotecas publicáveis (src/): compatíveis com trimming/AOT e documentadas. -->
+  <!-- Publishable libraries (src/): trimming/AOT compatible and documented. -->
   <PropertyGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Membros públicos sem documentação não quebram o build. -->
+    <!-- Public members without documentation do not break the build. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>cube;presenter;mvp;navigation;blazor;avalonia;repository</PackageTags>

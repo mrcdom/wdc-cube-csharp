@@ -190,7 +190,7 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
         }), null, ErrorToastDuration, Timeout.InfiniteTimeSpan);
     }
 
-    public const string GenericError = "Ocorreu um erro inesperado. Tente novamente em instantes.";
+    public const string GenericError = "An unexpected error occurred. Please try again shortly.";
 
     /// <summary>
     /// Errors nobody handled: the detail goes to the log, the user reads a message meant for them. Refusals the

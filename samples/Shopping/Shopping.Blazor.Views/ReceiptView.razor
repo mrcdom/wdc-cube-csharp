@@ -3,11 +3,11 @@
 <section class="card receipt-page">
     @if (Scope.NotifySuccess)
     {
-        <p class="success">Compra realizada com sucesso!</p>
+        <p class="success">Purchase completed successfully!</p>
     }
-    <h2>🧾 Recibo <span class="chip">@Scope.DateLabel</span></h2>
+    <h2>🧾 Receipt <span class="chip">@Scope.DateLabel</span></h2>
     <table>
-        <thead><tr><th>Item</th><th>Qtd</th><th>Valor</th></tr></thead>
+        <thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead>
         <tbody>
             @foreach (var line in Scope.Lines)
             {
@@ -21,6 +21,6 @@
         <p class="correction">@correction</p>
     }
     <div class="actions">
-        <button class="primary continue" @onclick="Scope.OnContinue">Continuar Comprando</button>
+        <button class="primary continue" @onclick="Scope.OnContinue">Continue Shopping</button>
     </div>
 </section>

@@ -14,12 +14,12 @@ namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 /// </summary>
 public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresenter, AmendScope>(app, new AmendScope())
 {
-    public const string NothingToCorrect = "Diminua ou remova ao menos um item.";
-    public const string ReasonRequired = "Informe o motivo da correção.";
-    public const string EveryItemRemoved = "A correção não pode remover todos os itens.";
-    public const string OnlyDown = "A quantidade só pode diminuir (0 remove o item).";
-    public const string ChangedMeanwhile = "A compra mudou enquanto você a corrigia. Confira e tente de novo.";
-    public const string Saved = "Correção registrada.";
+    public const string NothingToCorrect = "Lower or remove at least one item.";
+    public const string ReasonRequired = "Enter the reason for the correction.";
+    public const string EveryItemRemoved = "The correction cannot remove every item.";
+    public const string OnlyDown = "The quantity can only go down (0 removes the item).";
+    public const string ChangedMeanwhile = "The purchase changed while you were correcting it. Check it and try again.";
+    public const string Saved = "Correction recorded.";
 
     private readonly Dictionary<long, decimal> _prices = [];
     private long? _purchaseId;
@@ -85,7 +85,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
                        ?? throw new PurchaseNotFoundException(purchaseId);
 
         _purchaseId = purchaseId;
-        Scope.TitleLabel = $"Compra nº {purchaseId}";
+        Scope.TitleLabel = $"Purchase #{purchaseId}";
         Scope.CustomerLabel = purchase.User?.Name ?? string.Empty;
         Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : string.Empty;
         _prices.Clear();
@@ -193,7 +193,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         }
         catch (Exception caught) when (caught is not OperationCanceledException)
         {
-            App.Unexpected("Registrando a correção", caught);
+            App.Unexpected("Recording the correction", caught);
         }
         finally
         {

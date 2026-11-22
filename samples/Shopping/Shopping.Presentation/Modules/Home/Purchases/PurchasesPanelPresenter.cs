@@ -65,14 +65,14 @@ public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, Purchases
             Page = page;
             _loadedPage = page;
             Scope.Purchases = [.. purchases.Select(ToCard)];
-            Scope.CountLabel = $"{total} {(total == 1 ? "compra" : "compras")}";
+            Scope.CountLabel = $"{total} {(total == 1 ? "purchase" : "purchases")}";
             Scope.PageLabel = $"{page} / {totalPages}";
             Scope.HasPrevious = page > 1;
             Scope.HasNext = page < totalPages;
         }
         catch (Exception caught)
         {
-            App.Unexpected("Carregando as compras", caught);
+            App.Unexpected("Loading the purchases", caught);
         }
         finally
         {

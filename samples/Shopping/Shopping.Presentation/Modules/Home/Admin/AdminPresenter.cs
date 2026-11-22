@@ -21,7 +21,7 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
     /// <summary>The permission the administration needs.</summary>
     public const string Permission = "purchase-amendment:write";
 
-    public const string NotAllowed = "Você não tem acesso à administração.";
+    public const string NotAllowed = "You do not have access to administration.";
 
     private int _pending;
     private (int Page, string? Customer)? _loaded;
@@ -117,14 +117,14 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
             Page = page;
             _loaded = (page, customer);
             Scope.Purchases = [.. purchases.Select(ToRow)];
-            Scope.CountLabel = $"{total} {(total == 1 ? "compra" : "compras")}";
+            Scope.CountLabel = $"{total} {(total == 1 ? "purchase" : "purchases")}";
             Scope.PageLabel = $"{page} / {totalPages}";
             Scope.HasPrevious = page > 1;
             Scope.HasNext = page < totalPages;
         }
         catch (Exception caught) when (caught is not OperationCanceledException)
         {
-            App.Unexpected("Carregando as compras", caught);
+            App.Unexpected("Loading the purchases", caught);
         }
         finally
         {
@@ -152,7 +152,7 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
         var items = p.Items ?? [];
         return new AdminPurchaseRow(
             p.Id!.Value,
-            $"Nº {p.Id}",
+            $"#{p.Id}",
             p.User?.Name ?? string.Empty,
             p.BuyDate is { } date ? Formats.Date(date) : string.Empty,
             string.Join(", ", items.Select(i => i.Product?.Name).Where(n => !string.IsNullOrWhiteSpace(n))),

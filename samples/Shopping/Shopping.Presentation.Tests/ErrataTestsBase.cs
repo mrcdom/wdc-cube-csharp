@@ -86,12 +86,12 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var before = DateTimeOffset.UtcNow.AddSeconds(-5);
 
         Assert.True(await repositories.Amendments.Insert(
-            Errata(purchase, "  Item entregue a menos  ", (items[0], 1), (items[1], 0)), cancellationToken: Ct));
+            Errata(purchase, "  Item delivered short  ", (items[0], 1), (items[1], 0)), cancellationToken: Ct));
 
         var now = await ItemsOf(purchase);
         Assert.Equal([(items[0].Id, 1), (items[2].Id, 1)], now.Select(i => (i.Id, i.Amount ?? 0)));
         var errata = Assert.Single(await ErrataOf(purchase));
-        Assert.Equal("Item entregue a menos", errata.Reason);
+        Assert.Equal("Item delivered short", errata.Reason);
         Assert.Equal(author, errata.Author!.Id);
         Assert.InRange(errata.Date!.Value, before, DateTimeOffset.UtcNow.AddSeconds(5));
         Assert.Equal(
@@ -104,7 +104,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
     {
         var (purchase, items) = await FulanoBuys(3, 2);
         var (admin, me) = await As("admin");
-        var errata = Errata(purchase, "Correção", (items[0], 2));
+        var errata = Errata(purchase, "Correction", (items[0], 2));
         errata.Author = new User { Id = items.Count + 9999 };
         errata.Date = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero);
         errata.Lines![0].Price = 0.01m;
@@ -130,7 +130,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         bool inserted;
         try
         {
-            inserted = await admin.Amendments.Insert(Errata(purchase, "Correção", (items[0], 1)),
+            inserted = await admin.Amendments.Insert(Errata(purchase, "Correction", (items[0], 1)),
                 new PurchaseAmendment { Purchase = new Purchase(), Reason = Mark.String }, Ct);
         }
         catch (InvalidRequestException)
@@ -158,8 +158,8 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
 
         // Whichever goes second starts from what the first left: it is applied (4 after 3 is refused as going up).
         await Task.WhenAll(
-            Attempt(() => admin.Amendments.Insert(Errata(purchase, "Primeira", (items[0], 4)), cancellationToken: Ct)),
-            Attempt(() => gerente.Amendments.Insert(Errata(purchase, "Segunda", (items[0], 3)), cancellationToken: Ct)));
+            Attempt(() => admin.Amendments.Insert(Errata(purchase, "First", (items[0], 4)), cancellationToken: Ct)),
+            Attempt(() => gerente.Amendments.Insert(Errata(purchase, "Second", (items[0], 3)), cancellationToken: Ct)));
 
         var lines = (await ErrataOf(purchase)).Select(e => Assert.Single(e.Lines!)).ToList();
         Assert.NotEmpty(lines);
@@ -197,7 +197,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var (admin, _) = await As("admin");
 
         await Assert.ThrowsAsync<InvalidRequestException>(() =>
-            admin.Amendments.Insert(Errata(purchase, "Correção", (items[1], 0), (items[0], after)), cancellationToken: Ct));
+            admin.Amendments.Insert(Errata(purchase, "Correction", (items[1], 0), (items[0], after)), cancellationToken: Ct));
 
         Assert.Equal([3, 1], (await ItemsOf(purchase)).Select(i => i.Amount ?? 0));
         Assert.Empty(await ErrataOf(purchase));
@@ -210,7 +210,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var (admin, _) = await As("admin");
 
         await Assert.ThrowsAsync<InvalidRequestException>(() =>
-            admin.Amendments.Insert(Errata(purchase, "Cancelar", (items[0], 0), (items[1], 0)), cancellationToken: Ct));
+            admin.Amendments.Insert(Errata(purchase, "Cancel", (items[0], 0), (items[1], 0)), cancellationToken: Ct));
 
         Assert.Equal(2, (await ItemsOf(purchase)).Count);
     }
@@ -221,16 +221,16 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var (purchase, items) = await FulanoBuys(3, 2);
         var (other, otherItems) = await FulanoBuys(1);
         var (admin, _) = await As("admin");
-        var stale = Errata(purchase, "Correção", (items[0], 1));
+        var stale = Errata(purchase, "Correction", (items[0], 1));
         stale.Lines![0].AmountBefore = 4;
         PurchaseAmendment[] refused =
         [
             Errata(purchase, "   ", (items[0], 1)),
-            Errata(purchase, "Correção"),
-            Errata(purchase, "Correção", (otherItems[0], 0)),
-            Errata(purchase, "Correção", (items[0], 2), (items[0], 1)),
+            Errata(purchase, "Correction"),
+            Errata(purchase, "Correction", (otherItems[0], 0)),
+            Errata(purchase, "Correction", (items[0], 2), (items[0], 1)),
             stale,
-            new() { Reason = "Correção", Lines = [new PurchaseAmendmentLine { ItemId = items[0].Id, AmountAfter = 1 }] },
+            new() { Reason = "Correction", Lines = [new PurchaseAmendmentLine { ItemId = items[0].Id, AmountAfter = 1 }] },
         ];
 
         foreach (var errata in refused)
@@ -252,7 +252,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var (customer, _) = await As(user);
 
         await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            customer.Amendments.Insert(Errata(purchase, "Quero menos", (items[0], 1)), cancellationToken: Ct));
+            customer.Amendments.Insert(Errata(purchase, "I want fewer", (items[0], 1)), cancellationToken: Ct));
 
         Assert.Equal(3, (await ItemsOf(purchase))[0].Amount);
     }
@@ -267,7 +267,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         {
             BuyDate = DateTimeOffset.UtcNow,
             Items = [new PurchaseItem { Product = new Product { Id = product.Id }, Amount = 2 }],
-            Amendments = [new PurchaseAmendment { Reason = "Já corrigida", Lines = [] }],
+            Amendments = [new PurchaseAmendment { Reason = "Already corrected", Lines = [] }],
         }, cancellationToken: Ct));
     }
 
@@ -276,13 +276,13 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
     {
         var (purchase, items) = await FulanoBuys(3, 2);
         var (admin, _) = await As("admin");
-        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correção", (items[0], 1)), cancellationToken: Ct));
+        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correction", (items[0], 1)), cancellationToken: Ct));
         var errata = Assert.Single(await ErrataOf(purchase));
         var byId = new PurchaseAmendmentCriteria().PurchaseAmendmentId.Eq(errata.Id);
         var lineById = new PurchaseAmendmentLineCriteria().PurchaseAmendmentId.Eq(errata.Id);
 
         await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            admin.Amendments.Update(new PurchaseAmendment { Id = errata.Id, Reason = "Outro motivo" }, cancellationToken: Ct));
+            admin.Amendments.Update(new PurchaseAmendment { Id = errata.Id, Reason = "Another reason" }, cancellationToken: Ct));
         await Assert.ThrowsAsync<AccessDeniedException>(() => admin.Amendments.Delete(byId, Ct));
         await Assert.ThrowsAsync<AccessDeniedException>(() => admin.AmendmentLines.Delete(lineById, Ct));
         await Assert.ThrowsAsync<AccessDeniedException>(() => admin.AmendmentLines.Insert(new PurchaseAmendmentLine
@@ -290,7 +290,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
             Amendment = new PurchaseAmendment { Id = errata.Id }, ItemId = items[1].Id, Price = 1m, AmountBefore = 2, AmountAfter = 1,
             Product = new Product { Id = items[1].Product!.Id },
         }, cancellationToken: Ct));
-        Assert.Equal("Correção", Assert.Single(await ErrataOf(purchase)).Reason);
+        Assert.Equal("Correction", Assert.Single(await ErrataOf(purchase)).Reason);
 
         var (suporte, _) = await As("suporte");
         Assert.Equal(1, await suporte.Amendments.Delete(byId, Ct));
@@ -302,7 +302,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
     {
         var (purchase, items) = await FulanoBuys(3, 2);
         var (admin, _) = await As("admin");
-        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correção", (items[0], 1)), cancellationToken: Ct));
+        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correction", (items[0], 1)), cancellationToken: Ct));
         var (suporte, _) = await As("suporte");
 
         Assert.Equal(1, await suporte.Purchases.Delete(new PurchaseCriteria().PurchaseId.Eq(purchase.Id), Ct));
@@ -318,7 +318,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
     {
         var (purchase, items) = await FulanoBuys(3, 2);
         var (admin, _) = await As("admin");
-        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correção", (items[1], 0)), cancellationToken: Ct));
+        Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correction", (items[1], 0)), cancellationToken: Ct));
         var (fulano, _) = await As("fulano");
         var (beotrano, _) = await As("beotrano");
         var withErrata = new Purchase
@@ -337,7 +337,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         var seen = Assert.Single(await fulano.Purchases.Fetch(
             new PurchaseCriteria().PurchaseId.Eq(purchase.Id).WithProjection(withErrata), cancellationToken: Ct));
         var errata = Assert.Single(seen.Amendments!);
-        Assert.Equal("Correção", errata.Reason);
+        Assert.Equal("Correction", errata.Reason);
         Assert.Null(errata.Author);
         Assert.Equal(0, Assert.Single(errata.Lines!).AmountAfter);
         Assert.Null(Assert.Single(await fulano.Amendments.Fetch(direct, cancellationToken: Ct)).Author);
@@ -347,7 +347,7 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
 
         var staff = Assert.Single(await admin.Amendments.Fetch(new PurchaseAmendmentCriteria().PurchaseId.Eq(purchase.Id)
             .WithProjection(new PurchaseAmendment { Author = new User { Name = Mark.String } }), cancellationToken: Ct));
-        Assert.Equal("João da Silva", staff.Author!.Name);
+        Assert.Equal("John Smith", staff.Author!.Name);
     }
 
     [Fact]

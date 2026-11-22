@@ -6,8 +6,8 @@ namespace Shopping.Presentation.Modules.Login;
 /// <summary>Public place: asks for the credentials and, when they match, opens the session and goes home.</summary>
 public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresenter, LoginScope>(app, new LoginScope())
 {
-    public const string NotRecognized = "Usuário ou senha não reconhecido!";
-    public const string CommunicationFailure = "Falha de comunicação com o servidor. Verifique sua conexão.";
+    public const string NotRecognized = "Username or password not recognized!";
+    public const string CommunicationFailure = "Could not reach the server. Check your connection.";
 
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {

@@ -66,10 +66,10 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
     public void Login_WrongPasswordShowsTheMessage_RightOneOpensHome()
     {
         var page = LogIn(Open(), "admin", "wrong");
-        page.WaitForAssertion(() => Assert.Equal("Usuário ou senha não reconhecido!", page.Find(".login-card .error").TextContent), Wait);
+        page.WaitForAssertion(() => Assert.Equal("Username or password not recognized!", page.Find(".login-card .error").TextContent), Wait);
 
         LogIn(page, "admin", "admin");
-        page.WaitForAssertion(() => Assert.Equal("Olá, João da Silva", page.Find(".greeting").TextContent), Wait);
+        page.WaitForAssertion(() => Assert.Equal("Hello, John Smith", page.Find(".greeting").TextContent), Wait);
         Assert.Equal("home", Address);
         page.WaitForAssertion(() => Assert.Equal(4, page.FindAll(".product-card").Count), Wait);
         page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".purchase-card").Count), Wait);
@@ -81,8 +81,8 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         var page = LogIn(Open(), "fulano", "fulano");
         page.WaitForAssertion(() => Assert.Equal(4, page.FindAll(".product-card").Count), Wait);
 
-        page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Bola de vôlei").Click();
-        page.WaitForAssertion(() => Assert.Equal("Bola de vôlei", page.Find(".product-page h2").TextContent), Wait);
+        page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Volleyball").Click();
+        page.WaitForAssertion(() => Assert.Equal("Volleyball", page.Find(".product-page h2").TextContent), Wait);
         Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key
         Assert.Equal(3, page.FindAll(".description li").Count);
 
@@ -94,13 +94,13 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         page.WaitForAssertion(() => Assert.Equal("3", page.Find(".cart-line .value").TextContent), Wait);
         Assert.Equal("home/cart", Address);
         Assert.Equal("3", page.Find(".badge").TextContent);
-        Assert.Contains("R$ 135,90", page.Find(".cart-page .total").TextContent, StringComparison.Ordinal);
+        Assert.Contains("$135.90", page.Find(".cart-page .total").TextContent, StringComparison.Ordinal);
 
         page.Find(".cart-page .buy").Click();
 
-        page.WaitForAssertion(() => Assert.Equal("Compra realizada com sucesso!", page.Find(".receipt-page .success").TextContent), Wait);
+        page.WaitForAssertion(() => Assert.Equal("Purchase completed successfully!", page.Find(".receipt-page .success").TextContent), Wait);
         Assert.StartsWith("home/receipt?_e=", Address, StringComparison.Ordinal);
-        Assert.Contains("R$ 135,90", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
+        Assert.Contains("$135.90", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
         Assert.Empty(page.FindAll(".badge"));
     }
 
@@ -111,9 +111,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         var store = _db.Store!.Repositories;
         var fulano = (await store.Users.Fetch(new Domain.Users.UserCriteria().UserName.Eq("fulano"), limit: 1,
             cancellationToken: Ct))[0];
-        var ball = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Bola de vôlei"), limit: 1,
+        var ball = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Volleyball"), limit: 1,
             cancellationToken: Ct))[0];
-        var tape = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Fita veda rosca"), limit: 1,
+        var tape = (await store.Products.Fetch(new Domain.Products.ProductCriteria().Name.Eq("Thread Seal Tape"), limit: 1,
             cancellationToken: Ct))[0];
         var purchase = new Domain.Purchases.Purchase
         {
@@ -132,35 +132,35 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         var page = LogIn(Open(), "admin", "admin");
         page.WaitForElement(".admin-button", Wait).Click();
         page.WaitForElement(".admin-page", Wait);
-        page.Find(".admin-filter .customer").Input("Fulano");
+        page.Find(".admin-filter .customer").Input("Doe");
         page.Find(".admin-filter").Submit();
-        page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("Fulano de Tal", c.TextContent)), Wait);
-        page.WaitForAssertion(() => Assert.Single(page.FindAll(".admin-row"), r => r.QuerySelector(".number")!.TextContent == $"Nº {purchase.Id}"), Wait);
-        page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"Nº {purchase.Id}").Click();
+        page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("John Doe", c.TextContent)), Wait);
+        page.WaitForAssertion(() => Assert.Single(page.FindAll(".admin-row"), r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}"), Wait);
+        page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}").Click();
 
         page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".amend-line").Count), Wait);
         Assert.True(page.Find(".amend-page .confirm").HasAttribute("disabled"));
         page.FindAll(".amend-line")[0].QuerySelector(".minus")!.Click();
         page.WaitForAssertion(() => Assert.Equal("1", page.FindAll(".amend-line")[0].QuerySelector(".new")!.TextContent), Wait);
-        page.Find(".amend-page textarea").Input("Uma bola não foi entregue");
+        page.Find(".amend-page textarea").Input("One ball was not delivered");
         page.WaitForAssertion(() => Assert.False(page.Find(".amend-page .confirm").HasAttribute("disabled")), Wait);
         page.Find(".amend-page .confirm").Click();
 
-        page.WaitForAssertion(() => Assert.Equal("Correção registrada.", page.Find(".amend-page .success").TextContent), Wait);
-        Assert.Contains("Uma bola não foi entregue", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
-        Assert.Contains("Bola de vôlei: 2 → 1", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
+        page.WaitForAssertion(() => Assert.Equal("Correction recorded.", page.Find(".amend-page .success").TextContent), Wait);
+        Assert.Contains("One ball was not delivered", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
+        Assert.Contains("Volleyball: 2 → 1", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
 
         page.Find(".amend-page .back").Click();
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".admin-row .corrected")), Wait);
-        Assert.Equal("Fulano", page.Find(".admin-filter .customer").GetAttribute("value"));
+        Assert.Equal("Doe", page.Find(".admin-filter .customer").GetAttribute("value"));
 
         page.Find(".exit").Click();
         LogIn(page, "fulano", "fulano");
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".purchase-card")), Wait);
         Assert.Empty(page.FindAll(".admin-button"));
         page.FindAll(".purchase-card")[0].Click();
-        page.WaitForAssertion(() => Assert.StartsWith("Compra corrigida em ", page.Find(".receipt-page .correction").TextContent, StringComparison.Ordinal), Wait);
-        Assert.Contains("R$ 47,97", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
+        page.WaitForAssertion(() => Assert.StartsWith("Purchase corrected on ", page.Find(".receipt-page .correction").TextContent, StringComparison.Ordinal), Wait);
+        Assert.Contains("$47.97", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

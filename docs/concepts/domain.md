@@ -136,7 +136,7 @@ Rules:
 - `In(null)` asks nothing; `In([])` matches nothing.
 - `Between(a, b)` is inclusive; with one end `null` it becomes `Ge` or `Le`.
 - `Containing` and `StartingWith` escape `%`, `_` and `\` in the text and compare ignoring case. `Like` and `ILike` use the wildcards you wrote.
-- Requests on the same field combine with AND. Call `Or()` on the criterion first to combine them with OR: `criteria.Name.Or().Like("Bola%")` then `criteria.Name.Eq("Fita")`. `And()` restores the default.
+- Requests on the same field combine with AND. Call `Or()` on the criterion first to combine them with OR: `criteria.Name.Or().Like("Volley%")` then `criteria.Name.Eq("Thread Seal Tape")`. `And()` restores the default.
 - Different fields always combine with AND.
 - `Clear()` removes the requests made on a field.
 
@@ -160,7 +160,7 @@ The criteria wire format (shared with the Kotlin implementation):
 
 ```json
 { "price": { "p": [ { "o": "GE", "v": [10.5] }, { "o": "LE", "v": [50.5] } ] },
-  "name": { "or": true, "p": [ { "o": "LIKE", "v": ["Bola%"] }, { "o": "EQ", "v": ["Fita"] } ] },
+  "name": { "or": true, "p": [ { "o": "LIKE", "v": ["Volley%"] }, { "o": "EQ", "v": ["Thread Seal Tape"] } ] },
   "productId": 3,
   "orderBy": "CHEAPEST_FIRST" }
 ```

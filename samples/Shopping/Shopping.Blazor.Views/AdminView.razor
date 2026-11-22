@@ -7,15 +7,15 @@
 else
 {
     <section class="card admin-page">
-        <h2>Administração <span class="chip">@Scope.CountLabel</span></h2>
+        <h2>Administration <span class="chip">@Scope.CountLabel</span></h2>
         <form class="admin-filter" @onsubmit="() => Scope.OnFilter(_customer)" @onsubmit:preventDefault>
-            <input class="customer" placeholder="Nome do cliente" value="@_customer"
+            <input class="customer" placeholder="Customer name" value="@_customer"
                    @oninput="e => _customer = e.Value?.ToString() ?? string.Empty" />
-            <button class="outlined filter" type="submit">Filtrar</button>
+            <button class="outlined filter" type="submit">Filter</button>
         </form>
         @if (!Scope.Loading && Scope.Purchases.Count == 0)
         {
-            <p class="muted">Nenhuma compra encontrada</p>
+            <p class="muted">No purchases found</p>
         }
         @foreach (var purchase in Scope.Purchases)
         {
@@ -27,17 +27,17 @@ else
                 <span class="price">@purchase.TotalLabel</span>
                 @if (purchase.Corrected)
                 {
-                    <span class="chip corrected">corrigida</span>
+                    <span class="chip corrected">corrected</span>
                 }
             </button>
         }
         <nav class="pager">
-            <button class="previous" disabled="@(!Scope.HasPrevious)" @onclick="Scope.OnPrevious">◀ Anterior</button>
+            <button class="previous" disabled="@(!Scope.HasPrevious)" @onclick="Scope.OnPrevious">◀ Previous</button>
             <span class="page">@Scope.PageLabel</span>
-            <button class="next" disabled="@(!Scope.HasNext)" @onclick="Scope.OnNext">Próxima ▶</button>
+            <button class="next" disabled="@(!Scope.HasNext)" @onclick="Scope.OnNext">Next ▶</button>
         </nav>
         <div class="actions">
-            <button class="outlined back" @onclick="Scope.OnBack">Voltar</button>
+            <button class="outlined back" @onclick="Scope.OnBack">Back</button>
         </div>
     </section>
 }

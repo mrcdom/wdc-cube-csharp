@@ -6,7 +6,7 @@ public sealed record ReceiptLine(string Description, int Quantity, string ValueL
 
 public sealed class ReceiptScope : Scope
 {
-    /// <summary>Only right after buying: "Compra realizada com sucesso!".</summary>
+    /// <summary>Only right after buying: "Purchase completed successfully!".</summary>
     public bool NotifySuccess { get; set => Set(ref field, value); }
 
     public string DateLabel { get; set => Set(ref field, value); } = string.Empty;
@@ -15,7 +15,7 @@ public sealed class ReceiptScope : Scope
 
     public string TotalLabel { get; set => Set(ref field, value); } = string.Empty;
 
-    /// <summary>One per errata, oldest first: "Compra corrigida em {data}: {motivo}".</summary>
+    /// <summary>One per errata, oldest first: "Purchase corrected on {date}: {reason}".</summary>
     public IReadOnlyList<string> Corrections { get; set => Set(ref field, value); } = [];
 
     public Func<Task> OnContinue { get; set; } = ScopeActions.Unbound();

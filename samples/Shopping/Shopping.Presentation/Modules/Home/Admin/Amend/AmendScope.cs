@@ -2,7 +2,7 @@ using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 
-/// <summary>An errata already made: when, by whom, why, and what changed ("Bola de vôlei: 3 → 1").</summary>
+/// <summary>An errata already made: when, by whom, why, and what changed ("Volleyball: 3 → 1").</summary>
 public sealed record AmendmentEntry(string DateLabel, string AuthorLabel, string Reason, IReadOnlyList<string> Changes);
 
 /// <summary>One item of the purchase: what it has, and what it will have after the correction.</summary>
@@ -26,7 +26,7 @@ public sealed class AmendScope : Scope
 {
     public AmendScope() => Lines = new ScopeList<AmendLineScope>(this, nameof(Lines));
 
-    /// <summary>"Compra nº {id}".</summary>
+    /// <summary>"Purchase #{id}".</summary>
     public string TitleLabel { get; set => Set(ref field, value); } = string.Empty;
 
     public string CustomerLabel { get; set => Set(ref field, value); } = string.Empty;
@@ -52,7 +52,7 @@ public sealed class AmendScope : Scope
 
     public string? ErrorMessage { get; set => Set(ref field, value); }
 
-    /// <summary>"Correção registrada." after confirming.</summary>
+    /// <summary>"Correction recorded." after confirming.</summary>
     public string? SuccessMessage { get; set => Set(ref field, value); }
 
     public Func<string, Task> OnChangeReason { get; set; } = ScopeActions.Unbound<string>();

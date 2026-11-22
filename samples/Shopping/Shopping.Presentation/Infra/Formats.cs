@@ -7,15 +7,12 @@ namespace Shopping.Presentation.Infra;
 /// <summary>How the screens write values. In the presentation, so every view writes them the same way.</summary>
 public static partial class Formats
 {
-    private static readonly CultureInfo s_brazil = CultureInfo.GetCultureInfo("pt-BR");
-    private static readonly TimeZoneInfo s_zone = FindZone();
+    /// <summary><c>$1,234.56</c>, whatever the culture of the machine.</summary>
+    public static string Money(decimal value) => "$" + value.ToString("N2", CultureInfo.InvariantCulture);
 
-    /// <summary><c>R$ 1.234,56</c>.</summary>
-    public static string Money(decimal value) => "R$ " + value.ToString("N2", s_brazil);
-
-    /// <summary><c>18/11/2026</c>, in Brasília time.</summary>
+    /// <summary><c>11/18/2026</c>, the day in UTC (the instant the database stores).</summary>
     public static string Date(DateTimeOffset value) =>
-        TimeZoneInfo.ConvertTime(value, s_zone).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+        value.UtcDateTime.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// A product description as the screen shows it: the items of an HTML list, or the plain text as a single item.
@@ -37,18 +34,6 @@ public static partial class Formats
         "image/product/" + productId.ToString(CultureInfo.InvariantCulture) + ".png";
 
     private static string Clean(string fragment) => WebUtility.HtmlDecode(Tag().Replace(fragment, string.Empty)).Trim();
-
-    private static TimeZoneInfo FindZone()
-    {
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            return TimeZoneInfo.Utc;
-        }
-    }
 
     [GeneratedRegex(@"<li[^>]*>(.*?)</li>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex ListItem();

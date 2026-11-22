@@ -142,7 +142,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         desktop.Capture("1-login");
 
         await Login(desktop, "fulano");
-        await desktop.Until(() => desktop.Find<TextBlock>("Greeting").Text == "Olá, Fulano de Tal", "the greeting");
+        await desktop.Until(() => desktop.Find<TextBlock>("Greeting").Text == "Hello, John Doe", "the greeting");
         await desktop.Until(() => desktop.All<Button>().Count(b => b.Classes.Contains("product-card")) == 4, "four products");
         await desktop.Until(() => desktop.All<Image>().Count(i => i.Source is not null) >= 4, "the product images");
         desktop.Capture("2-home");
@@ -162,7 +162,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
 
         Desktop.Click(desktop.Find<Button>("BuyButton"));
         await desktop.Until(() => desktop.All<ReceiptView>().Any() && desktop.Find<TextBlock>("Total").Text is { Length: > 0 }, "the receipt");
-        Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Compra realizada com sucesso!" && t.IsEffectivelyVisible);
+        Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Purchase completed successfully!" && t.IsEffectivelyVisible);
         desktop.Capture("5-receipt");
 
         Assert.True(desktop.History.CanGoBack);
@@ -183,32 +183,32 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         Desktop.Click(desktop.Find<Button>("AdminButton"));
         await desktop.Until(() => desktop.All<AdminView>().Any() && desktop.All<Button>().Any(b => b.Classes.Contains("purchase-card")
                                                                                                 && b.IsEffectivelyVisible), "the administration");
-        desktop.Find<TextBox>("CustomerBox").Text = "Silva";
-        Desktop.Click(desktop.ButtonWith("Filtrar"));
-        await desktop.Until(() => AdminRows(desktop) is { Count: > 0 } rows && rows.All(r => r.CustomerLabel == "João da Silva"),
+        desktop.Find<TextBox>("CustomerBox").Text = "Smith";
+        Desktop.Click(desktop.ButtonWith("Filter"));
+        await desktop.Until(() => AdminRows(desktop) is { Count: > 0 } rows && rows.All(r => r.CustomerLabel == "John Smith"),
             "only the admin's purchases");
         desktop.Capture("6-admin");
 
         // The demo purchase of 2011: a ball and a tape. The tape was not delivered.
-        Desktop.Click(desktop.All<Button>().First(b => b is { IsEffectivelyVisible: true, DataContext: Presentation.Modules.Home.Admin.AdminPurchaseRow { DateLabel: "03/04/2011" } }));
+        Desktop.Click(desktop.All<Button>().First(b => b is { IsEffectivelyVisible: true, DataContext: Presentation.Modules.Home.Admin.AdminPurchaseRow { DateLabel: "04/03/2011" } }));
         await desktop.Until(() => desktop.All<AmendLineView>().Count() == 2, "the purchase's items");
         Assert.False(desktop.Find<Button>("ConfirmButton").IsEnabled);
         var tape = desktop.All<AmendLineView>().Last();
         Desktop.Click(tape.GetVisualDescendants().OfType<Button>().First(b => (b.Content as string) == "−"));
-        desktop.Find<TextBox>("ReasonBox").Text = "Fita não entregue";
+        desktop.Find<TextBox>("ReasonBox").Text = "Tape not delivered";
         await desktop.Until(() => desktop.Find<Button>("ConfirmButton").IsEnabled, "the confirmation offered");
         desktop.Capture("7-amend");
 
         Desktop.Click(desktop.Find<Button>("ConfirmButton"));
-        await desktop.Until(() => desktop.Find<TextBlock>("Success").Text == "Correção registrada.", "the correction registered");
+        await desktop.Until(() => desktop.Find<TextBlock>("Success").Text == "Correction recorded.", "the correction registered");
         Assert.Single(desktop.All<AmendLineView>());
         Assert.Equal(string.Empty, desktop.Find<TextBox>("ReasonBox").Text);
-        Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Fita não entregue" && t.IsEffectivelyVisible);
+        Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Tape not delivered" && t.IsEffectivelyVisible);
         desktop.Capture("8-amended");
 
-        Desktop.Click(desktop.ButtonWith("Voltar"));
-        await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == "corrigida" && t.IsEffectivelyVisible), "the list, marked");
-        Assert.Equal("Silva", desktop.Find<TextBox>("CustomerBox").Text);
+        Desktop.Click(desktop.ButtonWith("Back"));
+        await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == "corrected" && t.IsEffectivelyVisible), "the list, marked");
+        Assert.Equal("Smith", desktop.Find<TextBox>("CustomerBox").Text);
         desktop.Presenter.Release();
         desktop.Window.Close();
     });
@@ -222,7 +222,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
     {
         var desktop = await Open();
         desktop.Find<TextBox>("UserBox").Text = "fulano";
-        desktop.Find<TextBox>("PasswordBox").Text = "errada";
+        desktop.Find<TextBox>("PasswordBox").Text = "wrong";
         Desktop.Click(desktop.Find<Button>("EnterButton"));
 
         await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == Presentation.Modules.Login.LoginPresenter.NotRecognized

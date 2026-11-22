@@ -65,6 +65,6 @@ public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPres
         Scope.Lines = [.. items.Select(i => new ReceiptLine(i.Product?.Name ?? string.Empty, i.Amount ?? 0, Formats.Money(i.Price ?? 0)))];
         Scope.TotalLabel = Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0)));
         Scope.Corrections = [.. (purchase.Amendments ?? []).Select(a =>
-            $"Compra corrigida em {(a.Date is { } when ? Formats.Date(when) : string.Empty)}: {a.Reason}")];
+            $"Purchase corrected on {(a.Date is { } when ? Formats.Date(when) : string.Empty)}: {a.Reason}")];
     }
 }

@@ -4,9 +4,6 @@
   <PropertyGroup>
     <TargetFrameworks></TargetFrameworks>
     <TargetFramework>net11.0</TargetFramework>
-    <!-- The money and dates are pt-BR whatever the browser's language: without the full ICU data, a browser in
-         English loads only its own shard and pt-BR formats as invariant ("R$ 45.30"). -->
-    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Shopping.Blazor.Views/Shopping.Blazor.Views.csproj" />

@@ -38,11 +38,11 @@ public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPa
                 .. products.Select(p => new ProductCard(p.Id!.Value, p.Name ?? string.Empty, Formats.Money(p.Price ?? 0),
                     Formats.ProductImageUrl(p.Id!.Value))),
             ];
-            Scope.CountLabel = $"{products.Count} {(products.Count == 1 ? "item" : "itens")}";
+            Scope.CountLabel = $"{products.Count} {(products.Count == 1 ? "item" : "items")}";
         }
         catch (Exception caught)
         {
-            App.Unexpected("Carregando os produtos", caught);
+            App.Unexpected("Loading the products", caught);
         }
         finally
         {

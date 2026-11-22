@@ -13,7 +13,7 @@
         </Button>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12">
           <Panel>
-            <Button x:Name="CartButton" Classes="onPrimary" Click="OnCart" ToolTip.Tip="Carrinho">
+            <Button x:Name="CartButton" Classes="onPrimary" Click="OnCart" ToolTip.Tip="Cart">
               <TextBlock Text="🛒" />
             </Button>
             <Border Background="{StaticResource Error}" CornerRadius="10" Padding="6,0" Margin="0,-6,-6,0"
@@ -23,9 +23,9 @@
             </Border>
           </Panel>
           <Button x:Name="AdminButton" Classes="onPrimary" Click="OnAdmin" IsVisible="{Binding ShowAdmin}">
-            <TextBlock Text="Administração" FontWeight="SemiBold" />
+            <TextBlock Text="Administration" FontWeight="SemiBold" />
           </Button>
-          <Button Classes="onPrimary" Click="OnExit"><TextBlock Text="Sair" FontWeight="SemiBold" /></Button>
+          <Button Classes="onPrimary" Click="OnExit"><TextBlock Text="Sign out" FontWeight="SemiBold" /></Button>
         </StackPanel>
         <TextBlock x:Name="Greeting" Text="{Binding Greeting}" Foreground="White" VerticalAlignment="Center"
                    Margin="12,0" TextTrimming="CharacterEllipsis" />

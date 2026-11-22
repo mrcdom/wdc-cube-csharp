@@ -7,7 +7,7 @@ same scenarios in process and over HTTP. This page walks through it: what the ap
 one feature followed from the button to the table and back, and how to run it.
 
 The concepts behind each piece are explained in [Concepts](../README.md#concepts); this page links to them rather
-than repeating them. The screens are in Portuguese, like the demo data.
+than repeating them. The screens and the demo data are in US English.
 
 ## What the app does
 
@@ -133,10 +133,10 @@ Each host draws the same scope. In Blazor, a `ScopeView<CartScope>` binds the bu
 
 ```razor
 @* samples/Shopping/Shopping.Blazor.Views/CartView.razor *@
-<button class="outlined continue" @onclick="Scope.OnContinue">Continuar Comprando</button>
+<button class="outlined continue" @onclick="Scope.OnContinue">Continue Shopping</button>
 @if (Scope.Lines.Count > 0)
 {
-    <button class="buy" disabled="@Scope.Buying" @onclick="Scope.OnBuy">@(Scope.Buying ? "Comprando…" : "Comprar")</button>
+    <button class="buy" disabled="@Scope.Buying" @onclick="Scope.OnBuy">@(Scope.Buying ? "Buying…" : "Buy")</button>
 }
 ```
 
@@ -205,14 +205,14 @@ The scenario is tested without a view, against a real database, by `BuyingTestsB
 ```csharp
 // samples/Shopping/Shopping.Presentation.Tests/BuyingTestsBase.cs
 var shop = await Shop.LoggedIn(db, "beotrano");
-var product = await OpenProduct(shop, "Cafeteira design italiano");
+var product = await OpenProduct(shop, "Italian Design Coffee Maker");
 await shop.Do(() => product.Scope.OnAddToCart(2));
 
 await shop.Do(shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy);
 
 var receipt = shop.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place);
 Assert.True(receipt.Scope.NotifySuccess);
-Assert.Equal("R$ 399,98", receipt.Scope.TotalLabel);
+Assert.Equal("$399.98", receipt.Scope.TotalLabel);
 Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);
 ```
 

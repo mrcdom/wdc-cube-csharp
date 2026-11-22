@@ -18,10 +18,10 @@ public sealed class AdminScope : Scope
 
     public bool Loading { get; set => Set(ref field, value); }
 
-    /// <summary>"{n} compras".</summary>
+    /// <summary>"{n} purchases".</summary>
     public string CountLabel { get; set => Set(ref field, value); } = string.Empty;
 
-    /// <summary>"página / total".</summary>
+    /// <summary>"page / total".</summary>
     public string PageLabel { get; set => Set(ref field, value); } = string.Empty;
 
     public bool HasPrevious { get; set => Set(ref field, value); }

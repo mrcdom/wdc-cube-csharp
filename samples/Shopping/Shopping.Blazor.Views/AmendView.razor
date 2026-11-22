@@ -2,7 +2,7 @@
 
 <section class="card amend-page">
     <h2>@Scope.TitleLabel <span class="chip">@Scope.DateLabel</span></h2>
-    <p class="customer">Cliente: <strong>@Scope.CustomerLabel</strong></p>
+    <p class="customer">Customer: <strong>@Scope.CustomerLabel</strong></p>
     @if (Scope.SuccessMessage is { } success)
     {
         <p class="success">@success</p>
@@ -12,7 +12,7 @@
         <p class="error">@error</p>
     }
     <table>
-        <thead><tr><th>Item</th><th>Preço</th><th>Qtd</th><th>Nova qtd</th></tr></thead>
+        <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>New qty</th></tr></thead>
         <tbody>
             @foreach (var line in Scope.Lines)
             {
@@ -21,19 +21,19 @@
         </tbody>
     </table>
     <p class="total">Total: @Scope.TotalLabel → <strong>@Scope.NewTotalLabel</strong></p>
-    <label class="reason">Motivo
+    <label class="reason">Reason
         <textarea rows="2" value="@Scope.Reason" disabled="@Scope.Saving"
                   @oninput="e => Scope.OnChangeReason(e.Value?.ToString() ?? string.Empty)"></textarea>
     </label>
     <div class="actions">
-        <button class="outlined back" @onclick="Scope.OnBack">Voltar</button>
+        <button class="outlined back" @onclick="Scope.OnBack">Back</button>
         <button class="primary confirm" disabled="@(!Scope.CanConfirm || Scope.Saving)" @onclick="Scope.OnConfirm">
-            @(Scope.Saving ? "Registrando…" : "Registrar correção")
+            @(Scope.Saving ? "Recording…" : "Record correction")
         </button>
     </div>
     @if (Scope.History.Count > 0)
     {
-        <h3>Correções anteriores</h3>
+        <h3>Previous corrections</h3>
         <ul class="history">
             @foreach (var entry in Scope.History)
             {

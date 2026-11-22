@@ -75,17 +75,17 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnOpenAdmin());
         var admin = shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope;
 
-        Assert.Contains(admin.Purchases, p => p.CustomerLabel == "Fulano de Tal");
-        Assert.Contains(admin.Purchases, p => p.CustomerLabel == "João da Silva");
+        Assert.Contains(admin.Purchases, p => p.CustomerLabel == "John Doe");
+        Assert.Contains(admin.Purchases, p => p.CustomerLabel == "John Smith");
 
-        await shop.Do(() => admin.OnFilter("fulano"));
+        await shop.Do(() => admin.OnFilter("doe"));
 
-        Assert.All(admin.Purchases, p => Assert.Equal("Fulano de Tal", p.CustomerLabel));
+        Assert.All(admin.Purchases, p => Assert.Equal("John Doe", p.CustomerLabel));
         Assert.Contains(admin.Purchases, p => p.Id == purchaseId);
-        Assert.Equal("fulano", admin.CustomerFilter);
-        Assert.Equal("home/admin?ad-customer=fulano", shop.History.Token);
+        Assert.Equal("doe", admin.CustomerFilter);
+        Assert.Equal("home/admin?ad-customer=doe", shop.History.Token);
         var again = await Shop.Start(db, shop.History.Token, shop.Session);
-        Assert.All(again.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => Assert.Equal("Fulano de Tal", p.CustomerLabel));
+        Assert.All(again.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => Assert.Equal("John Doe", p.CustomerLabel));
     }
 
     // :: The correction
@@ -97,31 +97,31 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         var shop = await Shop.LoggedIn(db, "gerente");
         var amend = await Open(shop, purchaseId);
         var form = amend.Scope;
-        Assert.Equal($"Compra nº {purchaseId}", form.TitleLabel);
-        Assert.Equal("Fulano de Tal", form.CustomerLabel);
+        Assert.Equal($"Purchase #{purchaseId}", form.TitleLabel);
+        Assert.Equal("John Doe", form.CustomerLabel);
         Assert.Equal([3, 2], form.Lines.Select(l => l.Quantity));
         Assert.False(form.CanConfirm);
 
         await shop.Do(() => form.Lines[0].OnChangeNewQuantity(1));
         await shop.Do(() => form.Lines[1].OnChangeNewQuantity(0));
-        await shop.Do(() => form.OnChangeReason("Entregue a menos"));
+        await shop.Do(() => form.OnChangeReason("Short delivery"));
         Assert.True(form.CanConfirm);
-        Assert.Equal("R$ 45,30", form.NewTotalLabel); // one Bola de vôlei
+        Assert.Equal("$199.99", form.NewTotalLabel); // one Italian Design Coffee Maker
         await shop.Do(form.OnConfirm);
 
         Assert.Equal(AmendPresenter.Saved, form.SuccessMessage);
         Assert.Equal([1], form.Lines.Select(l => l.Quantity));
         var entry = Assert.Single(form.History);
-        Assert.Equal(("Gerente de Loja", "Entregue a menos"), (entry.AuthorLabel, entry.Reason));
-        Assert.Equal(["Bola de vôlei: 3 → 1", "Cafeteira design italiano: 2 → 0"], entry.Changes);
+        Assert.Equal(("Store Manager", "Short delivery"), (entry.AuthorLabel, entry.Reason));
+        Assert.Equal(["Italian Design Coffee Maker: 3 → 1", "Thread Seal Tape: 2 → 0"], entry.Changes);
         Assert.Equal(string.Empty, form.Reason);
         Assert.Contains(shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => p.Id == purchaseId && p.Corrected);
 
         var buyer = await Shop.LoggedIn(db, "fulano");
         await buyer.Do(() => buyer.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!.OnOpenReceipt(purchaseId));
         var receipt = buyer.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place).Scope;
-        Assert.Equal("R$ 45,30", receipt.TotalLabel);
-        Assert.Equal(["Compra corrigida em " + Infra.Formats.Date(DateTimeOffset.UtcNow) + ": Entregue a menos"], receipt.Corrections);
+        Assert.Equal("$199.99", receipt.TotalLabel);
+        Assert.Equal(["Purchase corrected on " + Infra.Formats.Date(DateTimeOffset.UtcNow) + ": Short delivery"], receipt.Corrections);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
 
         await shop.Do(() => form.Lines[0].OnChangeNewQuantity(0));
         await shop.Do(() => form.Lines[1].OnChangeNewQuantity(0));
-        await shop.Do(() => form.OnChangeReason("Cancelar"));
+        await shop.Do(() => form.OnChangeReason("Cancel"));
         await shop.Do(form.OnConfirm);
         Assert.Equal(AmendPresenter.EveryItemRemoved, form.ErrorMessage);
 
@@ -165,17 +165,17 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         Assert.True(await gerente.Amendments.Insert(new PurchaseAmendment
         {
             Purchase = new Purchase { Id = purchaseId },
-            Reason = "Antes",
+            Reason = "Before",
             Lines = [new PurchaseAmendmentLine { ItemId = item.Id, AmountAfter = 2 }],
         }, cancellationToken: Ct));
 
         await shop.Do(() => form.Lines[0].OnChangeNewQuantity(1));
-        await shop.Do(() => form.OnChangeReason("Depois"));
+        await shop.Do(() => form.OnChangeReason("After"));
         await shop.Do(form.OnConfirm);
 
         Assert.Equal(AmendPresenter.ChangedMeanwhile, form.ErrorMessage);
         Assert.Equal(2, form.Lines[0].Quantity);
-        Assert.Equal("Antes", Assert.Single(form.History).Reason);
+        Assert.Equal("Before", Assert.Single(form.History).Reason);
     }
 
     [Fact]
@@ -185,15 +185,15 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         var shop = await Shop.LoggedIn(db, "admin");
         await shop.Do(() => shop.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.OnOpenAdmin());
         var admin = shop.PresenterOf<AdminPresenter>(AdminKeys.Place);
-        await shop.Do(() => admin.Scope.OnFilter("Fulano"));
+        await shop.Do(() => admin.Scope.OnFilter("Doe"));
         await shop.Do(() => admin.Scope.OnOpenPurchase(purchaseId));
         Assert.StartsWith("home/admin/amend?", shop.History.Token, StringComparison.Ordinal);
         Assert.Same(shop.PresenterOf<AmendPresenter>(AmendKeys.Place).Scope, admin.Scope.Content);
 
         await shop.Do(shop.PresenterOf<AmendPresenter>(AmendKeys.Place).Scope.OnBack);
 
-        Assert.Equal("home/admin?ad-customer=Fulano", shop.History.Token);
+        Assert.Equal("home/admin?ad-customer=Doe", shop.History.Token);
         Assert.Null(admin.Scope.Content);
-        Assert.Equal("Fulano", admin.Scope.CustomerFilter);
+        Assert.Equal("Doe", admin.Scope.CustomerFilter);
     }
 }

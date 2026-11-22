@@ -13,8 +13,9 @@ public sealed partial class AdminView : ScopeView
 
     private AdminScope? _watched;
 
-    // What is being typed: view plumbing. The presenter receives it on "Filtrar" (or Enter); the filter in force
-    // (from the address too) is shown when it changes. Watched only while shown: a view that leaves the tree no longer hangs on its scope's event.
+    // What is being typed: view plumbing. The presenter receives it on "Filter" (or Enter); the filter in force
+    // (from the address too) is shown when it changes. Watched only while shown: a view that leaves the tree no
+    // longer hangs on its scope's event.
     private bool _attached;
 
     protected override void OnDataContextChanged(EventArgs e)
