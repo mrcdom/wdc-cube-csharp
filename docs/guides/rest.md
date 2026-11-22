@@ -265,7 +265,8 @@ statuses:
 | `AuthenticationException` | 401 | `AuthenticationException` (once `RefreshAccess`, if set, could not renew the token) |
 | `AccessDeniedException` | 403 | `AccessDeniedException` |
 | `KeyNotFoundException` | 404 | `KeyNotFoundException` (`FetchById` returns `null` instead) |
-| `TransactionConflictException` | 409 | `TransactionConflictException` |
+| `TransactionConflictException` | 409 | `TransactionConflictException` (on a remote commit: `TransactionSystemException`) |
+| `TransactionNotFoundException` | 410 | `TransactionNotFoundException` |
 | `TransactionLimitExceededException` | 429 | `TransactionLimitExceededException` |
 | anything else | 500, `"Internal server error"` | `RemoteCallException` (with `Status`) |
 

@@ -19,6 +19,7 @@ public static class RestErrors
             AccessDeniedException => (HttpStatusCode.Forbidden, error.Message),
             KeyNotFoundException => (HttpStatusCode.NotFound, error.Message),
             TransactionConflictException => (HttpStatusCode.Conflict, error.Message),
+            TransactionNotFoundException => (HttpStatusCode.Gone, error.Message),
             TransactionLimitExceededException => (HttpStatusCode.TooManyRequests, error.Message),
             _ => (HttpStatusCode.InternalServerError, "Internal server error"),
         };
@@ -35,6 +36,7 @@ public static class RestErrors
             HttpStatusCode.Forbidden => new AccessDeniedException(text),
             HttpStatusCode.NotFound => new KeyNotFoundException(text),
             HttpStatusCode.Conflict => new TransactionConflictException(text),
+            HttpStatusCode.Gone => new TransactionNotFoundException(text),
             HttpStatusCode.TooManyRequests => new TransactionLimitExceededException(text),
             _ => new RemoteCallException(status, text),
         };

@@ -7,8 +7,9 @@ using Wdc.Domain;
 namespace Wdc.Rest.Server;
 
 /// <summary>
-/// <c>POST /api/tx/begin</c> → <c>{"txId":"…"}</c>; <c>POST /api/tx/commit</c> and <c>/rollback</c> with
-/// <c>X-Tx-Id</c> → <c>{"status":"committed"|"rolledback"}</c>; <c>GET /api/tx/status</c> →
+/// <c>POST /api/tx/begin</c> → <c>{"txId":"…"}</c>; <c>POST /api/tx/commit</c> with <c>X-Tx-Id</c> →
+/// <c>{"status":"committed"}</c> (409 when a request inside failed); <c>/rollback</c> → <c>{"status":"rolledback"}</c>;
+/// <c>GET /api/tx/status</c> →
 /// <c>{"status":"open"|"committed"|"rolledback"|"unknown"}</c>.
 /// </summary>
 public static class RemoteTransactionRoutes

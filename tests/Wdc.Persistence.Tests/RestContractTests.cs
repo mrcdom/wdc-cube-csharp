@@ -296,7 +296,7 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     }
 
     [Fact]
-    public async Task RemoteTx_Outcomes_AreIdempotent_AndUnknownIs409NotServerError()
+    public async Task RemoteTx_Outcomes_AreIdempotent_AndUnknownIs410NotServerError()
     {
         var host = await Host();
         var client = ("X-Client-Id", "c1");
@@ -309,9 +309,11 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         Assert.Equal(HttpStatusCode.Conflict, (await Raw(host, HttpMethod.Post, "/api/tx/rollback", "{}", client, tx)).Status);
         Assert.Equal((HttpStatusCode.OK, """{"status":"committed"}"""), await Raw(host, HttpMethod.Get, "/api/tx/status", null, client, tx));
 
+        Assert.Equal(HttpStatusCode.Gone, (await Raw(host, HttpMethod.Post, "/api/repo/product/count", "{}", client, tx)).Status);
+
         var ghost = (RestNames.TransactionHeader, "no-such-tx");
-        Assert.Equal(HttpStatusCode.Conflict, (await Raw(host, HttpMethod.Post, "/api/tx/commit", "{}", client, ghost)).Status);
-        Assert.Equal(HttpStatusCode.Conflict,
+        Assert.Equal(HttpStatusCode.Gone, (await Raw(host, HttpMethod.Post, "/api/tx/commit", "{}", client, ghost)).Status);
+        Assert.Equal(HttpStatusCode.Gone,
             (await Raw(host, HttpMethod.Post, "/api/repo/product/count", "{}", client, ghost)).Status);
         Assert.Equal((HttpStatusCode.OK, """{"status":"unknown"}"""), await Raw(host, HttpMethod.Get, "/api/tx/status", null, client, ghost));
     }

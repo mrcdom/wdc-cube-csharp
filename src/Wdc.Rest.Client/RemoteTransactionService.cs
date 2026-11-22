@@ -152,6 +152,12 @@ public sealed class RemoteTransactionService : ITransactionService
         {
             return await Finish(id, "commit", CancellationToken.None).ConfigureAwait(false);
         }
+        catch (TransactionConflictException refused)
+        {
+            // Rolled back on the server (a request inside it failed): never reported as a success.
+            throw new TransactionSystemException(
+                "The transaction was rolled back on the server: a request inside it failed.", refused);
+        }
         catch (Exception lost) when (lost is HttpRequestException or TaskCanceledException)
         {
             // The answer did not arrive: ask what happened instead of guessing.

@@ -412,7 +412,8 @@ Every error answer has the same body:
 | 401 | `AuthenticationException` | `AuthenticationException` |
 | 403 | `AccessDeniedException` | `AccessDeniedException` |
 | 404 | `KeyNotFoundException`, or a handler that found nothing | `KeyNotFoundException` (`fetch-by-id`: `null`) |
-| 409 | `TransactionConflictException` | `TransactionConflictException` |
+| 409 | `TransactionConflictException` | `TransactionConflictException` (on a `commit`: `TransactionSystemException`) |
+| 410 | `TransactionNotFoundException` | `TransactionNotFoundException` |
 | 429 | `TransactionLimitExceededException` | `TransactionLimitExceededException` |
 | 500 | anything else, with the fixed message `Internal server error` (the detail is logged, never sent) | `RemoteCallException` |
 | other | not produced by the routes (a proxy, the host) | `RemoteCallException` |
@@ -450,7 +451,7 @@ Base path `/api/tx` (configurable on both sides).
 | Method and route | Headers | Body | Answer (200) |
 |---|---|---|---|
 | `POST /api/tx/begin` | `X-Client-Id`, credentials | ignored | `{"txId":"…"}` |
-| `POST /api/tx/commit` | `X-Tx-Id`, `X-Client-Id`, credentials | ignored | `{"status":"committed"}` or `{"status":"rolledback"}` |
+| `POST /api/tx/commit` | `X-Tx-Id`, `X-Client-Id`, credentials | ignored | `{"status":"committed"}` (a doomed transaction: 409) |
 | `POST /api/tx/rollback` | `X-Tx-Id`, `X-Client-Id`, credentials | ignored | `{"status":"rolledback"}` |
 | `GET /api/tx/status` | `X-Tx-Id`, `X-Client-Id`, credentials | — | `{"status":"open"\|"committed"\|"rolledback"\|"unknown"}` |
 
@@ -483,15 +484,17 @@ stateDiagram-v2
     RolledBackByCommit --> [*]: OutcomeRetention elapses
 ```
 
-- **One request at a time.** Requests carrying the same `X-Tx-Id` are served one after the other; `commit` and
-  `rollback` wait for the request in progress.
+- **One request at a time.** A request or a `commit` that arrives while another request runs in the same
+  transaction is refused with 409 ("in use"); the request in progress is not disturbed. A `rollback` that arrives
+  then takes effect at once (later requests get 410, `status` says `rolledback`), and the connection is rolled back
+  when the request in progress ends.
 - **A failed request dooms the transaction.** Any error raised while a request runs inside the transaction (a 400
   for a malformed body or a `fetch` over `MaxItems`, a 403 from a policy, a database error) marks it rollback-only,
   even if the client catches the error and goes on. A 404 from `fetch-by-id` is not an error and does not.
-  Refusals before the request joins the transaction (403 for another owner, 409 for an unknown id, a body over
-  `MaxBodyBytes`) do not either.
-- **A doomed transaction still accepts requests**, but its commit rolls back and answers 200
-  `{"status":"rolledback"}`. The client must check the status of every commit answer.
+  Refusals before the request joins the transaction (403 for another owner, 409 in use, 410 for an unknown id, a
+  body over `MaxBodyBytes`) do not either.
+- **A doomed transaction still accepts requests**, but its commit rolls back and is refused with 409, so no client
+  can take it for a success.
 - **A commit that fails in the database** answers the error of that failure (usually 500), and the outcome is
   remembered as rolled back.
 - **Expiry.** A transaction idle for `IdleTimeout`, or older than `MaxLifetime`, is rolled back by a background
@@ -503,15 +506,16 @@ The answers by state:
 | State | `commit` | `rollback` | `status` | request with `X-Tx-Id` |
 |---|---|---|---|---|
 | open | 200 `committed` | 200 `rolledback` | `open` | runs |
-| open, rollback-only | 200 `rolledback` | 200 `rolledback` | `open` | runs |
-| committed | 200 `committed` (repeat) | 409 | `committed` | 409 |
-| rolled back by `rollback` or by the reaper | 409 | 200 `rolledback` (repeat) | `rolledback` | 409 |
-| rolled back by a `commit` (rollback-only, or a failed commit) | 200 `rolledback` (repeat) | 200 `rolledback` | `rolledback` | 409 |
-| unknown, or forgotten | 409 | 409 | `unknown` | 409 |
+| open, a request running | 409 (in use) | 200 `rolledback` (the connection rolls back when the request ends) | `open` | 409 (in use) |
+| open, doomed (a request failed) | 409 (rolled back) | 200 `rolledback` | `open` | runs |
+| committed | 200 `committed` (repeat) | 409 | `committed` | 410 |
+| rolled back by `rollback` or by the reaper | 409 | 200 `rolledback` (repeat) | `rolledback` | 410 |
+| rolled back by a `commit` (doomed, or a failed commit) | 409 (repeat) | 200 `rolledback` | `rolledback` | 410 |
+| unknown, or forgotten | 410 | 410 | `unknown` | 410 |
 | any, another owner | 403 | 403 | 403 | 403 |
 
-Repeating the same outcome is a no-op, so a client may resend a commit or rollback whose answer it lost. Asking for
-the opposite outcome, or finishing an unknown transaction, is a 409 and never a server error.
+Repeating an outcome answers the same, so a client may resend a commit or rollback whose answer it lost. Asking for
+the opposite outcome is a 409; a transaction that no longer exists is a 410; neither is ever a server error.
 
 ### Limits (`RemoteTransactionOptions`)
 
@@ -531,8 +535,8 @@ The C# `RemoteTransactionService` follows this procedure; another client should 
 1. `POST /api/tx/begin`; send the `txId` as `X-Tx-Id` on every request of the unit of work.
 2. If the work fails, or a nested participant failed (even if its caller caught the error), send `rollback` and
    report the failure. If the work asked for rollback only, send `rollback` and report success.
-3. Otherwise send `commit` and read the answer: `committed` is success; `rolledback` means a request inside failed,
-   and is a failure.
+3. Otherwise send `commit`: `committed` is success; a 409 means a request inside failed and the server rolled back,
+   and is a failure; a 410 means the transaction expired, and is a failure too.
 4. **If the answer to the commit is lost** (connection reset, timeout), do not guess: `GET /api/tx/status`.
 
 | `status` after a lost commit answer | Outcome |
@@ -634,10 +638,6 @@ code:
 
 | Topic | C# | Kotlin |
 |---|---|---|
-| Unknown or expired remote transaction | 409 | 410 |
-| Commit of a transaction in which a request failed | 200 `{"status":"rolledback"}` | 409 |
-| Repeating `commit` after that | 200 `{"status":"rolledback"}` | 409 (opposite outcome) |
-| A request or `commit` while another request uses the transaction | waits for it | 409 ("in use") |
 | `update` of a row outside the caller's reach | 404 | 403 |
 | Default largest `limit`/`pageSize` | 10,000 (`MaxItems`) | 1,000 (`maxLimit`) |
 | Slice keys sent as strings (`"limit":"10"`) | 400 | coerced to integers |
@@ -648,10 +648,6 @@ code:
 
 Consequences for mixed deployments:
 
-- A C# client on a Kotlin server reports a commit refused by a failed request as `TransactionConflictException`
-  (409) rather than `TransactionSystemException`, and an expired transaction as `RemoteCallException` (410).
-- A client that only checks the status code of a commit, and not its `status` member, takes a C# server's
-  `{"status":"rolledback"}` for a success. Always read the `status` member.
 - Readers treat an omitted field and an explicit `null` alike in results, so the difference in results is harmless.
 
 ## See also

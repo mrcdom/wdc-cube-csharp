@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted (2026-11-18).
+Accepted (2026-11-18). Amended 2026-11-22: concurrent use and doomed commits are refused (409), a
+transaction that no longer exists is gone (410), as in the Kotlin implementation.
 
 ## Context
 
@@ -22,17 +23,18 @@ demarcation ([0012](0012-ambient-transaction.md)).
 - `RemoteTransactionCoordinator` holds one detached transaction per id (`IDetachedTransactionSource`, implemented by
   `Database`): a connection and a transaction not bound to any flow. For each request, the transaction is made ambient
   for the duration of that request.
-- Requests to one transaction run one at a time; commit and rollback wait for the request in progress, never closing
-  the connection under it.
+- Requests to one transaction run one at a time: a request or a commit while another request runs is refused (409)
+  rather than queued, so the server holds no waiting work. A rollback then holds at once for every later call, and
+  the connection is rolled back when the running request ends, never under it.
 - **Reads with `X-Tx-Id` take part in the transaction**, so they see its own writes (and do not block on them where
   readers wait for uncommitted rows).
-- A request that fails inside marks the transaction rollback-only; a later commit rolls back and reports
-  `rolledback`.
+- A request that fails inside dooms the transaction; a later commit rolls back and is refused (409), so no client can
+  take it for a success by looking only at the status code.
 - Each transaction has an owner, by default the authenticated user plus `X-Client-Id`; another owner is refused (403).
 - Limits: 128 open in total, 16 per owner (429 beyond); a reaper rolls back after 60 s idle or 10 min of life;
   outcomes are remembered for 5 min.
-- Repeating an outcome is a no-op; the opposite outcome, or an unknown, expired or finished transaction, is a
-  conflict (409), never a 500.
+- Repeating an outcome answers the same; the opposite outcome is a conflict (409); an unknown, expired or finished
+  transaction is gone (410). Never a 500.
 - A write without `X-Tx-Id` while its owner has a transaction open is refused (409, configurable): it is almost always
   a lost header.
 
@@ -41,13 +43,18 @@ demarcation ([0012](0012-ambient-transaction.md)).
 - `RemoteTransactionService` keeps the open transaction in an `AsyncLocal`, like the local one; every call of the same
   `RestClient` in that flow carries `X-Tx-Id`.
 - A commit whose answer is lost asks `/api/tx/status` before reporting anything.
-- A commit that the server answered with `rolledback` throws `TransactionSystemException`.
+- A commit refused because a request inside failed (409), or answered `rolledback` by `/status`, throws
+  `TransactionSystemException`.
 
 ## Alternatives considered
 
 - **Only one transaction per request**, with composite use cases as service endpoints: simpler, but the remote client
   loses the local transactional API.
 - **Postponing the feature.**
+- **Queuing concurrent requests on the server** instead of refusing them: more tolerant, but it holds waiting work
+  and connections on the server for what is a client error (one transaction used by two calls at once).
+- **Answering a doomed commit with 200 `rolledback`**: correct for a client that reads the body, a silent false
+  success for one that only reads the status code.
 
 ## Consequences
 

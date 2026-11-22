@@ -73,6 +73,7 @@ Routes under the base path:
 | `AccessDeniedException` | 403 |
 | `KeyNotFoundException` (also a `null` answer: not found) | 404 |
 | `TransactionConflictException` | 409 |
+| `TransactionNotFoundException` | 410 |
 | `TransactionLimitExceededException` | 429 |
 | anything else | 500 "Internal server error" (detail logged, not sent); `RemoteCallException` on the client |
 
@@ -91,15 +92,15 @@ The protected repository's own `Required` joins whichever transaction is active.
 A client can hold a transaction open across several requests. `MapRemoteTransactions()` adds:
 
 - `POST /api/tx/begin` → `{"txId":"…"}`;
-- `POST /api/tx/commit` and `/api/tx/rollback`, with `X-Tx-Id` → `{"status":"committed"|"rolledback"}`;
+- `POST /api/tx/commit` and `/api/tx/rollback`, with `X-Tx-Id` → `{"status":"committed"}` / `{"status":"rolledback"}`;
 - `GET /api/tx/status`, with `X-Tx-Id` → `{"status":"open"|"committed"|"rolledback"|"unknown"}`.
 
 `RemoteTransactionCoordinator` keeps them:
 
-- Each holds its own database connection (`IDetachedTransactionSource`) and serves one request at a time.
+- Each holds its own database connection (`IDetachedTransactionSource`) and serves one request at a time: a request or a commit while another request runs is refused with 409; a rollback then holds at once, and the connection rolls back when the running request ends.
 - Each belongs to an owner, by default `user:<id>|client:<X-Client-Id>` (`RestServerOptions.OwnerOf`). Another owner using it gets 403.
-- A request that fails inside marks it rollback-only: a later commit rolls back and says so.
-- Repeating the same outcome is a no-op; the opposite outcome, or an unknown id, is a 409.
+- A request that fails inside dooms it: a later commit rolls back and is refused with 409, which the client throws as `TransactionSystemException`.
+- Repeating an outcome answers the same; the opposite outcome is a 409; an unknown, expired or finished transaction is a 410.
 - Limits (`RemoteTransactionOptions`): `MaxOpen` (128), `MaxOpenPerOwner` (16), beyond which `begin` answers 429; `IdleTimeout` (60 s) and `MaxLifetime` (10 min), after which a reaper rolls back.
 
 Registration: `services.AddCubeRest(...)` registers the options and, unless `remoteTransactions: false`, the coordinator and its reaper (it needs an `IDetachedTransactionSource` in the container).

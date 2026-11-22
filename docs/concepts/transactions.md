@@ -123,10 +123,10 @@ On a client, `RemoteTransactionService` implements `ITransactionService` over th
 On the server, `RemoteTransactionCoordinator` holds the open transactions, each a detached transaction from an `IDetachedTransactionSource` (the `Database`):
 
 - Each transaction has an owner (by default the authenticated user and the client instance). A request with another owner's id is refused with `AccessDeniedException`.
-- Requests to one transaction run one at a time; commit and rollback wait for the request in progress.
+- Requests to one transaction run one at a time: a request or a commit while another request runs is refused (`TransactionConflictException`, HTTP 409); a rollback then holds at once, and the connection rolls back when the running request ends.
 - `RemoteTransactionOptions` sets the limits: `MaxOpen` (128) in total, `MaxOpenPerOwner` (16), `IdleTimeout` (60 s), `MaxLifetime` (10 min), `OutcomeRetention` (5 min) and `ReapInterval` (5 s). Over a limit, `Begin` throws `TransactionLimitExceededException` (HTTP 429).
 - `RemoteTransactionReaper`, a hosted service, rolls back transactions that are idle or too old.
-- An unknown, expired or finished transaction is a `TransactionConflictException` (HTTP 409). Repeating the same outcome is a no-op.
+- An unknown, expired or finished transaction is a `TransactionNotFoundException` (HTTP 410). A commit of a transaction doomed by a failed request rolls back and is refused (409). Repeating an outcome answers the same.
 - A write without `X-Tx-Id` while its owner has a transaction open is refused with 409 (`RestServerOptions.RefuseWritesOutsideOpenTransaction`, on by default): it is almost always a lost header.
 
 Endpoints, wiring and error mapping are described in [remote](remote.md).

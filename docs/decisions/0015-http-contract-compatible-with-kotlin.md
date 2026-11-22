@@ -20,7 +20,7 @@ Keep the Kotlin wire, so a client of one implementation can talk to a server of 
   `commit`, `rollback`, `status`.
 - **Bodies**: the same JSON for criteria, projections and slices (`offset`/`limit`, `page`/`pageSize`), written and
   read from the shared entity model ([0009](0009-shared-entity-model.md)) by `RepositoryWire`.
-- **Errors** as `{"error":"<message>"}` with the same statuses: 400, 401, 403, 404, 409, 429, 500 (detail logged, not
+- **Errors** as `{"error":"<message>"}` with the same statuses: 400, 401, 403, 404, 409, 410, 429, 500 (detail logged, not
   sent). `RestErrors` maps exceptions to statuses on the server and back on the client.
 - **Headers**: `X-Tx-Id` (the remote transaction), `X-Client-Id` (the client instance), `Authorization: Bearer`.
 - **Hardening that does not change the wire**:

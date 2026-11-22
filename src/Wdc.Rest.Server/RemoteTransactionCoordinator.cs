@@ -11,10 +11,11 @@ namespace Wdc.Rest.Server;
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
-/// <item>A request that fails inside a transaction marks it rollback-only: a later commit rolls back and says so.</item>
-/// <item>Commit and rollback wait for the request in progress (they never close the connection under it).</item>
-/// <item>Repeating the same outcome is a no-op; asking the opposite one, or for an unknown transaction, is a conflict
-/// (409), never a server error.</item>
+/// <item>A request that fails inside a transaction dooms it: a later commit rolls back and is refused (409).</item>
+/// <item>One request at a time: a request or a commit while another request runs is refused (409). A rollback asked
+/// then takes effect at once, and the connection is rolled back when that request ends.</item>
+/// <item>Repeating the same outcome answers the same; asking the opposite one is a conflict (409); an unknown,
+/// expired or finished transaction is gone (410). Never a server error.</item>
 /// </list>
 /// </remarks>
 public sealed class RemoteTransactionCoordinator : IAsyncDisposable
@@ -68,13 +69,19 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
     }
 
     /// <summary>Runs one request inside the transaction <paramref name="id"/>.</summary>
-    /// <exception cref="TransactionConflictException">Unknown, expired or finished.</exception>
+    /// <exception cref="TransactionNotFoundException">Unknown, expired or finished.</exception>
+    /// <exception cref="TransactionConflictException">Another request is using it.</exception>
     /// <exception cref="AccessDeniedException">It belongs to someone else.</exception>
     public async Task<T> Run<T>(string id, string? owner, Func<Task<T>> work, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(work);
         var entry = Find(id, owner);
-        await entry.Gate.WaitAsync(cancellationToken);
+        if (!entry.Gate.Wait(0))
+        {
+            throw InUse();
+        }
+
+        T result;
         try
         {
             if (entry.Closed)
@@ -85,7 +92,7 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
             entry.Touch(_time.GetUtcNow());
             try
             {
-                return await entry.Transaction.Run(work);
+                result = await entry.Transaction.Run(work);
             }
             catch
             {
@@ -99,15 +106,23 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
         }
         finally
         {
+            await RollBackIfAsked(entry);
             entry.Gate.Release();
+            await RollBackIfAskedJustNow(entry);
         }
+
+        return result;
     }
 
-    /// <summary>Commits; when a request inside it failed, rolls back instead.</summary>
-    /// <returns>The outcome: <see cref="RemoteTransactionStatus.Committed"/> or <see cref="RemoteTransactionStatus.RolledBack"/>.</returns>
+    /// <summary>Commits; when a request inside it failed, rolls back instead and refuses.</summary>
+    /// <returns><see cref="RemoteTransactionStatus.Committed"/>.</returns>
+    /// <exception cref="TransactionConflictException">A request inside it failed (it was rolled back), or another
+    /// request is using it, or it was rolled back.</exception>
+    /// <exception cref="TransactionNotFoundException">Unknown or expired.</exception>
     public Task<RemoteTransactionStatus> Commit(string id, string? owner, CancellationToken cancellationToken = default) =>
         Finish(id, owner, commit: true, cancellationToken);
 
+    /// <summary>Rolls back; while a request runs, at once for every later call, and on the connection when it ends.</summary>
     public Task<RemoteTransactionStatus> Rollback(string id, string? owner, CancellationToken cancellationToken = default) =>
         Finish(id, owner, commit: false, cancellationToken);
 
@@ -247,42 +262,112 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
         throw Gone(id);
     }
 
-    private TransactionConflictException Gone(string id) =>
+    private TransactionNotFoundException Gone(string id) =>
         _finished.TryGetValue(id, out var outcome)
-            ? new TransactionConflictException($"The transaction is already {Describe(outcome.Status)}.")
-            : new TransactionConflictException("Unknown or expired transaction.");
+            ? new TransactionNotFoundException($"The transaction is already {Describe(outcome.Status)}.")
+            : new TransactionNotFoundException("Unknown or expired transaction.");
 
-    private async Task<RemoteTransactionStatus> Finish(string id, string? owner, bool commit, CancellationToken cancellationToken)
+    private static TransactionConflictException InUse() =>
+        new("The transaction is in use by another request.");
+
+    private static TransactionConflictException Doomed() =>
+        new("The transaction was rolled back: a request inside it failed.");
+
+    // A rollback asked just as the gate opened: whoever takes the gate does it, once.
+    private async Task RollBackIfAskedJustNow(Entry entry)
     {
-        if (_open.TryGetValue(id, out var entry))
+        if (Volatile.Read(ref entry.RollbackAsked) == 1 && entry.Gate.Wait(0))
         {
-            CheckOwner(entry.Owner, owner);
-            await entry.Gate.WaitAsync(cancellationToken); // waits for the request in progress
             try
             {
-                if (!entry.Closed && _open.TryRemove(id, out _))
-                {
-                    entry.Closed = true;
-                    return await Close(entry, commit, cancellationToken);
-                }
+                await RollBackIfAsked(entry);
             }
             finally
             {
                 entry.Gate.Release();
             }
         }
+    }
 
-        // Finished already (by another call, or the reaper): repeating the same outcome is a no-op.
+    // Not cancellable: a request that was aborted must still not leave its connection open.
+    private async Task RollBackIfAsked(Entry entry)
+    {
+        if (Interlocked.Exchange(ref entry.RollbackAsked, 0) == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            await entry.Transaction.Rollback(CancellationToken.None);
+        }
+        catch (Exception caught)
+        {
+            _logger.LogError(caught, "Rolling back remote transaction {Id} after its request ended failed.", entry.Id);
+        }
+    }
+
+    private async Task<RemoteTransactionStatus> Finish(string id, string? owner, bool commit, CancellationToken cancellationToken)
+    {
+        if (_open.TryGetValue(id, out var entry))
+        {
+            CheckOwner(entry.Owner, owner);
+            if (!entry.Gate.Wait(0))
+            {
+                if (commit)
+                {
+                    throw InUse();
+                }
+
+                // Rolled back for every later call now; the connection, when the request in progress ends.
+                if (!entry.Closed && _open.TryRemove(id, out _))
+                {
+                    entry.Closed = true;
+                    Remember(entry, RemoteTransactionStatus.RolledBack, _time.GetUtcNow());
+                    Interlocked.Increment(ref _rolledBack);
+                    Volatile.Write(ref entry.RollbackAsked, 1);
+                    await RollBackIfAskedJustNow(entry); // the request may have ended meanwhile
+
+                    return RemoteTransactionStatus.RolledBack;
+                }
+            }
+            else
+            {
+                try
+                {
+                    if (!entry.Closed && _open.TryRemove(id, out _))
+                    {
+                        entry.Closed = true;
+                        return await Close(entry, commit, cancellationToken);
+                    }
+                }
+                finally
+                {
+                    entry.Gate.Release();
+                }
+            }
+        }
+
+        // Finished already (by another call, or the reaper): repeating the same outcome answers the same.
         if (_finished.TryGetValue(id, out var outcome))
         {
             CheckOwner(outcome.Owner, owner);
-            var same = commit
-                ? outcome.Status == RemoteTransactionStatus.Committed || outcome.ByCommit
-                : outcome.Status == RemoteTransactionStatus.RolledBack;
-            if (same)
+            if (commit && outcome.Status == RemoteTransactionStatus.Committed)
             {
                 return outcome.Status;
             }
+
+            if (commit && outcome.ByCommit)
+            {
+                throw Doomed();
+            }
+
+            if (!commit && outcome.Status == RemoteTransactionStatus.RolledBack)
+            {
+                return outcome.Status;
+            }
+
+            throw new TransactionConflictException($"The transaction is already {Describe(outcome.Status)}.");
         }
 
         throw Gone(id);
@@ -315,7 +400,7 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
 
         Remember(entry, status, _time.GetUtcNow(), commit);
         Interlocked.Increment(ref status == RemoteTransactionStatus.Committed ? ref _committed : ref _rolledBack);
-        return status;
+        return commit && status == RemoteTransactionStatus.RolledBack ? throw Doomed() : status;
     }
 
     private void Remember(Entry entry, RemoteTransactionStatus status, DateTimeOffset at, bool byCommit = false) =>
@@ -353,6 +438,9 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
         public SemaphoreSlim Gate { get; } = new(1, 1);
 
         public volatile bool Closed;
+
+        /// <summary>1 when a rollback was asked while a request ran: done once, by whoever holds the gate next.</summary>
+        public int RollbackAsked;
 
         public void Touch(DateTimeOffset now) => Interlocked.Exchange(ref _lastUsedTicks, now.UtcTicks);
     }
