@@ -118,7 +118,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         var purchase = new Domain.Purchases.Purchase
         {
             User = new Domain.Users.User { Id = fulano.Id },
-            BuyDate = DateTimeOffset.UtcNow,
+            // Ahead of the purchases other test runs make as fulano meanwhile, on the same database: it stays first on
+            // the administrator's first page and in fulano's purchases.
+            BuyDate = DateTimeOffset.UtcNow.AddYears(1),
             Items =
             [
                 new Domain.Purchases.PurchaseItem { Product = new Domain.Products.Product { Id = ball.Id }, Amount = 2, Price = 45.30m },
@@ -133,6 +135,7 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         page.Find(".admin-filter .customer").Input("Fulano");
         page.Find(".admin-filter").Submit();
         page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("Fulano de Tal", c.TextContent)), Wait);
+        page.WaitForAssertion(() => Assert.Single(page.FindAll(".admin-row"), r => r.QuerySelector(".number")!.TextContent == $"Nº {purchase.Id}"), Wait);
         page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"Nº {purchase.Id}").Click();
 
         page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".amend-line").Count), Wait);
