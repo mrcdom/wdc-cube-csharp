@@ -41,19 +41,16 @@ public static class PurchaseItemPolicy
                     await RequireOwnPurchase(store, c, item.Purchase?.Id, ct);
                 }
 
-                if (Permissions.Maintains(c.Actor))
-                {
-                    return;
-                }
-
-                if (await AnyOfAPurchaseMade(store, new PurchaseItemCriteria().PurchaseItemId.Eq(item.Id), ct))
-                {
-                    throw new AccessDeniedException("The purchase was already made: its items do not change.");
-                }
-
+                // For every role, maintenance included.
                 if (written.Price is not null)
                 {
                     throw new AccessDeniedException("The price of an item comes from the product.");
+                }
+
+                if (!Permissions.Maintains(c.Actor)
+                    && await AnyOfAPurchaseMade(store, new PurchaseItemCriteria().PurchaseItemId.Eq(item.Id), ct))
+                {
+                    throw new AccessDeniedException("The purchase was already made: its items do not change.");
                 }
             },
             BeforeDelete = async (c, criteria, ct) =>

@@ -148,6 +148,23 @@ public sealed class ApplicationPresenterTests
     }
 
     [Fact]
+    public async Task MemoryHistory_WithANonDeterministicCodec_AddsNoEntryWhenTheStateIsTheSame()
+    {
+        var history = new MemoryHistoryManager { Codec = new NonceCodec() };
+        var app = new MainApp(history);
+        await app.KickStart(MainPlaces.Home);
+        await app.Flip(MainPlaces.Orders, i => i.SetParameter("oid", 1L));
+        var entries = 0;
+        history.EntriesChanged += () => entries++;
+
+        await app.InvokeAsync(app.UpdateHistory);
+        await app.InvokeAsync(app.UpdateHistory);
+
+        Assert.Equal(0, entries); // plain compared to plain: the envelopes differ, the state does not
+        Assert.Equal("orders?oid=1", history.Location);
+    }
+
+    [Fact]
     public async Task MemoryHistory_BackAndForward_FlipToTheStoredAddresses()
     {
         var history = new MemoryHistoryManager();

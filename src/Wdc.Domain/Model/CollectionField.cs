@@ -174,15 +174,20 @@ public sealed class CollectionField<TEntity, TChild> : FieldModel<TEntity>
                     CriteriaCodec.Read(ref reader, criteria);
                     break;
                 case "limit" when reader.TokenType == JsonTokenType.Number:
-                    limit = reader.GetInt32();
+                    limit = reader.TryGetInt32(out var limitValue) ? limitValue : -1; // out of range: refused below
                     break;
                 case "offset" when reader.TokenType == JsonTokenType.Number:
-                    offset = reader.GetInt32();
+                    offset = reader.TryGetInt32(out var offsetValue) ? offsetValue : -1; // out of range: refused below
                     break;
                 default:
                     reader.Skip();
                     break;
             }
+        }
+
+        if (limit is < 0 || offset is < 0)
+        {
+            throw new InvalidRequestException($"'{Name}': limit and offset cannot be negative.");
         }
 
         return new ProjectionList<TChild>(shape ?? Model.OwnFieldsProjection(), criteria, limit, offset);

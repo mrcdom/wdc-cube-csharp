@@ -14,20 +14,47 @@ public sealed partial class AmendView : ScopeView
 
     private AmendScope S => (AmendScope)Scope!;
 
-    /// <summary>The reason goes to the presenter as it is typed; a reason cleared there (after saving) clears the box.</summary>
+    // Watched only while shown: a view that leaves the tree no longer hangs on its scope's event.
+    private bool _attached;
+
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+        Watch(_attached ? Scope as AmendScope : null);
+    }
+
+    protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _attached = true;
+        Watch(Scope as AmendScope);
+    }
+
+    protected override void OnDetachedFromVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        _attached = false;
+        Watch(null);
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    /// <summary>The reason goes to the presenter as it is typed; a reason cleared there (after saving) clears the box.</summary>
+    private void Watch(AmendScope? scope)
+    {
+        if (ReferenceEquals(scope, _watched))
+        {
+            return;
+        }
+
         if (_watched is not null)
         {
             _watched.PropertyChanged -= OnScopeChanged;
         }
 
-        _watched = Scope as AmendScope;
-        if (_watched is not null)
+        _watched = scope;
+        if (scope is not null)
         {
-            _watched.PropertyChanged += OnScopeChanged;
-            ShowReason(_watched.Reason);
+            scope.PropertyChanged += OnScopeChanged;
+            ShowReason(scope.Reason);
         }
     }
 

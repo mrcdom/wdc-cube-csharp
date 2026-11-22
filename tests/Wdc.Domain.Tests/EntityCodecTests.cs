@@ -98,6 +98,37 @@ public sealed class EntityCodecTests
         Assert.NotNull(items.Shape.Price);
     }
 
+    [Theory]
+    [InlineData("""{"items":{"limit":-1}}""")]
+    [InlineData("""{"items":{"offset":-5}}""")]
+    [InlineData("""{"items":{"limit":99999999999}}""")]
+    public void Projection_ACollectionSliceOutOfRange_IsAnInvalidRequest(string json) =>
+        Assert.Throws<InvalidRequestException>(() => s_purchases.FromJson(json));
+
+    [Fact]
+    public void Projection_TheMarkerOfAnEnumWithNoZeroMember_ReadsBackAsMarked()
+    {
+        var kind = ValueKinds.Enum<Level>();
+        var marker = kind.Marker!.Value;
+        Assert.True(Enum.IsDefined(marker));
+
+        var buffer = new System.Buffers.ArrayBufferWriter<byte>();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(buffer))
+        {
+            kind.Write(writer, marker);
+        }
+
+        var reader = new System.Text.Json.Utf8JsonReader(buffer.WrittenSpan);
+        reader.Read();
+        Assert.Equal(marker, kind.Read(ref reader));
+    }
+
+    private enum Level
+    {
+        Low = 1,
+        High = 2,
+    }
+
     [Fact]
     public void Values_TravelInTheSharedFormats()
     {

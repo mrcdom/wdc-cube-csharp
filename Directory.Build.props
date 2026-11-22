@@ -19,10 +19,12 @@
     <PackageProjectUrl>https://github.com/mrcdom/wdc-cube-csharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mrcdom/wdc-cube-csharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <!-- Relativo à raiz do repositório e com '/': as condições abaixo valem em qualquer pasta e no Windows. -->
+    <WdcProjectPath>$([MSBuild]::MakeRelative($(MSBuildThisFileDirectory), $(MSBuildProjectDirectory)).Replace('\', '/'))/</WdcProjectPath>
   </PropertyGroup>
 
   <!-- Bibliotecas publicáveis (src/): compatíveis com trimming/AOT e documentadas. -->
-  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/src/'))">
+  <PropertyGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
@@ -36,16 +38,16 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(MSBuildProjectDirectory.Contains('/src/'))">
+  <ItemGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/samples/'))">
+  <PropertyGroup Condition="$(WdcProjectPath.StartsWith('samples/'))">
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(MSBuildProjectDirectory.Contains('/tests/')) or $(MSBuildProjectName.EndsWith('.Tests'))">
+  <PropertyGroup Condition="$(WdcProjectPath.StartsWith('tests/')) or $(MSBuildProjectName.EndsWith('.Tests'))">
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>

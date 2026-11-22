@@ -101,6 +101,8 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
     [Theory]
     [InlineData("""{"price":{"p":[{"o":"GT","v":[null]}]}}""")]
     [InlineData("""{"price":{"p":[{"o":"BETWEEN","v":[1]}]}}""")]
+    [InlineData("""{"price":{"p":[{"o":"LIKE","v":[1]}]}}""")]
+    [InlineData("""{"price":{"p":[{"o":"EQ","v":["abc"]}]}}""")]
     public async Task Wire_ADeleteWhoseFilterCannotFilter_IsRefused_AndNothingIsDeleted(string criteria)
     {
         await NewProduct("Fica", 1m);

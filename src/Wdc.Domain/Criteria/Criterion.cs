@@ -161,14 +161,15 @@ public class Criterion<TOwner, T> : Criterion
     /// Puts back a request read from the wire, as it was: unlike the fluent methods, it keeps an explicit null.
     /// </summary>
     /// <exception cref="InvalidRequestException">
-    /// The request cannot be a filter: the wrong number of values for the operator, or a null where only a value
-    /// compares (<c>GT</c>, <c>BETWEEN</c>, <c>LIKE</c>...). Kept, it would count as a filter and translate to none,
-    /// and a delete would reach every row.
+    /// The request cannot be a filter: the wrong number of values for the operator, a null where only a value
+    /// compares (<c>GT</c>, <c>BETWEEN</c>, <c>LIKE</c>...), or a pattern on a field that is not text. Kept, it would
+    /// count as a filter and translate to none, and a delete would reach every row.
     /// </exception>
     public void Restore(Operator op, IReadOnlyList<T>? values)
     {
         T[] list = [.. values ?? []];
-        if (!op.Accepts(list.Length) || (op.ComparesValues() && list.Any(v => ValueKind<T>.IsNull(v))))
+        if (!op.Accepts(list.Length) || (op.ComparesValues() && list.Any(v => ValueKind<T>.IsNull(v)))
+            || (op is Operator.Like or Operator.ILike && typeof(T) != typeof(string)))
         {
             throw new InvalidRequestException(
                 $"'{Name}': {op.WireName()} with [{string.Join(", ", list.Select(v => v?.ToString() ?? "null"))}] is not a filter.");
@@ -233,7 +234,7 @@ public class Criterion<TOwner, T> : Criterion
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
-            var loose = reader.TokenType == JsonTokenType.Null ? default! : _kind.Read(ref reader);
+            var loose = ReadValue(ref reader);
             if (!ValueKind<T>.IsNull(loose))
             {
                 Restore(Operator.Eq, [loose]);
@@ -289,7 +290,7 @@ public class Criterion<TOwner, T> : Criterion
                     case "v" when reader.TokenType == JsonTokenType.StartArray:
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            values.Add(reader.TokenType == JsonTokenType.Null ? default! : _kind.Read(ref reader));
+                            values.Add(ReadValue(ref reader));
                             SkipIfContainer(ref reader);
                         }
 
@@ -305,6 +306,24 @@ public class Criterion<TOwner, T> : Criterion
                 Restore(known, values); // unknown operator: discarded (a looser filter, never a different one)
             }
         }
+    }
+
+    // A null token is null; any other token that does not convert is refused, never read as null (EQ would become
+    // IS NULL).
+    private T ReadValue(ref Utf8JsonReader reader)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return default!;
+        }
+
+        var value = _kind.Read(ref reader);
+        if (ValueKind<T>.IsNull(value))
+        {
+            throw new InvalidRequestException($"'{Name}': {reader.TokenType} is not a value of this field.");
+        }
+
+        return value;
     }
 
     private static void SkipIfContainer(ref Utf8JsonReader reader)

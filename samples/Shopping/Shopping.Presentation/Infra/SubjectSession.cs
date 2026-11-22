@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Shopping.Presentation.Infra;
 
@@ -6,7 +7,7 @@ internal static class SubjectSession
 {
     public const string Key = "shopping.subject";
 
-    public static string Write(Subject subject) => JsonSerializer.Serialize(subject);
+    public static string Write(Subject subject) => JsonSerializer.Serialize(subject, SubjectJson.Default.Subject);
 
     public static Subject? Read(string? json)
     {
@@ -17,7 +18,7 @@ internal static class SubjectSession
 
         try
         {
-            return JsonSerializer.Deserialize<Subject>(json);
+            return JsonSerializer.Deserialize(json, SubjectJson.Default.Subject);
         }
         catch (JsonException)
         {
@@ -25,3 +26,7 @@ internal static class SubjectSession
         }
     }
 }
+
+// Generated at build time: no reflection, so it holds under trimming and AOT.
+[JsonSerializable(typeof(Subject))]
+internal sealed partial class SubjectJson : JsonSerializerContext;

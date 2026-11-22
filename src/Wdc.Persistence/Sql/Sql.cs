@@ -127,7 +127,7 @@ public static class Sql
         {
             if (!predicate.Operator.Accepts(predicate.Values.Count))
             {
-                continue;
+                throw Untranslatable(criterion, predicate);
             }
 
             var values = predicate.Values.Select(kind.ToDatabaseObject).ToList();
@@ -147,14 +147,15 @@ public static class Sql
                 Operator.IsNotNull => IsNotNull(column),
                 _ => null,
             };
-            if (part is not null)
-            {
-                parts.Add(part);
-            }
+            // Dropped, the predicate would still count as a filter and the statement would reach every row.
+            parts.Add(part ?? throw Untranslatable(criterion, predicate));
         }
 
         return parts;
     }
+
+    private static InvalidRequestException Untranslatable(Criterion criterion, IPredicate predicate) =>
+        new($"'{criterion.Name}': {predicate.Operator.WireName()} with {predicate.Values.Count} value(s) is not a filter.");
 
     private static Fragment? Combine(string separator, IEnumerable<ISqlFragment?> conditions)
     {

@@ -14,20 +14,46 @@ public sealed partial class AdminView : ScopeView
     private AdminScope? _watched;
 
     // What is being typed: view plumbing. The presenter receives it on "Filtrar" (or Enter); the filter in force
-    // (from the address too) is shown when it changes.
+    // (from the address too) is shown when it changes. Watched only while shown: a view that leaves the tree no longer hangs on its scope's event.
+    private bool _attached;
+
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+        Watch(_attached ? Scope as AdminScope : null);
+    }
+
+    protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _attached = true;
+        Watch(Scope as AdminScope);
+    }
+
+    protected override void OnDetachedFromVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        _attached = false;
+        Watch(null);
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void Watch(AdminScope? scope)
+    {
+        if (ReferenceEquals(scope, _watched))
+        {
+            return;
+        }
+
         if (_watched is not null)
         {
             _watched.PropertyChanged -= OnScopeChanged;
         }
 
-        _watched = Scope as AdminScope;
-        if (_watched is not null)
+        _watched = scope;
+        if (scope is not null)
         {
-            _watched.PropertyChanged += OnScopeChanged;
-            CustomerBox.Text = _watched.CustomerFilter;
+            scope.PropertyChanged += OnScopeChanged;
+            CustomerBox.Text = scope.CustomerFilter;
         }
     }
 

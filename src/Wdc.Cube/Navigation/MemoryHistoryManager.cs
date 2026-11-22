@@ -25,11 +25,16 @@ public sealed class MemoryHistoryManager : HistoryManager
     public override void Update(CubeApplication app, Place place)
     {
         ArgumentNullException.ThrowIfNull(app);
-        var address = EncodeAddress(app.NewFlipIntent(place).ToString());
-        if (string.Equals(address, _current, StringComparison.Ordinal))
+        var plain = app.NewFlipIntent(place).ToString();
+        var question = _current.IndexOf('?', StringComparison.Ordinal);
+        var currentQuery = question < 0 ? string.Empty : _current[(question + 1)..];
+        var wantsEnvelope = Codec is not null && plain.Contains('?', StringComparison.Ordinal);
+        if (string.Equals(plain, Location, StringComparison.Ordinal) && wantsEnvelope == IsEnvelope(currentQuery))
         {
-            return;
+            return; // same state, same form (never compare envelopes: a codec may be non-deterministic)
         }
+
+        var address = EncodeAddress(plain);
 
         if (_current.Length > 0 || _back.Count > 0)
         {

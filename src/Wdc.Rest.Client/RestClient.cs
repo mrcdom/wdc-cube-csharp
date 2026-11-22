@@ -36,6 +36,10 @@ public sealed class RestClient
     public Task<byte[]?> PostOrNull(string path, byte[] body, CancellationToken cancellationToken = default) =>
         Send(HttpMethod.Post, path, body, nullOnNotFound: true, CurrentTransactionId, cancellationToken);
 
+    /// <summary>A GET; an error status throws (404 as <see cref="KeyNotFoundException"/>), and 204 is an empty body.</summary>
+    public async Task<byte[]> Get(string path, CancellationToken cancellationToken = default) =>
+        (await Send(HttpMethod.Get, path, null, nullOnNotFound: false, CurrentTransactionId, cancellationToken).ConfigureAwait(false))!;
+
     /// <summary>A GET; 404 (and 204) as <see langword="null"/>.</summary>
     public Task<byte[]?> GetOrNull(string path, CancellationToken cancellationToken = default) =>
         Send(HttpMethod.Get, path, null, nullOnNotFound: true, CurrentTransactionId, cancellationToken);

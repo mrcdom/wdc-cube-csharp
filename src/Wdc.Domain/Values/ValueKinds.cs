@@ -264,7 +264,8 @@ public static class ValueKinds
 
         public override string Name => typeof(TEnum).Name;
 
-        public override TEnum? Marker => default(TEnum);
+        // A defined member, so the marker reads back as marked (an enum may have no member with value 0).
+        public override TEnum? Marker { get; } = System.Enum.GetValues<TEnum>() is [var first, ..] ? first : default(TEnum);
 
         public override void Write(Utf8JsonWriter writer, TEnum? value) => writer.WriteStringValue(value!.Value.ToString());
 

@@ -290,6 +290,21 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
     }
 
     [Fact]
+    public async Task Super_DoesNotWriteThePriceOfAnItem()
+    {
+        var (fulano, _) = await As("fulano");
+        var purchase = await APurchase(fulano, 1);
+        var item = (await ItemsOf(purchase))[0];
+        var (suporte, _) = await As("suporte");
+
+        await Assert.ThrowsAsync<AccessDeniedException>(() => suporte.PurchaseItems.Update(
+            new PurchaseItem { Id = item.Id, Price = 0.01m }, projection: new PurchaseItem { Price = Mark.Decimal },
+            cancellationToken: Ct));
+
+        Assert.Equal(item.Price, (await ItemsOf(purchase))[0].Price);
+    }
+
+    [Fact]
     public async Task Super_DeletesIt_WithItsItems()
     {
         var (fulano, _) = await As("fulano");
