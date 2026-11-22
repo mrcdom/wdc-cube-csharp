@@ -1,4 +1,4 @@
-using Tutorial.Presentation.Modules.Root;
+using Tutorial.Presentation.Modules;
 using Tutorial.Presentation.Modules.Restricted;
 using Tutorial.Presentation.Modules.Subscriptions;
 using Tutorial.Presentation.Modules.TodoMvc;

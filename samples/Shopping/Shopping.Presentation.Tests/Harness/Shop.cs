@@ -5,7 +5,7 @@ using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Login;
 using Microsoft.Extensions.Time.Testing;
 using Shopping.Presentation.Infra;
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Wdc.Cube;
 using Wdc.Cube.Testing;
 

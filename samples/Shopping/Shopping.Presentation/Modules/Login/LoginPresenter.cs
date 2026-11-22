@@ -1,5 +1,4 @@
 using Shopping.Presentation.Modules.Home;
-using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Login;

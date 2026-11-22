@@ -6,7 +6,6 @@ using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
-using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home;

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Wdc.Cube;
 
 namespace Shopping.Avalonia.Views;

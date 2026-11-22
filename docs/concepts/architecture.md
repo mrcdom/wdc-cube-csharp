@@ -32,6 +32,9 @@ public sealed class ProductKeys : HomeKeys
 }
 ```
 
+In the samples the folders follow the same tree: the root module (`RootKeys`, `RootPresenter`, `RootScope`) sits
+directly in `Modules/`, and each place's module is a subfolder of its parent's (`Modules/Home/ProductDetail`).
+
 The application presenter lists them for the navigation:
 
 ```csharp

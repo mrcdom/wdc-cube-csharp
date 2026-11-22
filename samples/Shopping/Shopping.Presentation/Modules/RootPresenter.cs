@@ -11,7 +11,7 @@ using Shopping.Presentation.Infra;
 using Wdc.Cube;
 using Home = Shopping.Presentation.Modules.Home;
 
-namespace Shopping.Presentation.Modules.Root;
+namespace Shopping.Presentation.Modules;
 
 /// <summary>
 /// The application presenter: the page frame (body and error toast), the session (who is logged in) and the

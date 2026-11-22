@@ -1,5 +1,5 @@
 using System.Reflection;
-using Tutorial.Presentation.Modules.Root;
+using Tutorial.Presentation.Modules;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Tests;

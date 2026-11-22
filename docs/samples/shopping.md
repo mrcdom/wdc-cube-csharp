@@ -61,7 +61,7 @@ Each place is declared by its keys class, from the place of the keys it extends,
 tree:
 
 ```text
-RootKeys      (root)        Modules/Root
+RootKeys      (root)        Modules
 ├─ LoginKeys  login         Modules/Login
 └─ HomeKeys   home          Modules/Home
    ├─ ProductKeys  home/product   Modules/Home/ProductDetail

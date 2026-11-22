@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
-using Tutorial.Presentation.Modules.Root;
+using Tutorial.Presentation.Modules;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 using Wdc.Cube.Testing;

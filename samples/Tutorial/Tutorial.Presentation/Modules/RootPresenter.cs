@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Root;
+namespace Tutorial.Presentation.Modules;
 
 /// <summary>The application presenter: the page frame (menu, body, dialog, alert) and the services.</summary>
 public sealed class RootPresenter : ApplicationPresenter<RootScope>

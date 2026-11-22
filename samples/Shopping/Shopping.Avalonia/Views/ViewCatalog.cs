@@ -7,7 +7,7 @@ using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
 using Shopping.Presentation.Modules.Login;
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Wdc.Cube.Avalonia;
 
 namespace Shopping.Avalonia.Views;

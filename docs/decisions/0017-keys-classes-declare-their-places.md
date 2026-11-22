@@ -28,6 +28,8 @@ same keys base (the application, the intent, a way to flip).
   scanning types would need reflection.
 - The level of the application is named for the tree: `RootKeys`, `RootPresenter`, `RootScope`, `RootView`, as
   `Place.Root`, rather than "main", which in .NET also reads as the program's entry point or the main window.
+- The folder tree is the place tree too: the root module lives directly in `Modules/`, and each place's module is a
+  subfolder of its parent's (`Modules/Home/Cart` for `home/cart`).
 - The navigation method is `Flip`, the vocabulary of `FlipIntent` and `FlipToIntent`, as in the other
   implementations.
 

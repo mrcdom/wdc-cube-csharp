@@ -1,6 +1,6 @@
 using Wdc.Cube;
 
-namespace Shopping.Presentation.Modules.Root;
+namespace Shopping.Presentation.Modules;
 
 /// <summary>Names the application level reads and writes. Every keys file owns a two-letter prefix.</summary>
 public class RootKeys : CubeKeys

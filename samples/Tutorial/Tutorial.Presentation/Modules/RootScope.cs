@@ -1,6 +1,6 @@
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Root;
+namespace Tutorial.Presentation.Modules;
 
 public enum AlertSeverity
 {

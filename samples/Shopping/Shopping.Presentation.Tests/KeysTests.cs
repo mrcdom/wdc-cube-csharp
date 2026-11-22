@@ -1,5 +1,5 @@
 using System.Reflection;
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Tests;

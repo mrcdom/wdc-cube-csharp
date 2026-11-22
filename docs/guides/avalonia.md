@@ -134,7 +134,7 @@ locator; declare its type with `x:DataType` so bindings are compiled and checked
 <cube:ScopeView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:cube="using:Wdc.Cube.Avalonia"
-                xmlns:m="using:Shopping.Presentation.Modules.Root"
+                xmlns:m="using:Shopping.Presentation.Modules"
                 xmlns:v="using:Shopping.Avalonia.Views"
                 x:Class="Shopping.Avalonia.Views.RootView"
                 x:DataType="m:RootScope">

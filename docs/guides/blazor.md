@@ -296,7 +296,7 @@ The application reads the session **before** it reads the address, because the s
 means (a guard) and how to read it (a codec):
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/RootPresenter.cs
 public Task Start() => InvokeAsync(async () =>
 {
     // The session first: with it comes the key that opens a sealed address (F5 on one).

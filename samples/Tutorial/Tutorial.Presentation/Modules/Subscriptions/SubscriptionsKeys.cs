@@ -1,4 +1,3 @@
-using Tutorial.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Tutorial.Presentation.Modules.Subscriptions;

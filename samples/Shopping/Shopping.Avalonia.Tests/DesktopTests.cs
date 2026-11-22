@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 using Microsoft.AspNetCore.TestHost;
 using Shopping.Avalonia.Views;
 using Shopping.Client;
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Shopping.Presentation.Tests;
 using Wdc.Cube;
 using Wdc.Cube.Avalonia;

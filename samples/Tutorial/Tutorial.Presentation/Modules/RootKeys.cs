@@ -1,6 +1,6 @@
 using Wdc.Cube;
 
-namespace Tutorial.Presentation.Modules.Root;
+namespace Tutorial.Presentation.Modules;
 
 /// <summary>
 /// Typed reading of the intent for the application level. The only class that knows these names; every name starts

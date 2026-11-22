@@ -1,4 +1,3 @@
-using Shopping.Presentation.Modules.Root;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home.ProductDetail;

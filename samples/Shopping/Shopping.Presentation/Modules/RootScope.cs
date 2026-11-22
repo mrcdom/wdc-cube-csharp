@@ -1,6 +1,6 @@
 using Wdc.Cube;
 
-namespace Shopping.Presentation.Modules.Root;
+namespace Shopping.Presentation.Modules;
 
 public sealed class RootScope : Scope
 {

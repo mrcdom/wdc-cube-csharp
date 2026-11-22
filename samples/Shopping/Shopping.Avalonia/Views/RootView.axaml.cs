@@ -1,4 +1,4 @@
-using Shopping.Presentation.Modules.Root;
+using Shopping.Presentation.Modules;
 using Wdc.Cube.Avalonia;
 
 namespace Shopping.Avalonia.Views;

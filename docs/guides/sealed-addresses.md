@@ -83,7 +83,7 @@ public static string Derive(byte[] master, long userId)
 `KickStart`, so a reload on a sealed address opens), when the user logs in, and removes it on logout:
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/RootPresenter.cs
 public Task Start() => InvokeAsync(async () =>
 {
     // The session first: with it comes the key that opens a sealed address (F5 on one).
@@ -98,7 +98,7 @@ public Task Start() => InvokeAsync(async () =>
 ```
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Root/RootPresenter.cs
+// samples/Shopping/Shopping.Presentation/Modules/RootPresenter.cs
 private void InstallCodec(Subject? subject)
 {
     if (subject?.HistoryKey is not { } key)
