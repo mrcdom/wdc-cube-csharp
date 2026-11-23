@@ -633,19 +633,14 @@ compressed payloads, are not covered by a cross-implementation test: the two use
 ## Compatibility notes
 
 The repository wire, the criteria format and the projection envelope are shared with the Kotlin implementation of
-Cube; the sealed address is shared with the TypeScript implementation. These are the differences observed in the
-code:
+Cube; the sealed address is shared with the TypeScript implementation. The status codes, limits and error cases in
+this document hold for both servers. One difference remains in the code:
 
 | Topic | C# | Kotlin |
 |---|---|---|
-| Slice keys sent as strings (`"limit":"10"`) | 400 | coerced to integers |
-| `X-Tx-Id` on a server without remote transactions | 400 | ignored |
 | Fields marked by the projection but empty, in results | written as `null` | the entity is written as read, so an empty field may be omitted |
-| `insert` that reports no success | `{"success":false}` | `{"success":false,"id":…}` |
 
-Consequences for mixed deployments:
-
-- Readers treat an omitted field and an explicit `null` alike in results, so the difference in results is harmless.
+It is harmless in mixed deployments: readers treat an omitted field and an explicit `null` alike in results.
 
 ## See also
 
