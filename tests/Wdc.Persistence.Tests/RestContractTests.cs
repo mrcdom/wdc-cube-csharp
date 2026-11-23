@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -331,6 +332,33 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         Assert.Equal(HttpStatusCode.OK, (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c1"))).Status);
         Assert.Equal(HttpStatusCode.TooManyRequests, (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c1"))).Status);
         Assert.Equal(HttpStatusCode.OK, (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c2"))).Status);
+    }
+
+    [Fact]
+    public async Task RemoteTx_CapIsTheUsers_AcrossItsClients()
+    {
+        var host = await Host(o => o.QuotaOf = _ => "user:7", transactions: o => o.MaxOpenPerOwner = 2);
+
+        Assert.Equal(HttpStatusCode.OK, (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c1"))).Status);
+        Assert.Equal(HttpStatusCode.OK, (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c2"))).Status);
+        Assert.Equal(HttpStatusCode.TooManyRequests,
+            (await Raw(host, HttpMethod.Post, "/api/tx/begin", "{}", ("X-Client-Id", "c3"))).Status);
+    }
+
+    [Fact]
+    public void DefaultQuota_IsTheUser_OrTheAnonymousClient()
+    {
+        var signedIn = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", "7")], "test")),
+        };
+        signedIn.Request.Headers["X-Client-Id"] = "c1";
+        Assert.Equal("user:7", RestServerOptions.DefaultQuota(signedIn));
+        Assert.Equal("user:7|client:c1", RestServerOptions.DefaultOwner(signedIn));
+
+        var anonymous = new DefaultHttpContext();
+        anonymous.Request.Headers["X-Client-Id"] = "c1";
+        Assert.Equal(RestServerOptions.DefaultOwner(anonymous), RestServerOptions.DefaultQuota(anonymous));
     }
 
     [Fact]

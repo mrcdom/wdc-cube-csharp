@@ -20,7 +20,7 @@ public static class RemoteTransactionRoutes
         var group = routes.MapGroup(basePath);
         group.MapPost("begin", context => RestHttp.Respond(context, async () =>
         {
-            var id = await Coordinator(context).Begin(Owner(context), context.RequestAborted);
+            var id = await Coordinator(context).Begin(Owner(context), Quota(context), context.RequestAborted);
             return RestJson.Write(w =>
             {
                 w.WriteStartObject();
@@ -63,6 +63,8 @@ public static class RemoteTransactionRoutes
         ?? throw new InvalidRequestException("Remote transactions are not enabled on this server.");
 
     private static string? Owner(HttpContext context) => RestHttp.Options(context).OwnerOf(context);
+
+    private static string? Quota(HttpContext context) => RestHttp.Options(context).QuotaOf(context);
 
     private static string Id(HttpContext context)
     {

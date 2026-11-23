@@ -47,9 +47,17 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
 
     /// <summary>Opens a transaction for <paramref name="owner"/> and returns its id.</summary>
     /// <exception cref="TransactionLimitExceededException">Too many open, in total or for the owner.</exception>
-    public async Task<string> Begin(string? owner, CancellationToken cancellationToken = default)
+    public Task<string> Begin(string? owner, CancellationToken cancellationToken = default) =>
+        Begin(owner, owner, cancellationToken);
+
+    /// <summary>
+    /// Opens a transaction for <paramref name="owner"/>, counting it against the cap of <paramref name="quota"/>
+    /// (the user, when the owner is one user on one client: a new client id doesn't buy a new cap).
+    /// </summary>
+    /// <exception cref="TransactionLimitExceededException">Too many open, in total or for the quota.</exception>
+    public async Task<string> Begin(string? owner, string? quota, CancellationToken cancellationToken = default)
     {
-        Reserve(owner);
+        Reserve(quota);
         IDetachedTransaction transaction;
         try
         {
@@ -57,13 +65,13 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
         }
         catch
         {
-            ReleaseReservation(owner);
+            ReleaseReservation(quota);
             throw;
         }
 
         var id = Guid.NewGuid().ToString("N");
-        _open[id] = new Entry(id, owner, transaction, _time.GetUtcNow());
-        ReleaseReservation(owner);
+        _open[id] = new Entry(id, owner, quota, transaction, _time.GetUtcNow());
+        ReleaseReservation(quota);
         Interlocked.Increment(ref _begun);
         return id;
     }
@@ -203,9 +211,9 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
     // :: Internals
 
     private int _reserved;
-    private readonly Dictionary<string, int> _reservedByOwner = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, int> _reservedByQuota = new(StringComparer.Ordinal);
 
-    private void Reserve(string? owner)
+    private void Reserve(string? quota)
     {
         lock (_admission)
         {
@@ -215,37 +223,37 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
                 throw new TransactionLimitExceededException($"Too many open transactions (limit {_options.MaxOpen}).");
             }
 
-            if (owner is not null)
+            if (quota is not null)
             {
-                var mine = _open.Values.Count(e => e.Owner == owner) + _reservedByOwner.GetValueOrDefault(owner);
+                var mine = _open.Values.Count(e => e.Quota == quota) + _reservedByQuota.GetValueOrDefault(quota);
                 if (mine >= _options.MaxOpenPerOwner)
                 {
                     Interlocked.Increment(ref _rejected);
                     throw new TransactionLimitExceededException(
-                        $"Too many open transactions for this client (limit {_options.MaxOpenPerOwner}).");
+                        $"Too many open transactions for this user (limit {_options.MaxOpenPerOwner}).");
                 }
 
-                _reservedByOwner[owner] = _reservedByOwner.GetValueOrDefault(owner) + 1;
+                _reservedByQuota[quota] = _reservedByQuota.GetValueOrDefault(quota) + 1;
             }
 
             _reserved++;
         }
     }
 
-    private void ReleaseReservation(string? owner)
+    private void ReleaseReservation(string? quota)
     {
         lock (_admission)
         {
             _reserved--;
-            if (owner is not null && _reservedByOwner.TryGetValue(owner, out var count))
+            if (quota is not null && _reservedByQuota.TryGetValue(quota, out var count))
             {
                 if (count <= 1)
                 {
-                    _reservedByOwner.Remove(owner);
+                    _reservedByQuota.Remove(quota);
                 }
                 else
                 {
-                    _reservedByOwner[owner] = count - 1;
+                    _reservedByQuota[quota] = count - 1;
                 }
             }
         }
@@ -421,13 +429,15 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
         _ => "finished",
     };
 
-    private sealed class Entry(string id, string? owner, IDetachedTransaction transaction, DateTimeOffset createdAt)
+    private sealed class Entry(string id, string? owner, string? quota, IDetachedTransaction transaction, DateTimeOffset createdAt)
     {
         private long _lastUsedTicks = createdAt.UtcTicks;
 
         public string Id { get; } = id;
 
         public string? Owner { get; } = owner;
+
+        public string? Quota { get; } = quota;
 
         public IDetachedTransaction Transaction { get; } = transaction;
 

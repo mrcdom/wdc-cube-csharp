@@ -57,7 +57,7 @@ Routes under the base path:
 `RepositoryRpc` is only the wire. It decodes the body, calls the repository, and encodes the answer. It does not decide who may do what: the repository it resolves is a `ProtectedRepository` built for the request's actor, so authorization, reach, field sanitizing and write checks are the same as in any other host. What it adds is about the transport:
 
 - A query with no projection gets the repository's own-fields projection.
-- `fetch` with a `limit` above `RestServerOptions.MaxItems` (default 10,000) is a 400. A `fetch` with no limit that matches more than `MaxItems` rows is a 400 too ("page the request"), never silently cut.
+- `fetch` with a `limit` above `RestServerOptions.MaxItems` (default 1,000) is a 400. A `fetch` with no limit that matches more than `MaxItems` rows is a 400 too ("page the request"), never silently cut.
 - `fetch-page` needs `pageSize` between 1 and `MaxItems`.
 - `update` without the key, and `delete` with no filter, are 400.
 - Bodies larger than `MaxBodyBytes` (default 16 MB) are refused.
@@ -98,10 +98,10 @@ A client can hold a transaction open across several requests. `MapRemoteTransact
 `RemoteTransactionCoordinator` keeps them:
 
 - Each holds its own database connection (`IDetachedTransactionSource`) and serves one request at a time: a request or a commit while another request runs is refused with 409; a rollback then holds at once, and the connection rolls back when the running request ends.
-- Each belongs to an owner, by default `user:<id>|client:<X-Client-Id>` (`RestServerOptions.OwnerOf`). Another owner using it gets 403.
+- Each belongs to an owner, by default `user:<id>|client:<X-Client-Id>` (`RestServerOptions.OwnerOf`). Another owner using it gets 403. The cap of open transactions counts the user, across its clients (`RestServerOptions.QuotaOf`).
 - A request that fails inside dooms it: a later commit rolls back and is refused with 409, which the client throws as `TransactionSystemException`.
 - Repeating an outcome answers the same; the opposite outcome is a 409; an unknown, expired or finished transaction is a 410.
-- Limits (`RemoteTransactionOptions`): `MaxOpen` (128), `MaxOpenPerOwner` (16), beyond which `begin` answers 429; `IdleTimeout` (60 s) and `MaxLifetime` (10 min), after which a reaper rolls back.
+- Limits (`RemoteTransactionOptions`): `MaxOpen` (128), `MaxOpenPerOwner` (16, counted per user across its clients), beyond which `begin` answers 429; `IdleTimeout` (60 s) and `MaxLifetime` (10 min), after which a reaper rolls back.
 
 Registration: `services.AddCubeRest(...)` registers the options and, unless `remoteTransactions: false`, the coordinator and its reaper (it needs an `IDetachedTransactionSource` in the container).
 

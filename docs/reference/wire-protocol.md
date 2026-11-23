@@ -392,7 +392,7 @@ POST /api/repo/product/delete
 | Option (`RestServerOptions`) | Default | Effect |
 |---|---|---|
 | `MaxBodyBytes` | 16 MiB | A larger request body is a 400, checked on `Content-Length` and while reading. |
-| `MaxItems` | 10,000 | Largest `limit` and `pageSize`, and largest result of `fetch` without `limit`. |
+| `MaxItems` | 1,000 | Largest `limit` and `pageSize`, and largest result of `fetch` without `limit`. |
 | `RefuseWritesOutsideOpenTransaction` | `true` | See [Transactions per request](#transactions-per-request). |
 | `OwnerOf` | `user:<id>\|client:<X-Client-Id>` | Who owns a remote transaction. See [Owner](#owner). |
 
@@ -522,7 +522,7 @@ the opposite outcome is a 409; a transaction that no longer exists is a 410; nei
 | Option | Default | Effect |
 |---|---|---|
 | `MaxOpen` | 128 | Open at once in total; each holds a database connection. `begin` beyond it: 429. |
-| `MaxOpenPerOwner` | 16 | Open at once per owner. `begin` beyond it: 429. |
+| `MaxOpenPerOwner` | 16 | Open at once per user, all its clients together (per client when anonymous). `begin` beyond it: 429. |
 | `IdleTimeout` | 60 s | Rolled back after this long without a request. |
 | `MaxLifetime` | 10 min | Rolled back after this long, used or not. |
 | `OutcomeRetention` | 5 min | How long `status` and repeated `commit`/`rollback` remember the outcome. |
@@ -638,13 +638,10 @@ code:
 
 | Topic | C# | Kotlin |
 |---|---|---|
-| `update` of a row outside the caller's reach | 404 | 403 |
-| Default largest `limit`/`pageSize` | 10,000 (`MaxItems`) | 1,000 (`maxLimit`) |
 | Slice keys sent as strings (`"limit":"10"`) | 400 | coerced to integers |
 | `X-Tx-Id` on a server without remote transactions | 400 | ignored |
 | Fields marked by the projection but empty, in results | written as `null` | the entity is written as read, so an empty field may be omitted |
 | `insert` that reports no success | `{"success":false}` | `{"success":false,"id":…}` |
-| Limit of open transactions per owner | per user and client | per user (all of the user's clients together) |
 
 Consequences for mixed deployments:
 

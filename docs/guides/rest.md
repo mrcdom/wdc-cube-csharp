@@ -41,20 +41,21 @@ Tune the limits through the two callbacks:
 
 ```csharp
 services.AddCubeRest(
-    o => o.MaxItems = 1_000, // largest fetch and pageSize (default 10,000)
+    o => o.MaxItems = 500, // largest fetch and pageSize (default 1,000)
     configureTransactions: t => t.IdleTimeout = TimeSpan.FromSeconds(30)); // default 60 s
 ```
 
 | `RestServerOptions` | Default | Meaning |
 |---|---|---|
 | `MaxBodyBytes` | 16 MB | Largest request body read. |
-| `MaxItems` | 10,000 | Largest `fetch` (an unlimited fetch that matches more is a 400) and largest `pageSize`. |
+| `MaxItems` | 1,000 | Largest `fetch` (an unlimited fetch that matches more is a 400) and largest `pageSize`. |
 | `RefuseWritesOutsideOpenTransaction` | `true` | A write without `X-Tx-Id` while its owner has a transaction open is a 409. |
 | `OwnerOf` | `RestServerOptions.DefaultOwner` | Who owns a remote transaction: `user:<id>\|client:<X-Client-Id>`. |
+| `QuotaOf` | `RestServerOptions.DefaultQuota` | Whose cap a new remote transaction counts against: `user:<id>`, or the owner when anonymous, so a new client id doesn't buy a new cap. |
 
 | `RemoteTransactionOptions` | Default |
 |---|---|
-| `MaxOpen` / `MaxOpenPerOwner` | 128 / 16 (beyond them, `begin` answers 429) |
+| `MaxOpen` / `MaxOpenPerOwner` | 128 / 16 (beyond them, `begin` answers 429); the per-owner cap is the user's, across all its clients |
 | `IdleTimeout` / `MaxLifetime` | 60 s / 10 min (then the reaper rolls back) |
 | `OutcomeRetention` / `ReapInterval` | 5 min / 5 s |
 

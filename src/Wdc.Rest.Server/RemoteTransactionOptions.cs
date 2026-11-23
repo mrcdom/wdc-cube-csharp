@@ -6,7 +6,7 @@ public sealed class RemoteTransactionOptions
     /// <summary>Open at once, in total. Each one holds a connection.</summary>
     public int MaxOpen { get; set; } = 128;
 
-    /// <summary>Open at once by one owner (one user on one client).</summary>
+    /// <summary>Open at once by one user, on all its clients (by one client, when anonymous).</summary>
     public int MaxOpenPerOwner { get; set; } = 16;
 
     /// <summary>Rolled back after this long without a request.</summary>

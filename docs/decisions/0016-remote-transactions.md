@@ -31,7 +31,7 @@ demarcation ([0012](0012-ambient-transaction.md)).
 - A request that fails inside dooms the transaction; a later commit rolls back and is refused (409), so no client can
   take it for a success by looking only at the status code.
 - Each transaction has an owner, by default the authenticated user plus `X-Client-Id`; another owner is refused (403).
-- Limits: 128 open in total, 16 per owner (429 beyond); a reaper rolls back after 60 s idle or 10 min of life;
+- Limits: 128 open in total, 16 per user across its clients (429 beyond); a reaper rolls back after 60 s idle or 10 min of life;
   outcomes are remembered for 5 min.
 - Repeating an outcome answers the same; the opposite outcome is a conflict (409); an unknown, expired or finished
   transaction is gone (410). Never a 500.
