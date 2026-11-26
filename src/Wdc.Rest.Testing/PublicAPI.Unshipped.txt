@@ -1,0 +1,17 @@
+#nullable enable
+static Wdc.Rest.Testing.RestTestHost.Start(System.Action<Microsoft.AspNetCore.Builder.WebApplicationBuilder!>! configure, System.Action<Microsoft.AspNetCore.Builder.WebApplication!>! map, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Rest.Testing.RestTestHost!>!
+Wdc.Rest.Testing.RestTestHost
+Wdc.Rest.Testing.RestTestHost.App.get -> Microsoft.AspNetCore.Builder.WebApplication!
+Wdc.Rest.Testing.RestTestHost.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Wdc.Rest.Testing.RestTestHost.NewClient(Wdc.Rest.Client.RestClientOptions? options = null) -> Wdc.Rest.Client.RestClient!
+Wdc.Rest.Testing.RestTestHost.NewHttpClient() -> System.Net.Http.HttpClient!
+Wdc.Rest.Testing.RestTestHost.Send(System.Net.Http.HttpMethod! method, string! path, string? json = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>? headers = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Rest.Testing.RestTestResponse!>!
+Wdc.Rest.Testing.RestTestHost.Services.get -> System.IServiceProvider!
+Wdc.Rest.Testing.RestTestResponse
+Wdc.Rest.Testing.RestTestResponse.Body.get -> string!
+Wdc.Rest.Testing.RestTestResponse.Bytes.get -> System.ReadOnlyMemory<byte>
+Wdc.Rest.Testing.RestTestResponse.Error.get -> string?
+Wdc.Rest.Testing.RestTestResponse.Header(string! name) -> string?
+Wdc.Rest.Testing.RestTestResponse.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Wdc.Rest.Testing.RestTestResponse.RestTestResponse(System.Net.HttpStatusCode status, byte[]! body, System.Collections.Generic.IReadOnlyDictionary<string!, string!>! headers) -> void
+Wdc.Rest.Testing.RestTestResponse.Status.get -> System.Net.HttpStatusCode

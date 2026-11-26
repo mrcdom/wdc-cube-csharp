@@ -3,61 +3,60 @@ using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Wdc.Domain;
 using Wdc.Rest;
 using Wdc.Rest.Client;
 using Wdc.Rest.Server;
+using Wdc.Rest.Testing;
 
 namespace Wdc.Persistence.Tests;
 
 /// <summary>What every REST answer carries (headers, Server-Timing), which answer an exception becomes, and 429s.</summary>
 public sealed class RestHttpOptionsTests : IAsyncDisposable
 {
-    private WebApplication? _app;
+    private RestTestHost? _host;
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     public async ValueTask DisposeAsync()
     {
-        if (_app is not null)
+        if (_host is not null)
         {
-            await _app.DisposeAsync();
+            await _host.DisposeAsync();
         }
     }
 
     private async Task<HttpClient> Start(Action<RestServerOptions>? configure = null, Action<WebApplicationBuilder>? build = null,
         Action<WebApplication>? map = null)
     {
-        var builder = WebApplication.CreateSlimBuilder();
-        builder.WebHost.UseTestServer();
-        builder.Logging.ClearProviders();
-        builder.Services.AddSingleton<IDetachedTransactionSource>(new FakeSource());
-        builder.Services.AddCubeRest(configure, configureTransactions: o => o.MaxOpen = 1);
-        build?.Invoke(builder);
-        _app = builder.Build();
-        map?.Invoke(_app);
-        _app.MapGet("/ok", One);
-        _app.MapGet("/cached", c =>
+        _host = await RestTestHost.Start(builder =>
         {
-            c.Response.Headers.CacheControl = "max-age=60";
-            return One(c);
-        });
-        _app.MapGet("/denied", c => RestHttp.Respond(c, () => throw new AccessDeniedException("No.")));
-        _app.MapGet("/timed", Timed);
-        _app.MapGet("/throw/{kind}", c => RestHttp.Respond(c, () => throw ((string)c.Request.RouteValues["kind"]! switch
+            builder.Services.AddSingleton<IDetachedTransactionSource>(new FakeSource());
+            builder.Services.AddCubeRest(configure, configureTransactions: o => o.MaxOpen = 1);
+            build?.Invoke(builder);
+        }, app =>
         {
-            "stock" => new OutOfStockException("Out of stock."),
-            "stock-pass" => new OutOfStockException("pass"),
-            "state" => new InvalidOperationException("Bad state."),
-            "slow" => new TooManyRequestsException("Slow down.", TimeSpan.FromSeconds(2.5)),
-            _ => new Exception("Boom."),
-        })));
-        _app.MapRemoteTransactions();
-        await _app.StartAsync(Ct);
-        return _app.GetTestClient();
+            map?.Invoke(app);
+            app.MapGet("/ok", One);
+            app.MapGet("/cached", c =>
+            {
+                c.Response.Headers.CacheControl = "max-age=60";
+                return One(c);
+            });
+            app.MapGet("/denied", c => RestHttp.Respond(c, () => throw new AccessDeniedException("No.")));
+            app.MapGet("/timed", Timed);
+            app.MapGet("/throw/{kind}", c => RestHttp.Respond(c, () => throw ((string)c.Request.RouteValues["kind"]! switch
+            {
+                "stock" => new OutOfStockException("Out of stock."),
+                "stock-pass" => new OutOfStockException("pass"),
+                "state" => new InvalidOperationException("Bad state."),
+                "slow" => new TooManyRequestsException("Slow down.", TimeSpan.FromSeconds(2.5)),
+                _ => new Exception("Boom."),
+            })));
+            app.MapRemoteTransactions();
+        }, Ct);
+        return _host.NewHttpClient();
     }
 
     [Fact]
@@ -105,7 +104,7 @@ public sealed class RestHttpOptionsTests : IAsyncDisposable
         using var failed = await http.GetAsync("/denied", Ct);
         Assert.Matches(@"^total;dur=\d+\.\d$", failed.Headers.GetValues("Server-Timing").Single());
 
-        await _app!.DisposeAsync();
+        await _host!.DisposeAsync();
         using var described = await Start(o => (o.ServerTiming, o.ServerTimingDescriptions) = (true, true));
         using var withDescription = await described.GetAsync("/timed", Ct);
         Assert.Matches(@"^db;desc=""Query"";dur=\d+\.\d, total;dur=\d+\.\d$", withDescription.Headers.GetValues("Server-Timing").Single());
@@ -150,7 +149,13 @@ public sealed class RestHttpOptionsTests : IAsyncDisposable
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
         Assert.Equal(TimeSpan.FromSeconds(3), response.Headers.RetryAfter!.Delta);
 
-        var client = new RestClient(_app!.GetTestClient());
+        var raw = await _host!.Send(HttpMethod.Get, "/throw/slow", cancellationToken: Ct);
+        Assert.Equal(HttpStatusCode.TooManyRequests, raw.Status);
+        Assert.Equal("3", raw.Header("retry-after"));
+        Assert.Equal("Slow down.", raw.Error);
+        Assert.StartsWith("application/json", raw.Header("Content-Type"), StringComparison.Ordinal);
+
+        var client = _host.NewClient();
         var refused = await Assert.ThrowsAsync<TooManyRequestsException>(() => client.Get("/throw/slow", Ct));
         Assert.Equal("Slow down.", refused.Message);
         Assert.Equal(TimeSpan.FromSeconds(3), refused.RetryAfter);
@@ -185,7 +190,7 @@ public sealed class RestHttpOptionsTests : IAsyncDisposable
     public async Task RemoteTx_TheLimitOverTheWire_IsStillTheTransactionLimit()
     {
         using var http = await Start();
-        var transactions = new RemoteTransactionService(new RestClient(_app!.GetTestClient()));
+        var transactions = new RemoteTransactionService(_host!.NewClient());
         var inside = new TaskCompletionSource();
         var release = new TaskCompletionSource();
         var first = transactions.Execute(Propagation.Required, async _ =>

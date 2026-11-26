@@ -2,13 +2,13 @@ namespace Wdc.Persistence.Tests;
 
 public sealed class PostgreSqlHttpFixture : PostgreSqlFixture
 {
-    private RestTestHost? _host;
+    private ShoppingRestHost? _host;
 
     public override bool IsRemote => true;
 
     protected override async Task OnReady()
     {
-        _host = await RestTestHost.Start(Shopping!);
+        _host = await ShoppingRestHost.Start(Shopping!);
         Side = new RemoteShopping(_host.NewClient());
     }
 

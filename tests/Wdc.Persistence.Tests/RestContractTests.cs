@@ -18,7 +18,7 @@ namespace Wdc.Persistence.Tests;
 /// </summary>
 public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlFixture>
 {
-    private RestTestHost? _host;
+    private ShoppingRestHost? _host;
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -38,30 +38,18 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         }
     }
 
-    private async Task<RestTestHost> Host(Action<RestServerOptions>? configure = null, Action<RemoteTransactionOptions>? transactions = null,
+    private async Task<ShoppingRestHost> Host(Action<RestServerOptions>? configure = null, Action<RemoteTransactionOptions>? transactions = null,
         Func<HttpContext, IRepository<Purchase, PurchaseCriteria, long>>? purchases = null, TimeProvider? time = null)
     {
-        _host = await RestTestHost.Start(Local, configure, transactions, purchases: purchases, time: time);
+        _host = await ShoppingRestHost.Start(Local, configure, transactions, purchases: purchases, time: time);
         return _host;
     }
 
-    private static async Task<(HttpStatusCode Status, string Body)> Raw(RestTestHost host, HttpMethod method, string path,
+    private static async Task<(HttpStatusCode Status, string Body)> Raw(ShoppingRestHost host, HttpMethod method, string path,
         string? json = null, params (string Name, string Value)[] headers)
     {
-        using var http = host.App.GetTestClient();
-        using var request = new HttpRequestMessage(method, path);
-        if (json is not null)
-        {
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-        }
-
-        foreach (var (name, value) in headers)
-        {
-            request.Headers.Add(name, value);
-        }
-
-        using var response = await http.SendAsync(request, Ct);
-        return (response.StatusCode, await response.Content.ReadAsStringAsync(Ct));
+        var response = await host.Host.Send(method, path, json, headers.Select(h => KeyValuePair.Create(h.Name, h.Value)), Ct);
+        return (response.Status, response.Body);
     }
 
     private async Task<Product> NewProduct(string name, decimal price)
