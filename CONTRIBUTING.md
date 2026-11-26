@@ -50,6 +50,8 @@ check it by hand.
   kept together in the file of the screen's root scope with the value types they expose.
 - **Comments explain the code's logic** — why it does what it does — not the history of how it got there.
 - **Package versions** live only in `Directory.Packages.props`.
+- **Each change that a user of the packages can notice gets a line in [`CHANGELOG.md`](CHANGELOG.md)**, under
+  *Unreleased*, saying whether it breaks anything and what to do.
 - **Tests come with the change.** Behavior visible to an application is tested through the presentation (without a
   view) and, when data is involved, both in process and through HTTP, as the Shopping tests do.
 
@@ -62,6 +64,10 @@ changing the sample, rewrite the blocks with:
 ```bash
 python3 scripts/update-doc-snippets.py
 ```
+
+## Security
+
+Report vulnerabilities privately, as [SECURITY.md](SECURITY.md) describes, not in an issue.
 
 ## License
 

@@ -131,6 +131,11 @@ dotnet test --solution wdc-cube.slnx
 Tests that need a database are skipped, with the reason, when its connection string is missing. See
 [CONTRIBUTING](CONTRIBUTING.md) for the databases and the conventions.
 
+## Changes and security
+
+What changed in each version is in the [changelog](CHANGELOG.md). Report vulnerabilities privately, as
+[SECURITY.md](SECURITY.md) describes.
+
 ## License
 
 [MIT](LICENSE) © 2017-2026 WeDoCode Consultoria e Soluções Avançadas LTDA
