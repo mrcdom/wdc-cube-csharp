@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Wdc.Domain;
@@ -30,13 +31,31 @@ public sealed class RemoteTransactionCoordinator : IAsyncDisposable
     private long _begun, _committed, _rolledBack, _reaped, _rejected;
 
     public RemoteTransactionCoordinator(IDetachedTransactionSource source, RemoteTransactionOptions? options = null,
-        TimeProvider? time = null, ILogger<RemoteTransactionCoordinator>? logger = null)
+        TimeProvider? time = null, ILogger<RemoteTransactionCoordinator>? logger = null, IMeterFactory? meters = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         _source = source;
         _options = options ?? new RemoteTransactionOptions();
         _time = time ?? TimeProvider.System;
         _logger = (ILogger?)logger ?? NullLogger.Instance;
+        if (meters is not null)
+        {
+            var meter = meters.Create(RestServerMetrics.MeterName);
+            meter.CreateObservableUpDownCounter("wdc.remote.transactions.open", () => _open.Count, "{transaction}",
+                "Remote transactions open now.");
+            meter.CreateObservableCounter("wdc.remote.transactions", ObserveEvents, "{transaction}",
+                "Remote transactions, by what happened to them.");
+        }
+    }
+
+    private IEnumerable<Measurement<long>> ObserveEvents()
+    {
+        var stats = Stats;
+        yield return new(stats.Begun, new KeyValuePair<string, object?>("event", "begun"));
+        yield return new(stats.Committed, new KeyValuePair<string, object?>("event", "committed"));
+        yield return new(stats.RolledBack, new KeyValuePair<string, object?>("event", "rolledback"));
+        yield return new(stats.Reaped, new KeyValuePair<string, object?>("event", "reaped"));
+        yield return new(stats.RejectedByLimit, new KeyValuePair<string, object?>("event", "refused"));
     }
 
     public RemoteTransactionOptions Options => _options;

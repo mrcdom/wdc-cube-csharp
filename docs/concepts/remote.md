@@ -74,7 +74,7 @@ Routes under the base path:
 | `KeyNotFoundException` (also a `null` answer: not found) | 404 |
 | `TransactionConflictException` | 409 |
 | `TransactionNotFoundException` | 410 |
-| `TransactionLimitExceededException` | 429 |
+| `TooManyRequestsException` (also `TransactionLimitExceededException`) | 429, with `Retry-After` when known |
 | anything else | 500 "Internal server error" (detail logged, not sent); `RemoteCallException` on the client |
 
 ### Transactions per request

@@ -20,13 +20,16 @@ public static class RestErrors
             KeyNotFoundException => (HttpStatusCode.NotFound, error.Message),
             TransactionConflictException => (HttpStatusCode.Conflict, error.Message),
             TransactionNotFoundException => (HttpStatusCode.Gone, error.Message),
-            TransactionLimitExceededException => (HttpStatusCode.TooManyRequests, error.Message),
+            TooManyRequestsException => (HttpStatusCode.TooManyRequests, error.Message),
             _ => (HttpStatusCode.InternalServerError, "Internal server error"),
         };
     }
 
     /// <summary>The exception a client raises for an error answer.</summary>
-    public static Exception FromResponse(HttpStatusCode status, string? message)
+    public static Exception FromResponse(HttpStatusCode status, string? message) => FromResponse(status, message, null);
+
+    /// <summary>The exception a client raises for an error answer, with the answer's <c>Retry-After</c> (429).</summary>
+    public static Exception FromResponse(HttpStatusCode status, string? message, TimeSpan? retryAfter)
     {
         var text = string.IsNullOrEmpty(message) ? $"HTTP {(int)status}" : message;
         return status switch
@@ -37,7 +40,7 @@ public static class RestErrors
             HttpStatusCode.NotFound => new KeyNotFoundException(text),
             HttpStatusCode.Conflict => new TransactionConflictException(text),
             HttpStatusCode.Gone => new TransactionNotFoundException(text),
-            HttpStatusCode.TooManyRequests => new TransactionLimitExceededException(text),
+            HttpStatusCode.TooManyRequests => new TooManyRequestsException(text, retryAfter),
             _ => new RemoteCallException(status, text),
         };
     }

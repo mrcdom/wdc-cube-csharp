@@ -21,6 +21,31 @@ public sealed class RestServerOptions
     /// </summary>
     public bool RefuseWritesOutsideOpenTransaction { get; set; } = true;
 
+    /// <summary>
+    /// Headers every REST answer carries, errors included; they replace what a route set. By default
+    /// <c>X-Content-Type-Options: nosniff</c> and <c>X-Frame-Options: DENY</c>.
+    /// </summary>
+    public IDictionary<string, string> SecurityHeaders { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["X-Content-Type-Options"] = "nosniff",
+        ["X-Frame-Options"] = "DENY",
+    };
+
+    /// <summary>
+    /// <c>Cache-Control</c> of the answers whose route did not set one, errors included (default <c>no-store</c>: the
+    /// answers are one user's data); <see langword="null"/> sends none.
+    /// </summary>
+    public string? CacheControl { get; set; } = "no-store";
+
+    /// <summary>Sends <c>Server-Timing</c> (see <see cref="RestTiming"/>), errors included. Off by default.</summary>
+    public bool ServerTiming { get; set; }
+
+    /// <summary>Also sends the descriptions of the <c>Server-Timing</c> measures (they may name internals). Off by default.</summary>
+    public bool ServerTimingDescriptions { get; set; }
+
+    /// <summary>Which answer an exception becomes: add maps for the application's exceptions.</summary>
+    public RestErrorMap Errors { get; } = new();
+
     /// <summary>Who owns a remote transaction: the user (when authenticated) and the client instance.</summary>
     public Func<HttpContext, string?> OwnerOf { get; set; } = DefaultOwner;
 

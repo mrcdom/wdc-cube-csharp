@@ -413,3 +413,10 @@ Wdc.Domain.TransactionSystemException.TransactionSystemException(string! message
 Wdc.Domain.ValueKind<T>
 Wdc.Domain.ValueKind<T>.ValueKind() -> void
 Wdc.Domain.ValueKinds
+Wdc.Domain.TooManyRequestsException
+Wdc.Domain.TooManyRequestsException.RetryAfter.get -> System.TimeSpan?
+Wdc.Domain.TooManyRequestsException.TooManyRequestsException() -> void
+Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message, System.TimeSpan? retryAfter) -> void
+Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message) -> void
+Wdc.Domain.TransactionLimitExceededException.TransactionLimitExceededException(string! message, System.TimeSpan? retryAfter) -> void

@@ -24,7 +24,8 @@ public static class RestServerServiceCollectionExtensions
             services.AddSingleton(txOptions);
             services.AddSingleton(sp => new RemoteTransactionCoordinator(
                 sp.GetRequiredService<IDetachedTransactionSource>(), txOptions, sp.GetService<TimeProvider>(),
-                sp.GetService<Microsoft.Extensions.Logging.ILogger<RemoteTransactionCoordinator>>()));
+                sp.GetService<Microsoft.Extensions.Logging.ILogger<RemoteTransactionCoordinator>>(),
+                sp.GetService<System.Diagnostics.Metrics.IMeterFactory>()));
             services.AddHostedService(sp => new RemoteTransactionReaper(
                 sp.GetRequiredService<RemoteTransactionCoordinator>(), sp.GetService<TimeProvider>()));
         }

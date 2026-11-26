@@ -21,6 +21,8 @@ The first version, not yet published.
 - **`Wdc.Persistence`, `.PostgreSql`, `.SqlServer`:** SQL repositories built from mappings, one statement per fetch,
   writes in cascade; PostgreSQL and SQL Server 2025.
 - **`Wdc.Rest`, `.Server`, `.Client`:** repositories and remote transactions over HTTP, with the wire of the Kotlin
-  implementation.
+  implementation. Security and cache headers on every answer, `Server-Timing`, a pluggable error map, 429 with
+  `Retry-After` (`TooManyRequestsException`, also for ASP.NET's rate limiter), and metrics of the remote transactions.
+- **Metrics:** `Wdc.Rest.Server` and `Wdc.Cube.Blazor` publish their instruments on `System.Diagnostics.Metrics`.
 
 [Unreleased]: https://github.com/mrcdom/wdc-cube-csharp/commits/main

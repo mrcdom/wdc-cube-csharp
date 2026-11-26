@@ -20,7 +20,6 @@ Wdc.Rest.Server.RemoteTransactionCoordinator.DisposeAsync() -> System.Threading.
 Wdc.Rest.Server.RemoteTransactionCoordinator.HasOpen(string! owner) -> bool
 Wdc.Rest.Server.RemoteTransactionCoordinator.Options.get -> Wdc.Rest.Server.RemoteTransactionOptions!
 Wdc.Rest.Server.RemoteTransactionCoordinator.Reap(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Wdc.Rest.Server.RemoteTransactionCoordinator.RemoteTransactionCoordinator(Wdc.Domain.IDetachedTransactionSource! source, Wdc.Rest.Server.RemoteTransactionOptions? options = null, System.TimeProvider? time = null, Microsoft.Extensions.Logging.ILogger<Wdc.Rest.Server.RemoteTransactionCoordinator!>? logger = null) -> void
 Wdc.Rest.Server.RemoteTransactionCoordinator.Rollback(string! id, string? owner, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Rest.Server.RemoteTransactionStatus>!
 Wdc.Rest.Server.RemoteTransactionCoordinator.Run<T>(string! id, string? owner, System.Func<System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
 Wdc.Rest.Server.RemoteTransactionCoordinator.Stats.get -> Wdc.Rest.Server.RemoteTransactionStats
@@ -88,3 +87,42 @@ Wdc.Rest.Server.RestServerServiceCollectionExtensions
 Wdc.Rest.Server.RestTransactions
 ~override Wdc.Rest.Server.RemoteTransactionStats.Equals(object obj) -> bool
 ~override Wdc.Rest.Server.RemoteTransactionStats.ToString() -> string
+const Wdc.Rest.Server.RestServerMetrics.MeterName = "Wdc.Rest.Server" -> string!
+override Wdc.Rest.Server.RestError.Equals(object? obj) -> bool
+override Wdc.Rest.Server.RestError.GetHashCode() -> int
+override Wdc.Rest.Server.RestError.ToString() -> string!
+static Wdc.Rest.Server.RestError.operator !=(Wdc.Rest.Server.RestError? left, Wdc.Rest.Server.RestError? right) -> bool
+static Wdc.Rest.Server.RestError.operator ==(Wdc.Rest.Server.RestError? left, Wdc.Rest.Server.RestError? right) -> bool
+static Wdc.Rest.Server.RestErrorMap.Default(System.Exception! error) -> Wdc.Rest.Server.RestError!
+static Wdc.Rest.Server.RestRateLimiting.OnRejected(Microsoft.AspNetCore.RateLimiting.OnRejectedContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+static Wdc.Rest.Server.RestTiming.Add(Microsoft.AspNetCore.Http.HttpContext! context, string! name, System.TimeSpan duration, string? description = null) -> void
+static Wdc.Rest.Server.RestTiming.Measure(Microsoft.AspNetCore.Http.HttpContext! context, string! name, System.Func<System.Threading.Tasks.Task!>! work, string? description = null) -> System.Threading.Tasks.Task!
+static Wdc.Rest.Server.RestTiming.Measure<T>(Microsoft.AspNetCore.Http.HttpContext! context, string! name, System.Func<System.Threading.Tasks.Task<T>!>! work, string? description = null) -> System.Threading.Tasks.Task<T>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.RemoteTransactionCoordinator(Wdc.Domain.IDetachedTransactionSource! source, Wdc.Rest.Server.RemoteTransactionOptions? options = null, System.TimeProvider? time = null, Microsoft.Extensions.Logging.ILogger<Wdc.Rest.Server.RemoteTransactionCoordinator!>? logger = null, System.Diagnostics.Metrics.IMeterFactory? meters = null) -> void
+Wdc.Rest.Server.RestError
+Wdc.Rest.Server.RestError.<Clone>$() -> Wdc.Rest.Server.RestError!
+Wdc.Rest.Server.RestError.Deconstruct(out System.Net.HttpStatusCode Status, out string! Message) -> void
+Wdc.Rest.Server.RestError.Equals(Wdc.Rest.Server.RestError? other) -> bool
+Wdc.Rest.Server.RestError.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Wdc.Rest.Server.RestError.Headers.init -> void
+Wdc.Rest.Server.RestError.Message.get -> string!
+Wdc.Rest.Server.RestError.Message.init -> void
+Wdc.Rest.Server.RestError.RestError(System.Net.HttpStatusCode Status, string! Message) -> void
+Wdc.Rest.Server.RestError.Status.get -> System.Net.HttpStatusCode
+Wdc.Rest.Server.RestError.Status.init -> void
+Wdc.Rest.Server.RestErrorMap
+Wdc.Rest.Server.RestErrorMap.Map<TException>(System.Func<TException!, Wdc.Rest.Server.RestError?>! map) -> Wdc.Rest.Server.RestErrorMap!
+Wdc.Rest.Server.RestErrorMap.Map<TException>(System.Net.HttpStatusCode status) -> Wdc.Rest.Server.RestErrorMap!
+Wdc.Rest.Server.RestErrorMap.Resolve(System.Exception! error) -> Wdc.Rest.Server.RestError!
+Wdc.Rest.Server.RestErrorMap.RestErrorMap() -> void
+Wdc.Rest.Server.RestRateLimiting
+Wdc.Rest.Server.RestServerMetrics
+Wdc.Rest.Server.RestServerOptions.CacheControl.get -> string?
+Wdc.Rest.Server.RestServerOptions.CacheControl.set -> void
+Wdc.Rest.Server.RestServerOptions.Errors.get -> Wdc.Rest.Server.RestErrorMap!
+Wdc.Rest.Server.RestServerOptions.SecurityHeaders.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Wdc.Rest.Server.RestServerOptions.ServerTiming.get -> bool
+Wdc.Rest.Server.RestServerOptions.ServerTiming.set -> void
+Wdc.Rest.Server.RestServerOptions.ServerTimingDescriptions.get -> bool
+Wdc.Rest.Server.RestServerOptions.ServerTimingDescriptions.set -> void
+Wdc.Rest.Server.RestTiming
