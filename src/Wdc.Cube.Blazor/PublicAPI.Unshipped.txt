@@ -1,0 +1,57 @@
+#nullable enable
+override Wdc.Cube.Blazor.CubeHostContext.Equals(object? obj) -> bool
+override Wdc.Cube.Blazor.CubeHostContext.GetHashCode() -> int
+override Wdc.Cube.Blazor.CubeHostContext.ToString() -> string!
+override Wdc.Cube.Blazor.NavigationHistoryManager.Location.get -> string!
+override Wdc.Cube.Blazor.NavigationHistoryManager.Update(Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> void
+override Wdc.Cube.Blazor.ScopeView<TScope>.OnAfterRender(bool firstRender) -> void
+override Wdc.Cube.Blazor.ScopeView<TScope>.OnParametersSet() -> void
+static Wdc.Cube.Blazor.BlazorPresentation.CreateDispatcher(Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> Wdc.Cube.PresentationDispatcher!
+static Wdc.Cube.Blazor.CubeBlazorServiceCollectionExtensions.AddCubeViews(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Wdc.Cube.Blazor.ViewRegistry!>! register) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Wdc.Cube.Blazor.CubeHostContext.operator !=(Wdc.Cube.Blazor.CubeHostContext? left, Wdc.Cube.Blazor.CubeHostContext? right) -> bool
+static Wdc.Cube.Blazor.CubeHostContext.operator ==(Wdc.Cube.Blazor.CubeHostContext? left, Wdc.Cube.Blazor.CubeHostContext? right) -> bool
+virtual Wdc.Cube.Blazor.ScopeView<TScope>.Dispose(bool disposing) -> void
+Wdc.Cube.Blazor.BlazorPresentation
+Wdc.Cube.Blazor.CubeBlazorServiceCollectionExtensions
+Wdc.Cube.Blazor.CubeHost<TApp>
+Wdc.Cube.Blazor.CubeHost<TApp>.Application.get -> TApp?
+Wdc.Cube.Blazor.CubeHost<TApp>.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Wdc.Cube.Blazor.CubeHost<TApp>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TApp!>?
+Wdc.Cube.Blazor.CubeHost<TApp>.ChildContent.set -> void
+Wdc.Cube.Blazor.CubeHost<TApp>.CreateApplication.get -> System.Func<Wdc.Cube.Blazor.CubeHostContext!, TApp!>!
+Wdc.Cube.Blazor.CubeHost<TApp>.CreateApplication.set -> void
+Wdc.Cube.Blazor.CubeHost<TApp>.CubeHost() -> void
+Wdc.Cube.Blazor.CubeHost<TApp>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Wdc.Cube.Blazor.CubeHost<TApp>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Wdc.Cube.Blazor.CubeHost<TApp>.Start.get -> System.Func<TApp!, System.Threading.Tasks.Task!>?
+Wdc.Cube.Blazor.CubeHost<TApp>.Start.set -> void
+Wdc.Cube.Blazor.CubeHostContext
+Wdc.Cube.Blazor.CubeHostContext.<Clone>$() -> Wdc.Cube.Blazor.CubeHostContext!
+Wdc.Cube.Blazor.CubeHostContext.CubeHostContext(Wdc.Cube.PresentationDispatcher! Dispatcher, Wdc.Cube.HistoryManager! History) -> void
+Wdc.Cube.Blazor.CubeHostContext.Deconstruct(out Wdc.Cube.PresentationDispatcher! Dispatcher, out Wdc.Cube.HistoryManager! History) -> void
+Wdc.Cube.Blazor.CubeHostContext.Dispatcher.get -> Wdc.Cube.PresentationDispatcher!
+Wdc.Cube.Blazor.CubeHostContext.Dispatcher.init -> void
+Wdc.Cube.Blazor.CubeHostContext.Equals(Wdc.Cube.Blazor.CubeHostContext? other) -> bool
+Wdc.Cube.Blazor.CubeHostContext.History.get -> Wdc.Cube.HistoryManager!
+Wdc.Cube.Blazor.CubeHostContext.History.init -> void
+Wdc.Cube.Blazor.NavigationHistoryManager
+Wdc.Cube.Blazor.NavigationHistoryManager.Dispose() -> void
+Wdc.Cube.Blazor.NavigationHistoryManager.NavigationHistoryManager(Microsoft.AspNetCore.Components.NavigationManager! navigation) -> void
+Wdc.Cube.Blazor.ScopeView<TScope>
+Wdc.Cube.Blazor.ScopeView<TScope>.Dispose() -> void
+Wdc.Cube.Blazor.ScopeView<TScope>.Scope.get -> TScope!
+Wdc.Cube.Blazor.ScopeView<TScope>.Scope.set -> void
+Wdc.Cube.Blazor.ScopeView<TScope>.ScopeView() -> void
+Wdc.Cube.Blazor.ViewEntry
+Wdc.Cube.Blazor.ViewEntry.ComponentType.get -> System.Type!
+Wdc.Cube.Blazor.ViewEntry.ViewEntry(System.Type! componentType) -> void
+Wdc.Cube.Blazor.ViewRegistry
+Wdc.Cube.Blazor.ViewRegistry.Find(System.Type! scopeType) -> Wdc.Cube.Blazor.ViewEntry?
+Wdc.Cube.Blazor.ViewRegistry.Register<TScope, TView>() -> Wdc.Cube.Blazor.ViewRegistry!
+Wdc.Cube.Blazor.ViewRegistry.ViewRegistry() -> void
+Wdc.Cube.Blazor.ViewSlot
+Wdc.Cube.Blazor.ViewSlot.Empty.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Wdc.Cube.Blazor.ViewSlot.Empty.set -> void
+Wdc.Cube.Blazor.ViewSlot.Scope.get -> Wdc.Cube.Scope?
+Wdc.Cube.Blazor.ViewSlot.Scope.set -> void
+Wdc.Cube.Blazor.ViewSlot.ViewSlot() -> void

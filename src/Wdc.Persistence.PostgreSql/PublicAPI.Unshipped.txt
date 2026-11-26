@@ -1,0 +1,17 @@
+#nullable enable
+static Wdc.Persistence.PostgreSql.PostgreSql.CreateDatabase(Npgsql.NpgsqlDataSource! dataSource, string? schema = null, Microsoft.Extensions.Logging.ILogger? logger = null) -> Wdc.Persistence.Database!
+static Wdc.Persistence.PostgreSql.PostgreSqlDialect.Instance.get -> Wdc.Persistence.PostgreSql.PostgreSqlDialect!
+Wdc.Persistence.PostgreSql.PostgreSql
+Wdc.Persistence.PostgreSql.PostgreSqlDialect
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.Name.get -> string!
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.PostgreSqlDialect() -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.QuoteIdentifier(string! name) -> string!
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteBoolean(Wdc.Persistence.SqlWriter! writer, bool value) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteDeleteFrom(Wdc.Persistence.SqlWriter! writer, string! table, string! alias) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteInsertReturningKey(Wdc.Persistence.SqlWriter! writer, string! table, System.Collections.Generic.IReadOnlyList<(string! Column, object? Value)>! values, string! keyColumn) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteJsonArraySubquery(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! element, System.Collections.Generic.IReadOnlyList<(System.Action<Wdc.Persistence.SqlWriter!>! Expression, bool Descending)>! orderBy, System.Action<Wdc.Persistence.SqlWriter!>! fromWhere) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteJsonAsText(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! json) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteJsonObject(Wdc.Persistence.SqlWriter! writer, System.Collections.Generic.IReadOnlyList<Wdc.Persistence.JsonEntry!>! entries) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteKeyObject(Wdc.Persistence.SqlWriter! writer, string! key, System.Action<Wdc.Persistence.SqlWriter!>! column, Wdc.Domain.IValueKind! kind) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteLike(Wdc.Persistence.SqlWriter! writer, Wdc.Persistence.ISqlFragment! expr, string! pattern, bool ignoreCase) -> void
+Wdc.Persistence.PostgreSql.PostgreSqlDialect.WriteSlice(Wdc.Persistence.SqlWriter! writer, int? limit, int? offset) -> void

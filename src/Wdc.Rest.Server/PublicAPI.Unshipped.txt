@@ -1,0 +1,90 @@
+#nullable enable
+override Wdc.Rest.Server.RemoteTransactionStats.GetHashCode() -> int
+static Wdc.Rest.Server.RemoteTransactionRoutes.MapRemoteTransactions(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! routes, string! basePath = "/api/tx") -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!
+static Wdc.Rest.Server.RemoteTransactionRoutes.WireName(Wdc.Rest.Server.RemoteTransactionStatus status) -> string!
+static Wdc.Rest.Server.RemoteTransactionStats.operator !=(Wdc.Rest.Server.RemoteTransactionStats left, Wdc.Rest.Server.RemoteTransactionStats right) -> bool
+static Wdc.Rest.Server.RemoteTransactionStats.operator ==(Wdc.Rest.Server.RemoteTransactionStats left, Wdc.Rest.Server.RemoteTransactionStats right) -> bool
+static Wdc.Rest.Server.RestHttp.ReadBody(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task<byte[]!>!
+static Wdc.Rest.Server.RestHttp.Respond(Microsoft.AspNetCore.Http.HttpContext! context, System.Func<System.Threading.Tasks.Task<byte[]?>!>! handle) -> System.Threading.Tasks.Task!
+static Wdc.Rest.Server.RestHttp.Write(Microsoft.AspNetCore.Http.HttpContext! context, System.Net.HttpStatusCode status, byte[]! body) -> System.Threading.Tasks.Task!
+static Wdc.Rest.Server.RestHttp.WriteError(Microsoft.AspNetCore.Http.HttpContext! context, System.Exception! error) -> System.Threading.Tasks.Task!
+static Wdc.Rest.Server.RestServerOptions.DefaultOwner(Microsoft.AspNetCore.Http.HttpContext! context) -> string?
+static Wdc.Rest.Server.RestServerOptions.DefaultQuota(Microsoft.AspNetCore.Http.HttpContext! context) -> string?
+static Wdc.Rest.Server.RestServerServiceCollectionExtensions.AddCubeRest(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Wdc.Rest.Server.RestServerOptions!>? configure = null, bool remoteTransactions = true, System.Action<Wdc.Rest.Server.RemoteTransactionOptions!>? configureTransactions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Wdc.Rest.Server.RestTransactions.Run<T>(Microsoft.AspNetCore.Http.HttpContext! context, bool write, System.Func<System.Threading.Tasks.Task<T>!>! work) -> System.Threading.Tasks.Task<T>!
+Wdc.Rest.Server.RemoteTransactionCoordinator
+Wdc.Rest.Server.RemoteTransactionCoordinator.Begin(string? owner, string? quota, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.Begin(string? owner, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.Commit(string! id, string? owner, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Rest.Server.RemoteTransactionStatus>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Wdc.Rest.Server.RemoteTransactionCoordinator.HasOpen(string! owner) -> bool
+Wdc.Rest.Server.RemoteTransactionCoordinator.Options.get -> Wdc.Rest.Server.RemoteTransactionOptions!
+Wdc.Rest.Server.RemoteTransactionCoordinator.Reap(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Wdc.Rest.Server.RemoteTransactionCoordinator.RemoteTransactionCoordinator(Wdc.Domain.IDetachedTransactionSource! source, Wdc.Rest.Server.RemoteTransactionOptions? options = null, System.TimeProvider? time = null, Microsoft.Extensions.Logging.ILogger<Wdc.Rest.Server.RemoteTransactionCoordinator!>? logger = null) -> void
+Wdc.Rest.Server.RemoteTransactionCoordinator.Rollback(string! id, string? owner, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Rest.Server.RemoteTransactionStatus>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.Run<T>(string! id, string? owner, System.Func<System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+Wdc.Rest.Server.RemoteTransactionCoordinator.Stats.get -> Wdc.Rest.Server.RemoteTransactionStats
+Wdc.Rest.Server.RemoteTransactionCoordinator.Status(string! id, string? owner) -> Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RemoteTransactionOptions
+Wdc.Rest.Server.RemoteTransactionOptions.IdleTimeout.get -> System.TimeSpan
+Wdc.Rest.Server.RemoteTransactionOptions.IdleTimeout.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.MaxLifetime.get -> System.TimeSpan
+Wdc.Rest.Server.RemoteTransactionOptions.MaxLifetime.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.MaxOpen.get -> int
+Wdc.Rest.Server.RemoteTransactionOptions.MaxOpen.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.MaxOpenPerOwner.get -> int
+Wdc.Rest.Server.RemoteTransactionOptions.MaxOpenPerOwner.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.OutcomeRetention.get -> System.TimeSpan
+Wdc.Rest.Server.RemoteTransactionOptions.OutcomeRetention.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.ReapInterval.get -> System.TimeSpan
+Wdc.Rest.Server.RemoteTransactionOptions.ReapInterval.set -> void
+Wdc.Rest.Server.RemoteTransactionOptions.RemoteTransactionOptions() -> void
+Wdc.Rest.Server.RemoteTransactionReaper
+Wdc.Rest.Server.RemoteTransactionReaper.RemoteTransactionReaper(Wdc.Rest.Server.RemoteTransactionCoordinator! coordinator, System.TimeProvider? time = null) -> void
+Wdc.Rest.Server.RemoteTransactionRoutes
+Wdc.Rest.Server.RemoteTransactionStats
+Wdc.Rest.Server.RemoteTransactionStats.Begun.get -> long
+Wdc.Rest.Server.RemoteTransactionStats.Begun.init -> void
+Wdc.Rest.Server.RemoteTransactionStats.Committed.get -> long
+Wdc.Rest.Server.RemoteTransactionStats.Committed.init -> void
+Wdc.Rest.Server.RemoteTransactionStats.Deconstruct(out int OpenNow, out long Begun, out long Committed, out long RolledBack, out long Reaped, out long RejectedByLimit) -> void
+Wdc.Rest.Server.RemoteTransactionStats.Equals(Wdc.Rest.Server.RemoteTransactionStats other) -> bool
+Wdc.Rest.Server.RemoteTransactionStats.OpenNow.get -> int
+Wdc.Rest.Server.RemoteTransactionStats.OpenNow.init -> void
+Wdc.Rest.Server.RemoteTransactionStats.Reaped.get -> long
+Wdc.Rest.Server.RemoteTransactionStats.Reaped.init -> void
+Wdc.Rest.Server.RemoteTransactionStats.RejectedByLimit.get -> long
+Wdc.Rest.Server.RemoteTransactionStats.RejectedByLimit.init -> void
+Wdc.Rest.Server.RemoteTransactionStats.RemoteTransactionStats() -> void
+Wdc.Rest.Server.RemoteTransactionStats.RemoteTransactionStats(int OpenNow, long Begun, long Committed, long RolledBack, long Reaped, long RejectedByLimit) -> void
+Wdc.Rest.Server.RemoteTransactionStats.RolledBack.get -> long
+Wdc.Rest.Server.RemoteTransactionStats.RolledBack.init -> void
+Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RemoteTransactionStatus.Committed = 2 -> Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RemoteTransactionStatus.Open = 1 -> Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RemoteTransactionStatus.RolledBack = 3 -> Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RemoteTransactionStatus.Unknown = 0 -> Wdc.Rest.Server.RemoteTransactionStatus
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.BasePath.get -> string!
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.Map(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! routes) -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.RepositoryRpc(string! basePath, Wdc.Domain.EntityModel<TEntity!>! model, System.Func<TCriteria!>! newCriteria, System.Func<Microsoft.AspNetCore.Http.HttpContext!, Wdc.Domain.IReadOnlyRepository<TEntity!, TCriteria!, TKey>!>! repository) -> void
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.Wire.get -> Wdc.Rest.RepositoryWire<TEntity!, TCriteria!>!
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.Writes.get -> bool
+Wdc.Rest.Server.RepositoryRpc<TEntity, TCriteria, TKey>.Writes.set -> void
+Wdc.Rest.Server.RestHttp
+Wdc.Rest.Server.RestServerOptions
+Wdc.Rest.Server.RestServerOptions.MaxBodyBytes.get -> int
+Wdc.Rest.Server.RestServerOptions.MaxBodyBytes.set -> void
+Wdc.Rest.Server.RestServerOptions.MaxItems.get -> int
+Wdc.Rest.Server.RestServerOptions.MaxItems.set -> void
+Wdc.Rest.Server.RestServerOptions.OwnerOf.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string?>!
+Wdc.Rest.Server.RestServerOptions.OwnerOf.set -> void
+Wdc.Rest.Server.RestServerOptions.QuotaOf.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string?>!
+Wdc.Rest.Server.RestServerOptions.QuotaOf.set -> void
+Wdc.Rest.Server.RestServerOptions.RefuseWritesOutsideOpenTransaction.get -> bool
+Wdc.Rest.Server.RestServerOptions.RefuseWritesOutsideOpenTransaction.set -> void
+Wdc.Rest.Server.RestServerOptions.RestServerOptions() -> void
+Wdc.Rest.Server.RestServerServiceCollectionExtensions
+Wdc.Rest.Server.RestTransactions
+~override Wdc.Rest.Server.RemoteTransactionStats.Equals(object obj) -> bool
+~override Wdc.Rest.Server.RemoteTransactionStats.ToString() -> string

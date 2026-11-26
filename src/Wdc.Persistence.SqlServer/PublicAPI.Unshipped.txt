@@ -1,0 +1,17 @@
+#nullable enable
+static Wdc.Persistence.SqlServer.SqlServer.CreateDatabase(string! connectionString, string? schema = null, Microsoft.Extensions.Logging.ILogger? logger = null) -> Wdc.Persistence.Database!
+static Wdc.Persistence.SqlServer.SqlServerDialect.Instance.get -> Wdc.Persistence.SqlServer.SqlServerDialect!
+Wdc.Persistence.SqlServer.SqlServer
+Wdc.Persistence.SqlServer.SqlServerDialect
+Wdc.Persistence.SqlServer.SqlServerDialect.Name.get -> string!
+Wdc.Persistence.SqlServer.SqlServerDialect.QuoteIdentifier(string! name) -> string!
+Wdc.Persistence.SqlServer.SqlServerDialect.SqlServerDialect() -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteBoolean(Wdc.Persistence.SqlWriter! writer, bool value) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteDeleteFrom(Wdc.Persistence.SqlWriter! writer, string! table, string! alias) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteInsertReturningKey(Wdc.Persistence.SqlWriter! writer, string! table, System.Collections.Generic.IReadOnlyList<(string! Column, object? Value)>! values, string! keyColumn) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteJsonArraySubquery(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! element, System.Collections.Generic.IReadOnlyList<(System.Action<Wdc.Persistence.SqlWriter!>! Expression, bool Descending)>! orderBy, System.Action<Wdc.Persistence.SqlWriter!>! fromWhere) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteJsonAsText(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! json) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteJsonObject(Wdc.Persistence.SqlWriter! writer, System.Collections.Generic.IReadOnlyList<Wdc.Persistence.JsonEntry!>! entries) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteKeyObject(Wdc.Persistence.SqlWriter! writer, string! key, System.Action<Wdc.Persistence.SqlWriter!>! column, Wdc.Domain.IValueKind! kind) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteLike(Wdc.Persistence.SqlWriter! writer, Wdc.Persistence.ISqlFragment! expr, string! pattern, bool ignoreCase) -> void
+Wdc.Persistence.SqlServer.SqlServerDialect.WriteSlice(Wdc.Persistence.SqlWriter! writer, int? limit, int? offset) -> void

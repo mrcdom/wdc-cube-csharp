@@ -1,0 +1,72 @@
+#nullable enable
+const Wdc.Rest.RestNames.ClientHeader = "X-Client-Id" -> string!
+const Wdc.Rest.RestNames.Count = "count" -> string!
+const Wdc.Rest.RestNames.Delete = "delete" -> string!
+const Wdc.Rest.RestNames.Fetch = "fetch" -> string!
+const Wdc.Rest.RestNames.FetchById = "fetch-by-id" -> string!
+const Wdc.Rest.RestNames.FetchPage = "fetch-page" -> string!
+const Wdc.Rest.RestNames.Insert = "insert" -> string!
+const Wdc.Rest.RestNames.TransactionBase = "/api/tx" -> string!
+const Wdc.Rest.RestNames.TransactionHeader = "X-Tx-Id" -> string!
+const Wdc.Rest.RestNames.Update = "update" -> string!
+override Wdc.Rest.Slice.GetHashCode() -> int
+static Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadCount(System.ReadOnlySpan<byte> body) -> int
+static Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadSuccess(System.ReadOnlySpan<byte> body) -> bool
+static Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteCount(int count) -> byte[]!
+static Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteSuccess(bool success) -> byte[]!
+static Wdc.Rest.RestErrors.Body(string! message) -> byte[]!
+static Wdc.Rest.RestErrors.FromResponse(System.Net.HttpStatusCode status, string? message) -> System.Exception!
+static Wdc.Rest.RestErrors.MessageOf(System.ReadOnlySpan<byte> body) -> string?
+static Wdc.Rest.RestErrors.ToResponse(System.Exception! error) -> (System.Net.HttpStatusCode Status, string! Message)
+static Wdc.Rest.RestJson.ReadInt(ref System.Text.Json.Utf8JsonReader reader, string! name) -> int
+static Wdc.Rest.RestJson.ReadObject(ref System.Text.Json.Utf8JsonReader reader, Wdc.Rest.RestJson.PropertyVisitor! visit) -> void
+static Wdc.Rest.RestJson.Start(System.ReadOnlySpan<byte> body) -> System.Text.Json.Utf8JsonReader
+static Wdc.Rest.RestJson.Write(System.Action<System.Text.Json.Utf8JsonWriter!>! write) -> byte[]!
+static Wdc.Rest.Slice.operator !=(Wdc.Rest.Slice left, Wdc.Rest.Slice right) -> bool
+static Wdc.Rest.Slice.operator ==(Wdc.Rest.Slice left, Wdc.Rest.Slice right) -> bool
+virtual Wdc.Rest.RestJson.PropertyVisitor.Invoke(string! name, ref System.Text.Json.Utf8JsonReader reader) -> void
+Wdc.Rest.RemoteCallException
+Wdc.Rest.RemoteCallException.RemoteCallException() -> void
+Wdc.Rest.RemoteCallException.RemoteCallException(string! message) -> void
+Wdc.Rest.RemoteCallException.RemoteCallException(string! message, System.Exception! innerException) -> void
+Wdc.Rest.RemoteCallException.RemoteCallException(System.Net.HttpStatusCode status, string! message) -> void
+Wdc.Rest.RemoteCallException.Status.get -> System.Net.HttpStatusCode?
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.Codec.get -> Wdc.Domain.JsonEntityCodec<TEntity!>!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.KeyFromRoute(string! text) -> TEntity!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.NewCriteria.get -> System.Func<TCriteria!>!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadEntity(System.ReadOnlySpan<byte> body) -> TEntity!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadFetchById(System.ReadOnlySpan<byte> body) -> (TEntity! KeyHolder, TEntity? Projection)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadInsert(System.ReadOnlySpan<byte> body) -> (TEntity! Entity, TEntity? Projection)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadInsertResult(System.ReadOnlySpan<byte> body) -> (bool Success, TEntity? Stored)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadItems(System.ReadOnlySpan<byte> body) -> (System.Collections.Generic.IReadOnlyList<TEntity!>! Items, int TotalItems)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadQuery(System.ReadOnlySpan<byte> body) -> (TCriteria! Criteria, Wdc.Rest.Slice Slice)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.ReadUpdate(System.ReadOnlySpan<byte> body) -> (TEntity! Entity, TEntity! Presence)
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.RepositoryWire(Wdc.Domain.EntityModel<TEntity!>! model, System.Func<TCriteria!>! newCriteria) -> void
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteEntity(TEntity! entity, TEntity? projection) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteFetchById(object! key, TEntity? projection) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteInsert(TEntity! bean, TEntity? projection) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteInsertResult(bool success, TEntity! bean) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteItems(System.Collections.Generic.IReadOnlyList<TEntity!>! items, TEntity? projection, int? totalItems = null) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteQuery(TCriteria! criteria, Wdc.Rest.Slice slice = default(Wdc.Rest.Slice)) -> byte[]!
+Wdc.Rest.RepositoryWire<TEntity, TCriteria>.WriteUpdate(TEntity! bean, TEntity! fields) -> byte[]!
+Wdc.Rest.RestErrors
+Wdc.Rest.RestJson
+Wdc.Rest.RestJson.PropertyVisitor
+Wdc.Rest.RestNames
+Wdc.Rest.Slice
+Wdc.Rest.Slice.Deconstruct(out int Offset, out int Limit, out int Page, out int PageSize) -> void
+Wdc.Rest.Slice.Equals(Wdc.Rest.Slice other) -> bool
+Wdc.Rest.Slice.Limit.get -> int
+Wdc.Rest.Slice.Limit.init -> void
+Wdc.Rest.Slice.Offset.get -> int
+Wdc.Rest.Slice.Offset.init -> void
+Wdc.Rest.Slice.Page.get -> int
+Wdc.Rest.Slice.Page.init -> void
+Wdc.Rest.Slice.PageSize.get -> int
+Wdc.Rest.Slice.PageSize.init -> void
+Wdc.Rest.Slice.Slice() -> void
+Wdc.Rest.Slice.Slice(int Offset = 0, int Limit = 0, int Page = 0, int PageSize = 0) -> void
+~override Wdc.Rest.Slice.Equals(object obj) -> bool
+~override Wdc.Rest.Slice.ToString() -> string

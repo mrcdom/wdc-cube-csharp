@@ -1,0 +1,14 @@
+#nullable enable
+override Wdc.Cube.Avalonia.ScopeView.OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs! e) -> void
+override Wdc.Cube.Avalonia.ScopeView.OnDataContextChanged(System.EventArgs! e) -> void
+override Wdc.Cube.Avalonia.ScopeView.OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs! e) -> void
+static Wdc.Cube.Avalonia.AvaloniaPresentation.CreateDispatcher() -> Wdc.Cube.PresentationDispatcher!
+Wdc.Cube.Avalonia.AvaloniaPresentation
+Wdc.Cube.Avalonia.ScopeView
+Wdc.Cube.Avalonia.ScopeView.Scope.get -> Wdc.Cube.Scope?
+Wdc.Cube.Avalonia.ScopeView.ScopeView() -> void
+Wdc.Cube.Avalonia.ScopeViewLocator
+Wdc.Cube.Avalonia.ScopeViewLocator.Build(object? param) -> Avalonia.Controls.Control?
+Wdc.Cube.Avalonia.ScopeViewLocator.Match(object? data) -> bool
+Wdc.Cube.Avalonia.ScopeViewLocator.Register<TScope>(System.Func<Avalonia.Controls.Control!>! create) -> Wdc.Cube.Avalonia.ScopeViewLocator!
+Wdc.Cube.Avalonia.ScopeViewLocator.ScopeViewLocator() -> void

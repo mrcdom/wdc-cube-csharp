@@ -31,12 +31,27 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Public members without documentation do not break the build. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!--
+      Overloads with optional parameters side by side (RS0026/RS0027) are part of the API's design; the listed API
+      still catches any change to them.
+    -->
+    <NoWarn>$(NoWarn);RS0026;RS0027</NoWarn>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>cube;presenter;mvp;navigation;blazor;avalonia;repository</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <!--
+    The public API of each library is listed in PublicAPI.Shipped.txt (released) and PublicAPI.Unshipped.txt (since the
+    last release): a change to it that is not listed breaks the build (RS0016/RS0017), so it is always deliberate.
+  -->
+  <ItemGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+  </ItemGroup>
 
   <ItemGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />

@@ -1,0 +1,36 @@
+#nullable enable
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Count(TCriteria! criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Delete(TCriteria! criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Fetch(TCriteria! criteria, int offset = 0, int limit = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TEntity!>!>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.FetchById(TKey id, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TEntity?>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.FetchPage(TCriteria! criteria, int page, int pageSize, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.Page<TEntity!>!>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Insert(TEntity! bean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.OwnFieldsProjection() -> TEntity!
+virtual Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Update(TEntity! newBean, TEntity? oldBean = null, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.BasePath.get -> string!
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Client.get -> Wdc.Rest.Client.RestClient!
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.RemoteRepository(Wdc.Rest.Client.RestClient! client, string! basePath, Wdc.Domain.EntityModel<TEntity!>! model, System.Func<TCriteria!>! newCriteria) -> void
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Route(string! operation) -> string!
+Wdc.Rest.Client.RemoteRepository<TEntity, TCriteria, TKey>.Wire.get -> Wdc.Rest.RepositoryWire<TEntity!, TCriteria!>!
+Wdc.Rest.Client.RemoteTransactionService
+Wdc.Rest.Client.RemoteTransactionService.AfterCommit(System.Func<System.Threading.Tasks.Task!>! task) -> System.Threading.Tasks.Task!
+Wdc.Rest.Client.RemoteTransactionService.Execute<T>(Wdc.Domain.Propagation propagation, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+Wdc.Rest.Client.RemoteTransactionService.InTransaction.get -> bool
+Wdc.Rest.Client.RemoteTransactionService.RemoteTransactionService(Wdc.Rest.Client.RestClient! client, string! basePath = "/api/tx", Microsoft.Extensions.Logging.ILogger? logger = null) -> void
+Wdc.Rest.Client.RestClient
+Wdc.Rest.Client.RestClient.ClientId.get -> string!
+Wdc.Rest.Client.RestClient.Get(string! path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]!>!
+Wdc.Rest.Client.RestClient.GetOrNull(string! path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]?>!
+Wdc.Rest.Client.RestClient.Post(string! path, byte[]! body, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]!>!
+Wdc.Rest.Client.RestClient.PostOrNull(string! path, byte[]! body, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]?>!
+Wdc.Rest.Client.RestClient.RestClient(System.Net.Http.HttpClient! http, Wdc.Rest.Client.RestClientOptions? options = null) -> void
+Wdc.Rest.Client.RestClientOptions
+Wdc.Rest.Client.RestClientOptions.AccessToken.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<string?>>?
+Wdc.Rest.Client.RestClientOptions.AccessToken.set -> void
+Wdc.Rest.Client.RestClientOptions.ClientId.get -> string!
+Wdc.Rest.Client.RestClientOptions.ClientId.set -> void
+Wdc.Rest.Client.RestClientOptions.RefreshAccess.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<bool>>?
+Wdc.Rest.Client.RestClientOptions.RefreshAccess.set -> void
+Wdc.Rest.Client.RestClientOptions.RestClientOptions() -> void
