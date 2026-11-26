@@ -59,7 +59,7 @@ public sealed class UpdatePipelineTests
     }
 
     [Fact]
-    public void Equality_ValuesAndStringsByValue_ObjectsByReference()
+    public void Equality_ByValue_CollectionsByContent_ScopesByReference()
     {
         var scope = new OrderScope();
         Own(scope);
@@ -71,7 +71,35 @@ public sealed class UpdatePipelineTests
 
         On(() => scope.Tag = new Money(10));
         Tick();
-        On(() => scope.Tag = new Money(10)); // equal record, other instance: another thing on screen
+        On(() => scope.Tag = new Money(10)); // an equal record
+        Assert.Equal(ScopeRenderState.Clean, scope.RenderState);
+
+        On(() => scope.Tag = new List<Money> { new(1), new(2) });
+        Tick();
+        On(() => scope.Tag = new[] { new Money(1), new Money(2) }); // another collection, same items in order
+        Assert.Equal(ScopeRenderState.Clean, scope.RenderState);
+        On(() => scope.Tag = new[] { new Money(2), new Money(1) });
+        Assert.Equal(ScopeRenderState.Dirty, scope.RenderState);
+        Tick();
+
+        On(() => scope.Tag = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2 });
+        Tick();
+        On(() => scope.Tag = new Dictionary<string, int> { ["b"] = 2, ["a"] = 1 }); // same entries
+        Assert.Equal(ScopeRenderState.Clean, scope.RenderState);
+        On(() => scope.Tag = new Dictionary<string, int> { ["a"] = 1, ["b"] = 3 });
+        Assert.Equal(ScopeRenderState.Dirty, scope.RenderState);
+        Tick();
+
+        On(() => scope.Tag = new object());
+        Tick();
+        On(() => scope.Tag = new object()); // a class without value equality: another thing
+        Assert.Equal(ScopeRenderState.Dirty, scope.RenderState);
+        Tick();
+
+        var external = new DetailScope();
+        On(() => scope.External = external);
+        Tick();
+        On(() => scope.External = new DetailScope()); // another scope is another view, whatever it holds
         Assert.Equal(ScopeRenderState.Dirty, scope.RenderState);
     }
 

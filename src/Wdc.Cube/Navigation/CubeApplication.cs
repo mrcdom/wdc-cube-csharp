@@ -31,6 +31,8 @@ public class CubeApplication
     private readonly Dictionary<string, Place> _placesByPath = new(StringComparer.Ordinal);
     private Dictionary<int, ICubePresenter> _presenters = [];
     private static readonly AsyncLocal<FlipContext?> s_ambientFlip = new();
+    private static readonly AsyncLocal<CubeApplication?> s_actionInProgress = new();
+    private readonly SemaphoreSlim _actionLock = new(1, 1);
     private FlipContext? _flip;
     private PendingNavigation? _pending;
     private Place? _lastPlace;
@@ -406,6 +408,49 @@ public class CubeApplication
                 _completion.TrySetException(caught);
             }
         }
+    }
+
+    // :: Actions
+
+    /// <summary>
+    /// Runs <paramref name="action"/> as the application's only action in progress. One that starts while another
+    /// waits on I/O waits for it to end, without holding a thread: two clicks on "Buy" run one after the other, and
+    /// no action sees another one's state halfway. An action started from inside a running one (directly or in work
+    /// it awaits) runs at once instead of waiting for itself. The guarded actions of presenters run through here.
+    /// </summary>
+    /// <remarks>
+    /// An action must not wait for work that runs another action outside its own flow (a task started elsewhere): that
+    /// other action waits for this one, and neither ends.
+    /// </remarks>
+    public async Task<T> RunAction<T>(Func<Task<T>> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        if (ReferenceEquals(s_actionInProgress.Value, this))
+        {
+            return await action();
+        }
+
+        await _actionLock.WaitAsync();
+        try
+        {
+            s_actionInProgress.Value = this; // flows into what the action awaits, and only into it
+            return await action();
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
+    /// <inheritdoc cref="RunAction{T}(Func{Task{T}})"/>
+    public Task RunAction(Func<Task> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        return RunAction(async () =>
+        {
+            await action();
+            return true;
+        });
     }
 
     // :: Errors and lifecycle

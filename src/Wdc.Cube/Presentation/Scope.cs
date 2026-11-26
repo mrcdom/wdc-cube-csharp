@@ -16,10 +16,11 @@ namespace Wdc.Cube;
 /// is kept and goes out in the next window, never lost and never piled on a view that is still drawing.
 /// </para>
 /// <para>
-/// <b>Equality.</b> Value types and strings compare by value; other objects by reference, as in the other Cube
-/// versions. Replacing an object with an equal copy is a change: it tells the view the thing on screen is another one.
-/// Changing <i>inside</i> an object already assigned is invisible to <see cref="Set{T}"/>: call
-/// <see cref="MarkDirty"/>.
+/// <b>Equality.</b> A value equal to the current one is no change: values compare with their own
+/// <see cref="object.Equals(object)"/> (records and value types by value, other classes by reference), strings
+/// ordinally, collections by content (sequences in order, dictionaries by key), and scopes always by reference, since
+/// another scope is another view. Changing <i>inside</i> an object already assigned is invisible to
+/// <see cref="Set{T}"/>: call <see cref="MarkDirty"/>.
 /// </para>
 /// <para>
 /// <b>Child scopes.</b> A scope assigned to an observed property, or added to a <see cref="ScopeList{T}"/>, that has no
@@ -264,16 +265,64 @@ public abstract class Scope : INotifyPropertyChanged
         }
     }
 
-    private static bool Same<T>(T current, T value)
+    private static bool Same<T>(T current, T value) =>
+        typeof(T).IsValueType ? EqualityComparer<T>.Default.Equals(current, value) : Equal(current, value);
+
+    private static bool Equal(object? current, object? value)
     {
-        if (typeof(T).IsValueType)
+        if (ReferenceEquals(current, value))
         {
-            return EqualityComparer<T>.Default.Equals(current, value);
+            return true;
         }
 
-        return current is string text
-            ? string.Equals(text, value as string, StringComparison.Ordinal)
-            : ReferenceEquals(current, value);
+        return (current, value) switch
+        {
+            (null, _) or (_, null) => false,
+            (Scope, _) or (_, Scope) => false, // a scope is an identity: another instance is another view
+            (string a, string b) => string.Equals(a, b, StringComparison.Ordinal),
+            (System.Collections.IDictionary a, System.Collections.IDictionary b) => EqualEntries(a, b),
+            (System.Collections.IEnumerable a, System.Collections.IEnumerable b) => EqualElements(a, b),
+            _ => current.Equals(value),
+        };
+    }
+
+    private static bool EqualEntries(System.Collections.IDictionary current, System.Collections.IDictionary value)
+    {
+        if (current.Count != value.Count)
+        {
+            return false;
+        }
+
+        foreach (System.Collections.DictionaryEntry entry in current)
+        {
+            if (!value.Contains(entry.Key) || !Equal(entry.Value, value[entry.Key]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool EqualElements(System.Collections.IEnumerable current, System.Collections.IEnumerable value)
+    {
+        var right = value.GetEnumerator();
+        try
+        {
+            foreach (var item in current)
+            {
+                if (!right.MoveNext() || !Equal(item, right.Current))
+                {
+                    return false;
+                }
+            }
+
+            return !right.MoveNext();
+        }
+        finally
+        {
+            (right as IDisposable)?.Dispose();
+        }
     }
 
     private sealed class Binding(Scope scope, object token) : IDisposable

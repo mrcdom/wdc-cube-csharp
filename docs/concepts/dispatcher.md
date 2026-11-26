@@ -10,6 +10,11 @@ a desktop UI thread, or a queue of its own in tests and servers).
 
 - **One presentation thread per application.** Items never overlap. They interleave only at `await` points, like an
   event loop.
+- **One action at a time.** Guarded actions go further: one that starts while another waits on I/O waits for it to
+  end (`CubeApplication.RunAction`, without holding a thread), so a double click never runs the same action twice
+  in parallel. An action started from inside a running one runs at once. An action must not await work that runs
+  another action outside its own flow: each would wait for the other. See
+  [0018](../decisions/0018-actions-run-one-at-a-time.md).
 - **Awaits come back.** While an item runs, the dispatcher's `SynchronizationContext` is installed, so the
   continuation of an `await` is queued on the same dispatcher.
 - **Entry points marshal themselves.** Members that return a `Task` (`Flip`, `FlipToIntent`, `FlipToIntentString`,

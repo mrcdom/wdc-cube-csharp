@@ -124,6 +124,22 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
     }
 
     [Fact]
+    public async Task Buying_WithADoubleClick_RecordsOnePurchase()
+    {
+        var shop = await Shop.LoggedIn(db, "beotrano");
+        var product = await OpenProduct(shop, "Volleyball");
+        await shop.Do(() => product.Scope.OnAddToCart(1));
+        var mine = new Domain.Purchases.PurchaseCriteria().UserId.Eq(shop.App.Subject!.Id);
+        var before = await db.Store!.Repositories.Purchases.Count(mine, TestContext.Current.CancellationToken);
+
+        var buy = shop.PresenterOf<CartPresenter>(CartKeys.Place).Scope.OnBuy;
+        await shop.Do(() => Task.WhenAll(buy(), buy())); // the second click arrives while the first one is recording
+
+        Assert.Equal(before + 1, await db.Store!.Repositories.Purchases.Count(mine, TestContext.Current.CancellationToken));
+        Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Receipt_OfSomeoneElse_IsTheSameAsOneThatDoesNotExist()
     {
         var admin = await Shop.LoggedIn(db, "admin");
