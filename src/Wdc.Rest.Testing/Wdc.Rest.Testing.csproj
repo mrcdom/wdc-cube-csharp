@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- An in-memory host for tests of REST servers built on Wdc.Rest.Server: the real pipeline, no socket. -->
+  <PropertyGroup>
+    <Description>Test helpers for Cube REST servers: an in-memory ASP.NET host, its REST client and raw requests.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
+    <ProjectReference Include="../Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+</Project>

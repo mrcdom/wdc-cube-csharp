@@ -17,6 +17,7 @@ The examples come from the Shopping sample: the server in `samples/Shopping/Shop
 |---|---|
 | Server (ASP.NET Core) | `Wdc.Rest.Server`, your persistence project, `Microsoft.AspNetCore.Authentication.JwtBearer` for tokens |
 | Client (WebAssembly, desktop, tests) | `Wdc.Rest.Client`, your domain project |
+| Tests of the server | `Wdc.Rest.Testing` (see [section 9](#9-test-the-server)) |
 
 Both sides reference `Wdc.Rest` (through those packages) and the **same domain project**: the entity models and
 criteria are what encode and decode the bodies, so the client needs nothing else to talk to the server.
@@ -336,6 +337,42 @@ The coordinator publishes its numbers on the meter `Wdc.Rest.Server` (`RestServe
 `wdc.remote.transactions.open` (open now) and `wdc.remote.transactions` by `event` (`begun`, `committed`,
 `rolledback`, `reaped`, `refused`). The Blazor host publishes `wdc.cube.applications.live` on `Wdc.Cube.Blazor`.
 Read them with `dotnet-counters`, or export them with OpenTelemetry (`AddMeter(RestServerMetrics.MeterName)`).
+
+## 9. Test the server
+
+`Wdc.Rest.Testing` runs the server in memory, with no socket: the same services, middleware and routes as
+`Program.cs`, then a `RestClient` of it, or raw requests to check the wire.
+
+```csharp
+await using var host = await RestTestHost.Start(
+    builder =>
+    {
+        builder.Services.AddSingleton<ITransactionService>(database);
+        builder.Services.AddSingleton<IDetachedTransactionSource>(database);
+        builder.Services.AddCubeRest();
+    },
+    app =>
+    {
+        new RepositoryRpc<Product, ProductCriteria, long>("/api/repo/product", Product.Model,
+            () => new ProductCriteria(), _ => products).Map(app);
+        app.MapRemoteTransactions();
+    });
+
+// Through the client, as the application calls it
+var remote = new RemoteRepository<Product, ProductCriteria, long>(host.NewClient(), "/api/repo/product",
+    Product.Model, () => new ProductCriteria());
+var cheap = await remote.Fetch(new ProductCriteria().Price.Lt(10m));
+
+// On the wire
+var answer = await host.Send(HttpMethod.Post, "/api/repo/product/fetch", """{"orderBy":"BY_MOOD"}""");
+Assert.Equal(HttpStatusCode.BadRequest, answer.Status);
+Assert.StartsWith("unknown ordering", answer.Error);
+Assert.Equal("no-store", answer.Header("Cache-Control"));
+```
+
+- Logging starts empty; add a provider in the first callback to see it.
+- The test host does not decompress: with compression on, a raw answer shows its `Content-Encoding`.
+- Each `NewClient()` is a new client id (`X-Client-Id`), so two clients are two owners of remote transactions.
 
 ## Checklist
 

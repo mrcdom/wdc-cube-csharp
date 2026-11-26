@@ -97,6 +97,7 @@ Tests drive the same scopes with no view at all. The full walkthrough, tests inc
 | `Wdc.Persistence` | SQL repositories built from mappings: one statement per fetch, writes in cascade. |
 | `Wdc.Persistence.PostgreSql`, `Wdc.Persistence.SqlServer` | The two dialects. |
 | `Wdc.Rest`, `Wdc.Rest.Server`, `Wdc.Rest.Client` | Repositories and transactions over HTTP: the same contracts, local or remote. |
+| `Wdc.Rest.Testing` | Testing a REST server in memory: the real pipeline, its client, raw requests. |
 
 The libraries are trimming- and AOT-compatible: no runtime reflection in the core and the domain.
 

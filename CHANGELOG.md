@@ -23,6 +23,7 @@ The first version, not yet published.
 - **`Wdc.Rest`, `.Server`, `.Client`:** repositories and remote transactions over HTTP, with the wire of the Kotlin
   implementation. Security and cache headers on every answer, `Server-Timing`, a pluggable error map, 429 with
   `Retry-After` (`TooManyRequestsException`, also for ASP.NET's rate limiter), and metrics of the remote transactions.
+- **`Wdc.Rest.Testing`:** a REST server in memory for tests, its client and raw requests.
 - **Metrics:** `Wdc.Rest.Server` and `Wdc.Cube.Blazor` publish their instruments on `System.Diagnostics.Metrics`.
 
 [Unreleased]: https://github.com/mrcdom/wdc-cube-csharp/commits/main

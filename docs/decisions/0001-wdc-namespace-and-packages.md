@@ -21,7 +21,7 @@ Every namespace and package starts with `Wdc.`, and the project name is the root
 | Presentation | `Wdc.Cube`, `Wdc.Cube.Blazor`, `Wdc.Cube.Avalonia`, `Wdc.Cube.Codec`, `Wdc.Cube.Testing` |
 | Domain | `Wdc.Domain` |
 | Persistence | `Wdc.Persistence`, `Wdc.Persistence.PostgreSql`, `Wdc.Persistence.SqlServer` |
-| HTTP | `Wdc.Rest`, `Wdc.Rest.Server`, `Wdc.Rest.Client` |
+| HTTP | `Wdc.Rest`, `Wdc.Rest.Server`, `Wdc.Rest.Client`, `Wdc.Rest.Testing` |
 
 - `Wdc.Cube.*` is the presentation side (places, presenters, scopes, renderers).
 - `Wdc.Domain` and below carry no dependency on `Wdc.Cube`: a server can use the data stack without the presentation.

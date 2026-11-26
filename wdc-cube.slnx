@@ -18,6 +18,7 @@
     <Project Path="src/Wdc.Rest/Wdc.Rest.csproj" />
     <Project Path="src/Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
     <Project Path="src/Wdc.Rest.Client/Wdc.Rest.Client.csproj" />
+    <Project Path="src/Wdc.Rest.Testing/Wdc.Rest.Testing.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/GettingStarted/">
