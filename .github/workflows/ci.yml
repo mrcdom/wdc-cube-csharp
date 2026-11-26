@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call: # the publishing workflow runs the whole suite first
   schedule:
     - cron: "0 6 * * 1" # weekly, to catch a broken dependency or image between changes
 

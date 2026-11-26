@@ -69,6 +69,19 @@ changing the sample, rewrite the blocks with:
 python3 scripts/update-doc-snippets.py
 ```
 
+## Releasing
+
+1. In `CHANGELOG.md`, turn *Unreleased* into the version's section, `## [x.y.z] — yyyy-mm-dd`, and add its link at the
+   bottom.
+2. Move the lines of each `PublicAPI.Unshipped.txt` to the `PublicAPI.Shipped.txt` beside it.
+3. Set `<Version>` in `Directory.Build.props` to the next version, then merge.
+4. Tag the merge commit `vx.y.z` and push the tag. The *Publish* workflow runs the whole CI suite, packs `src/`,
+   installs the packages in a project outside the repository (`scripts/check-packages.sh`) and pushes them to
+   nuget.org.
+
+Publishing uses nuget.org's trusted publishing: a policy on nuget.org trusts `publish.yml` of this repository, and
+the GitHub environment `nuget` holds the nuget.org user name in the variable `NUGET_USER`. No API key is stored.
+
 ## Security
 
 Report vulnerabilities privately, as [SECURITY.md](SECURITY.md) describes, not in an issue.
