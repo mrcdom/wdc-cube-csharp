@@ -1,0 +1,25 @@
+#nullable enable
+override Wdc.Cube.Codec.HistoryKeyVersion.Equals(object? obj) -> bool
+override Wdc.Cube.Codec.HistoryKeyVersion.GetHashCode() -> int
+override Wdc.Cube.Codec.HistoryKeyVersion.ToString() -> string!
+static Wdc.Cube.Codec.Base64Url.Decode(string! text) -> byte[]!
+static Wdc.Cube.Codec.Base64Url.Encode(System.ReadOnlySpan<byte> bytes) -> string!
+static Wdc.Cube.Codec.HistoryKeyVersion.FromText(int version, string! key) -> Wdc.Cube.Codec.HistoryKeyVersion!
+static Wdc.Cube.Codec.HistoryKeyVersion.operator !=(Wdc.Cube.Codec.HistoryKeyVersion? left, Wdc.Cube.Codec.HistoryKeyVersion? right) -> bool
+static Wdc.Cube.Codec.HistoryKeyVersion.operator ==(Wdc.Cube.Codec.HistoryKeyVersion? left, Wdc.Cube.Codec.HistoryKeyVersion? right) -> bool
+Wdc.Cube.Codec.AesHistoryCodec
+Wdc.Cube.Codec.AesHistoryCodec.AesHistoryCodec(byte[]! key, string! envelope = "_e") -> void
+Wdc.Cube.Codec.AesHistoryCodec.AesHistoryCodec(Wdc.Cube.Codec.HistoryKeyVersion! current, System.Collections.Generic.IEnumerable<Wdc.Cube.Codec.HistoryKeyVersion!>! previous, string! envelope = "_e") -> void
+Wdc.Cube.Codec.AesHistoryCodec.Decode(string! payload) -> string?
+Wdc.Cube.Codec.AesHistoryCodec.Encode(string! queryString) -> string?
+Wdc.Cube.Codec.AesHistoryCodec.Envelope.get -> string!
+Wdc.Cube.Codec.Base64Url
+Wdc.Cube.Codec.HistoryKeyVersion
+Wdc.Cube.Codec.HistoryKeyVersion.<Clone>$() -> Wdc.Cube.Codec.HistoryKeyVersion!
+Wdc.Cube.Codec.HistoryKeyVersion.Deconstruct(out int Version, out byte[]! Key) -> void
+Wdc.Cube.Codec.HistoryKeyVersion.Equals(Wdc.Cube.Codec.HistoryKeyVersion? other) -> bool
+Wdc.Cube.Codec.HistoryKeyVersion.HistoryKeyVersion(int Version, byte[]! Key) -> void
+Wdc.Cube.Codec.HistoryKeyVersion.Key.get -> byte[]!
+Wdc.Cube.Codec.HistoryKeyVersion.Key.init -> void
+Wdc.Cube.Codec.HistoryKeyVersion.Version.get -> int
+Wdc.Cube.Codec.HistoryKeyVersion.Version.init -> void

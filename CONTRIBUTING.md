@@ -50,6 +50,10 @@ check it by hand.
   kept together in the file of the screen's root scope with the value types they expose.
 - **Comments explain the code's logic** — why it does what it does — not the history of how it got there.
 - **Package versions** live only in `Directory.Packages.props`.
+- **The public API is listed.** Each library in `src/` lists its public API in `PublicAPI.Shipped.txt` (released)
+  and `PublicAPI.Unshipped.txt` (since the last release). Adding, changing or removing a public member without
+  updating `PublicAPI.Unshipped.txt` breaks the build (RS0016/RS0017); the IDE's code fix writes the line. On a
+  release, the unshipped lines move to the shipped file.
 - **Each change that a user of the packages can notice gets a line in [`CHANGELOG.md`](CHANGELOG.md)**, under
   *Unreleased*, saying whether it breaks anything and what to do.
 - **Tests come with the change.** Behavior visible to an application is tested through the presentation (without a

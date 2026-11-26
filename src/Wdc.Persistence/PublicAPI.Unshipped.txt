@@ -1,0 +1,155 @@
+#nullable enable
+override Wdc.Persistence.JsonEntry.Equals(object? obj) -> bool
+override Wdc.Persistence.JsonEntry.GetHashCode() -> int
+override Wdc.Persistence.JsonEntry.ToString() -> string!
+override Wdc.Persistence.SortSpec.Equals(object? obj) -> bool
+override Wdc.Persistence.SortSpec.GetHashCode() -> int
+override Wdc.Persistence.SortSpec.ToString() -> string!
+override Wdc.Persistence.SqlStatement.Equals(object? obj) -> bool
+override Wdc.Persistence.SqlStatement.GetHashCode() -> int
+override Wdc.Persistence.SqlStatement.ToString() -> string!
+override Wdc.Persistence.SqlWriter.ToString() -> string!
+override Wdc.Persistence.TypedNull.Equals(object? obj) -> bool
+override Wdc.Persistence.TypedNull.GetHashCode() -> int
+override Wdc.Persistence.TypedNull.ToString() -> string!
+static Wdc.Persistence.EntityMapping.For<TEntity>(Wdc.Domain.EntityModel<TEntity!>! model, string! table, string! aliasPrefix) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+static Wdc.Persistence.FilterContext.Asks(Wdc.Domain.Criterion! criterion) -> bool
+static Wdc.Persistence.JsonEntry.operator !=(Wdc.Persistence.JsonEntry? left, Wdc.Persistence.JsonEntry? right) -> bool
+static Wdc.Persistence.JsonEntry.operator ==(Wdc.Persistence.JsonEntry? left, Wdc.Persistence.JsonEntry? right) -> bool
+static Wdc.Persistence.SortSpec.Asc(string! column) -> Wdc.Persistence.SortSpec!
+static Wdc.Persistence.SortSpec.Desc(string! column) -> Wdc.Persistence.SortSpec!
+static Wdc.Persistence.SortSpec.operator !=(Wdc.Persistence.SortSpec? left, Wdc.Persistence.SortSpec? right) -> bool
+static Wdc.Persistence.SortSpec.operator ==(Wdc.Persistence.SortSpec? left, Wdc.Persistence.SortSpec? right) -> bool
+static Wdc.Persistence.Sql.And(System.Collections.Generic.IEnumerable<Wdc.Persistence.ISqlFragment?>! conditions) -> Wdc.Persistence.ISqlFragment?
+static Wdc.Persistence.Sql.Between(Wdc.Persistence.ISqlFragment! expr, object? start, object? end) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Column(string! alias, string! column) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Compare(Wdc.Persistence.ISqlFragment! left, string! op, object? value) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Equal(Wdc.Persistence.ISqlFragment! left, Wdc.Persistence.ISqlFragment! right) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Exists(System.Action<Wdc.Persistence.SqlWriter!>! subquery) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.False.get -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.In(Wdc.Persistence.ISqlFragment! expr, System.Collections.Generic.IReadOnlyList<object?>! values) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.IsNotNull(Wdc.Persistence.ISqlFragment! expr) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.IsNull(Wdc.Persistence.ISqlFragment! expr) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Like(Wdc.Persistence.ISqlFragment! expr, string! pattern, bool ignoreCase) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Not(Wdc.Persistence.ISqlFragment! condition) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Or(System.Collections.Generic.IEnumerable<Wdc.Persistence.ISqlFragment?>! conditions) -> Wdc.Persistence.ISqlFragment?
+static Wdc.Persistence.Sql.Raw(System.Action<Wdc.Persistence.SqlWriter!>! render) -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.Sql.Translate(Wdc.Persistence.ISqlFragment! column, Wdc.Domain.Criterion! criterion) -> Wdc.Persistence.ISqlFragment?
+static Wdc.Persistence.Sql.True.get -> Wdc.Persistence.ISqlFragment!
+static Wdc.Persistence.SqlStatement.operator !=(Wdc.Persistence.SqlStatement? left, Wdc.Persistence.SqlStatement? right) -> bool
+static Wdc.Persistence.SqlStatement.operator ==(Wdc.Persistence.SqlStatement? left, Wdc.Persistence.SqlStatement? right) -> bool
+static Wdc.Persistence.TypedNull.Of(Wdc.Domain.IValueKind! kind) -> object!
+static Wdc.Persistence.TypedNull.operator !=(Wdc.Persistence.TypedNull? left, Wdc.Persistence.TypedNull? right) -> bool
+static Wdc.Persistence.TypedNull.operator ==(Wdc.Persistence.TypedNull? left, Wdc.Persistence.TypedNull? right) -> bool
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Count(TCriteria criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Delete(TCriteria criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Fetch(TCriteria criteria, int offset = 0, int limit = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TEntity!>!>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.FetchById(TKey id, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TEntity?>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.FetchPage(TCriteria criteria, int page, int pageSize, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.Page<TEntity!>!>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Insert(TEntity! bean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.OwnFieldsProjection() -> TEntity!
+virtual Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Update(TEntity! newBean, TEntity? oldBean = null, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Persistence.Database
+Wdc.Persistence.Database.AfterCommit(System.Func<System.Threading.Tasks.Task!>! task) -> System.Threading.Tasks.Task!
+Wdc.Persistence.Database.BeginDetached(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.IDetachedTransaction!>!
+Wdc.Persistence.Database.Database(Wdc.Persistence.ISqlDialect! dialect, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Data.Common.DbConnection!>>! openConnection, string? schema = null, Microsoft.Extensions.Logging.ILogger? logger = null) -> void
+Wdc.Persistence.Database.Dialect.get -> Wdc.Persistence.ISqlDialect!
+Wdc.Persistence.Database.Execute(Wdc.Persistence.SqlStatement! statement, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+Wdc.Persistence.Database.Execute<T>(Wdc.Domain.Propagation propagation, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+Wdc.Persistence.Database.InTransaction.get -> bool
+Wdc.Persistence.Database.NewWriter() -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.Database.Scalar(Wdc.Persistence.SqlStatement! statement, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<object?>!
+Wdc.Persistence.Database.Schema.get -> string?
+Wdc.Persistence.EntityMapping
+Wdc.Persistence.EntityMapping<TEntity>
+Wdc.Persistence.EntityMapping<TEntity>.AliasPrefix.get -> string!
+Wdc.Persistence.EntityMapping<TEntity>.KeyColumn.get -> string!
+Wdc.Persistence.EntityMapping<TEntity>.KeyGenerated.get -> bool
+Wdc.Persistence.EntityMapping<TEntity>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Persistence.EntityMapping<TEntity>.Table.get -> string!
+Wdc.Persistence.EntityMappingBuilder<TEntity>
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Build() -> Wdc.Persistence.EntityMapping<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Collection<TChild>(string! field, string! childForeignKeyColumn, System.Func<Wdc.Persistence.EntityMapping<TChild!>!>! child, bool cascadeDelete = false) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Column(string! field, string? column = null) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Conditions<TCriteria>(System.Func<TCriteria, Wdc.Persistence.FilterContext!, Wdc.Persistence.ISqlFragment?>! conditions) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Key(string? column = null, bool generated = false) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Ordering<TOrderBy>(System.Func<TOrderBy, System.Collections.Generic.IReadOnlyList<Wdc.Persistence.SortSpec!>!>! columns) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.EntityMappingBuilder<TEntity>.Reference<TChild>(string! field, string! foreignKeyColumn, System.Func<Wdc.Persistence.EntityMapping<TChild!>!>! child) -> Wdc.Persistence.EntityMappingBuilder<TEntity!>!
+Wdc.Persistence.FilterContext
+Wdc.Persistence.FilterContext.Alias.get -> string!
+Wdc.Persistence.FilterContext.Column(string! column) -> Wdc.Persistence.ISqlFragment!
+Wdc.Persistence.FilterContext.NewAlias(string! prefix) -> string!
+Wdc.Persistence.FilterContext.Translate(string! column, Wdc.Domain.Criterion! criterion) -> Wdc.Persistence.ISqlFragment?
+Wdc.Persistence.FilterContext.Translate(Wdc.Persistence.ISqlFragment! expression, Wdc.Domain.Criterion! criterion) -> Wdc.Persistence.ISqlFragment?
+Wdc.Persistence.ISqlDialect
+Wdc.Persistence.ISqlDialect.Name.get -> string!
+Wdc.Persistence.ISqlDialect.QuoteIdentifier(string! name) -> string!
+Wdc.Persistence.ISqlDialect.WriteBoolean(Wdc.Persistence.SqlWriter! writer, bool value) -> void
+Wdc.Persistence.ISqlDialect.WriteDeleteFrom(Wdc.Persistence.SqlWriter! writer, string! table, string! alias) -> void
+Wdc.Persistence.ISqlDialect.WriteInsertReturningKey(Wdc.Persistence.SqlWriter! writer, string! table, System.Collections.Generic.IReadOnlyList<(string! Column, object? Value)>! values, string! keyColumn) -> void
+Wdc.Persistence.ISqlDialect.WriteJsonArraySubquery(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! element, System.Collections.Generic.IReadOnlyList<(System.Action<Wdc.Persistence.SqlWriter!>! Expression, bool Descending)>! orderBy, System.Action<Wdc.Persistence.SqlWriter!>! fromWhere) -> void
+Wdc.Persistence.ISqlDialect.WriteJsonAsText(Wdc.Persistence.SqlWriter! writer, System.Action<Wdc.Persistence.SqlWriter!>! json) -> void
+Wdc.Persistence.ISqlDialect.WriteJsonObject(Wdc.Persistence.SqlWriter! writer, System.Collections.Generic.IReadOnlyList<Wdc.Persistence.JsonEntry!>! entries) -> void
+Wdc.Persistence.ISqlDialect.WriteKeyObject(Wdc.Persistence.SqlWriter! writer, string! key, System.Action<Wdc.Persistence.SqlWriter!>! column, Wdc.Domain.IValueKind! kind) -> void
+Wdc.Persistence.ISqlDialect.WriteLike(Wdc.Persistence.SqlWriter! writer, Wdc.Persistence.ISqlFragment! expr, string! pattern, bool ignoreCase) -> void
+Wdc.Persistence.ISqlDialect.WriteSlice(Wdc.Persistence.SqlWriter! writer, int? limit, int? offset) -> void
+Wdc.Persistence.ISqlFragment
+Wdc.Persistence.ISqlFragment.Render(Wdc.Persistence.SqlWriter! writer) -> void
+Wdc.Persistence.JsonEntry
+Wdc.Persistence.JsonEntry.<Clone>$() -> Wdc.Persistence.JsonEntry!
+Wdc.Persistence.JsonEntry.Deconstruct(out string! Key, out System.Action<Wdc.Persistence.SqlWriter!>! Value, out Wdc.Domain.IValueKind? Kind) -> void
+Wdc.Persistence.JsonEntry.Equals(Wdc.Persistence.JsonEntry? other) -> bool
+Wdc.Persistence.JsonEntry.JsonEntry(string! Key, System.Action<Wdc.Persistence.SqlWriter!>! Value, Wdc.Domain.IValueKind? Kind) -> void
+Wdc.Persistence.JsonEntry.Key.get -> string!
+Wdc.Persistence.JsonEntry.Key.init -> void
+Wdc.Persistence.JsonEntry.Kind.get -> Wdc.Domain.IValueKind?
+Wdc.Persistence.JsonEntry.Kind.init -> void
+Wdc.Persistence.JsonEntry.Value.get -> System.Action<Wdc.Persistence.SqlWriter!>!
+Wdc.Persistence.JsonEntry.Value.init -> void
+Wdc.Persistence.SortSpec
+Wdc.Persistence.SortSpec.<Clone>$() -> Wdc.Persistence.SortSpec!
+Wdc.Persistence.SortSpec.Column.get -> string!
+Wdc.Persistence.SortSpec.Column.init -> void
+Wdc.Persistence.SortSpec.Deconstruct(out string! Column, out bool Descending) -> void
+Wdc.Persistence.SortSpec.Descending.get -> bool
+Wdc.Persistence.SortSpec.Descending.init -> void
+Wdc.Persistence.SortSpec.Equals(Wdc.Persistence.SortSpec? other) -> bool
+Wdc.Persistence.SortSpec.SortSpec(string! Column, bool Descending = false) -> void
+Wdc.Persistence.Sql
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Codec.get -> Wdc.Domain.JsonEntityCodec<TEntity!>!
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Database.get -> Wdc.Persistence.Database!
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.ProjectionOf(Wdc.Domain.ICriteria! criteria) -> TEntity!
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.Select(TEntity! projection, Wdc.Persistence.ISqlFragment? where, Wdc.Domain.ICriteria? ordering, int? limit, int? offset, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TEntity!>!>!
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.SqlRepository(Wdc.Persistence.Database! database, Wdc.Persistence.EntityMapping<TEntity!>! mapping) -> void
+Wdc.Persistence.SqlRepository<TEntity, TCriteria, TKey>.TableMapping.get -> Wdc.Persistence.EntityMapping<TEntity!>!
+Wdc.Persistence.SqlStatement
+Wdc.Persistence.SqlStatement.<Clone>$() -> Wdc.Persistence.SqlStatement!
+Wdc.Persistence.SqlStatement.Deconstruct(out string! Text, out System.Collections.Generic.IReadOnlyList<object?>! Parameters) -> void
+Wdc.Persistence.SqlStatement.Equals(Wdc.Persistence.SqlStatement? other) -> bool
+Wdc.Persistence.SqlStatement.Parameters.get -> System.Collections.Generic.IReadOnlyList<object?>!
+Wdc.Persistence.SqlStatement.Parameters.init -> void
+Wdc.Persistence.SqlStatement.SqlStatement(string! Text, System.Collections.Generic.IReadOnlyList<object?>! Parameters) -> void
+Wdc.Persistence.SqlStatement.Text.get -> string!
+Wdc.Persistence.SqlStatement.Text.init -> void
+Wdc.Persistence.SqlWriter
+Wdc.Persistence.SqlWriter.Append(char ch) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.Append(string! text) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.Column(string! alias, string! column) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.Dialect.get -> Wdc.Persistence.ISqlDialect!
+Wdc.Persistence.SqlWriter.Identifier(string! name) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.Join<T>(string! separator, System.Collections.Generic.IEnumerable<T>! items, System.Action<Wdc.Persistence.SqlWriter!, T>! write) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.NextAlias(string! prefix) -> string!
+Wdc.Persistence.SqlWriter.Parameter(object? value) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.Schema.get -> string?
+Wdc.Persistence.SqlWriter.SqlWriter(Wdc.Persistence.ISqlDialect! dialect, string? schema = null) -> void
+Wdc.Persistence.SqlWriter.Table(string! name) -> Wdc.Persistence.SqlWriter!
+Wdc.Persistence.SqlWriter.ToStatement() -> Wdc.Persistence.SqlStatement!
+Wdc.Persistence.TypedNull
+Wdc.Persistence.TypedNull.<Clone>$() -> Wdc.Persistence.TypedNull!
+Wdc.Persistence.TypedNull.ClrType.get -> System.Type!
+Wdc.Persistence.TypedNull.ClrType.init -> void
+Wdc.Persistence.TypedNull.Deconstruct(out System.Type! ClrType) -> void
+Wdc.Persistence.TypedNull.Equals(Wdc.Persistence.TypedNull? other) -> bool
+Wdc.Persistence.TypedNull.TypedNull(System.Type! ClrType) -> void

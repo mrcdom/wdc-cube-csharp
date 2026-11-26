@@ -1,0 +1,37 @@
+#nullable enable
+override Wdc.Cube.Testing.ManualDispatcher.CheckAccess() -> bool
+override Wdc.Cube.Testing.ManualDispatcher.Post(System.Threading.SendOrPostCallback! callback, object? state) -> void
+override Wdc.Cube.Testing.TestHistoryManager.Location.get -> string!
+override Wdc.Cube.Testing.TestHistoryManager.Update(Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> void
+static Wdc.Cube.Testing.CubeTestExtensions.PresenterOf<T>(this Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> T!
+static Wdc.Cube.Testing.CubeTestExtensions.Settle(this Wdc.Cube.CubeApplication! app, int maxRounds = 20) -> System.Threading.Tasks.Task!
+Wdc.Cube.Testing.CubeTestExtensions
+Wdc.Cube.Testing.ManualDispatcher
+Wdc.Cube.Testing.ManualDispatcher.ManualDispatcher() -> void
+Wdc.Cube.Testing.ManualDispatcher.PendingCount.get -> int
+Wdc.Cube.Testing.ManualDispatcher.Run(System.Func<System.Threading.Tasks.Task!>! work, System.TimeSpan? timeout = null) -> void
+Wdc.Cube.Testing.ManualDispatcher.Run<T>(System.Func<System.Threading.Tasks.Task<T>!>! work, System.TimeSpan? timeout = null) -> T
+Wdc.Cube.Testing.ManualDispatcher.RunOne() -> bool
+Wdc.Cube.Testing.ManualDispatcher.RunPending(int maxItems = 100000) -> int
+Wdc.Cube.Testing.ManualDispatcher.Unhandled.get -> System.Collections.Generic.List<System.Exception!>!
+Wdc.Cube.Testing.ScopeRenderRecorder
+Wdc.Cube.Testing.ScopeRenderRecorder.Attach(params Wdc.Cube.Scope![]! scopes) -> Wdc.Cube.Testing.ScopeRenderRecorder!
+Wdc.Cube.Testing.ScopeRenderRecorder.AutoConfirm.get -> bool
+Wdc.Cube.Testing.ScopeRenderRecorder.AutoConfirm.set -> void
+Wdc.Cube.Testing.ScopeRenderRecorder.Clear() -> void
+Wdc.Cube.Testing.ScopeRenderRecorder.CountFor(Wdc.Cube.Scope! scope) -> int
+Wdc.Cube.Testing.ScopeRenderRecorder.Detach() -> void
+Wdc.Cube.Testing.ScopeRenderRecorder.Invalidate(Wdc.Cube.Scope! scope) -> void
+Wdc.Cube.Testing.ScopeRenderRecorder.Renders.get -> System.Collections.Generic.List<Wdc.Cube.Scope!>!
+Wdc.Cube.Testing.ScopeRenderRecorder.ScopeRenderRecorder() -> void
+Wdc.Cube.Testing.TestHistoryManager
+Wdc.Cube.Testing.TestHistoryManager.ClearTokens() -> void
+Wdc.Cube.Testing.TestHistoryManager.EncodedToken.get -> string!
+Wdc.Cube.Testing.TestHistoryManager.EncodedTokens.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wdc.Cube.Testing.TestHistoryManager.Navigate(string! location) -> void
+Wdc.Cube.Testing.TestHistoryManager.SetLocation(string! location) -> void
+Wdc.Cube.Testing.TestHistoryManager.TestHistoryManager(string! location = "") -> void
+Wdc.Cube.Testing.TestHistoryManager.Token.get -> string!
+Wdc.Cube.Testing.TestHistoryManager.Tokens.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wdc.Cube.Testing.TestHistoryManager.UpdateCount.get -> int
+Wdc.Cube.Testing.TestHistoryManager.WireLocation.get -> string!

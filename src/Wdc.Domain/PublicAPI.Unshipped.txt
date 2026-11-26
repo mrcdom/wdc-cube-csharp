@@ -1,0 +1,415 @@
+#nullable enable
+abstract Wdc.Domain.Criterion.IsSet.get -> bool
+abstract Wdc.Domain.Criterion.Predicates.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
+abstract Wdc.Domain.Criterion.Restrictions.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
+abstract Wdc.Domain.Criterion.ValueKind.get -> Wdc.Domain.IValueKind!
+abstract Wdc.Domain.FieldModel<TEntity>.Differs(TEntity! next, TEntity! previous) -> bool
+abstract Wdc.Domain.FieldModel<TEntity>.GetValue(TEntity! entity) -> object?
+abstract Wdc.Domain.FieldModel<TEntity>.HasValue(TEntity! entity) -> bool
+abstract Wdc.Domain.FieldModel<TEntity>.MarkOwnFields(TEntity! projection) -> void
+abstract Wdc.Domain.FieldModel<TEntity>.SetValue(TEntity! entity, object? value) -> void
+abstract Wdc.Domain.ValueKind<T>.FromDatabase(object? value) -> T
+abstract Wdc.Domain.ValueKind<T>.Marker.get -> T
+abstract Wdc.Domain.ValueKind<T>.Name.get -> string!
+abstract Wdc.Domain.ValueKind<T>.Read(ref System.Text.Json.Utf8JsonReader reader) -> T
+abstract Wdc.Domain.ValueKind<T>.Write(System.Text.Json.Utf8JsonWriter! writer, T value) -> void
+const Wdc.Domain.CriteriaCodec.OrderByProperty = "orderBy" -> string!
+const Wdc.Domain.Mark.Boolean = true -> bool
+const Wdc.Domain.Mark.Decimal = 1 -> decimal
+const Wdc.Domain.Mark.Double = 1 -> double
+const Wdc.Domain.Mark.Int32 = 1 -> int
+const Wdc.Domain.Mark.Int64 = 1 -> long
+const Wdc.Domain.Mark.String = "~" -> string!
+const Wdc.Domain.TextCriterion<TOwner>.EscapeChar = '\\' -> char
+override Wdc.Domain.Actor.ToString() -> string!
+override Wdc.Domain.CollectionField<TEntity, TChild>.Differs(TEntity! next, TEntity! previous) -> bool
+override Wdc.Domain.CollectionField<TEntity, TChild>.GetValue(TEntity! entity) -> object?
+override Wdc.Domain.CollectionField<TEntity, TChild>.HasValue(TEntity! entity) -> bool
+override Wdc.Domain.CollectionField<TEntity, TChild>.MarkOwnFields(TEntity! projection) -> void
+override Wdc.Domain.CollectionField<TEntity, TChild>.SetValue(TEntity! entity, object? value) -> void
+override Wdc.Domain.ComparableCriterion<TOwner, T>.And() -> Wdc.Domain.ComparableCriterion<TOwner!, T>!
+override Wdc.Domain.ComparableCriterion<TOwner, T>.Or() -> Wdc.Domain.ComparableCriterion<TOwner!, T>!
+override Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.AcceptedOrderBy.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.OrderByName.get -> string?
+override Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.SetOrderByName(string? name) -> void
+override Wdc.Domain.Criteria<TSelf, TEntity>.ToString() -> string!
+override Wdc.Domain.Criterion.ToString() -> string!
+override Wdc.Domain.Criterion<TOwner, T>.IsSet.get -> bool
+override Wdc.Domain.Criterion<TOwner, T>.Predicates.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
+override Wdc.Domain.Criterion<TOwner, T>.Restrictions.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
+override Wdc.Domain.Criterion<TOwner, T>.ValueKind.get -> Wdc.Domain.IValueKind!
+override Wdc.Domain.Page<T>.Equals(object? obj) -> bool
+override Wdc.Domain.Page<T>.GetHashCode() -> int
+override Wdc.Domain.Page<T>.ToString() -> string!
+override Wdc.Domain.PolicyContext.Equals(object? obj) -> bool
+override Wdc.Domain.PolicyContext.GetHashCode() -> int
+override Wdc.Domain.PolicyContext.ToString() -> string!
+override Wdc.Domain.ReferenceField<TEntity, TChild>.Differs(TEntity! next, TEntity! previous) -> bool
+override Wdc.Domain.ReferenceField<TEntity, TChild>.GetValue(TEntity! entity) -> object?
+override Wdc.Domain.ReferenceField<TEntity, TChild>.HasValue(TEntity! entity) -> bool
+override Wdc.Domain.ReferenceField<TEntity, TChild>.MarkOwnFields(TEntity! projection) -> void
+override Wdc.Domain.ReferenceField<TEntity, TChild>.SetValue(TEntity! entity, object? value) -> void
+override Wdc.Domain.ScalarField<TEntity, T>.Differs(TEntity! next, TEntity! previous) -> bool
+override Wdc.Domain.ScalarField<TEntity, T>.GetValue(TEntity! entity) -> object?
+override Wdc.Domain.ScalarField<TEntity, T>.HasValue(TEntity! entity) -> bool
+override Wdc.Domain.ScalarField<TEntity, T>.MarkOwnFields(TEntity! projection) -> void
+override Wdc.Domain.ScalarField<TEntity, T>.ScalarKind.get -> Wdc.Domain.IValueKind?
+override Wdc.Domain.ScalarField<TEntity, T>.SetValue(TEntity! entity, object? value) -> void
+override Wdc.Domain.TextCriterion<TOwner>.And() -> Wdc.Domain.TextCriterion<TOwner!>!
+override Wdc.Domain.TextCriterion<TOwner>.Or() -> Wdc.Domain.TextCriterion<TOwner!>!
+static Wdc.Domain.CascadeGuard.Current.get -> Wdc.Domain.ICascadeGuard?
+static Wdc.Domain.CascadeGuard.Run<T>(Wdc.Domain.ICascadeGuard! guard, System.Func<System.Threading.Tasks.Task<T>!>! work) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.CascadeGuard.Suspend(System.Func<System.Threading.Tasks.Task!>! work) -> System.Threading.Tasks.Task!
+static Wdc.Domain.CriteriaCodec.FromJson<TCriteria>(string! json, TCriteria criteria) -> TCriteria
+static Wdc.Domain.CriteriaCodec.Read(ref System.Text.Json.Utf8JsonReader reader, Wdc.Domain.ICriteria! criteria) -> void
+static Wdc.Domain.CriteriaCodec.ToJson(Wdc.Domain.ICriteria! criteria) -> string!
+static Wdc.Domain.CriteriaCodec.TryReadField(ref System.Text.Json.Utf8JsonReader reader, Wdc.Domain.ICriteria! criteria, string! name) -> bool
+static Wdc.Domain.CriteriaCodec.Write(System.Text.Json.Utf8JsonWriter! writer, Wdc.Domain.ICriteria! criteria) -> void
+static Wdc.Domain.CriteriaCodec.WriteFields(System.Text.Json.Utf8JsonWriter! writer, Wdc.Domain.ICriteria! criteria) -> void
+static Wdc.Domain.EntityModel.For<TEntity>(System.Func<TEntity!>! factory, string? name = null) -> Wdc.Domain.EntityModelBuilder<TEntity!>!
+static Wdc.Domain.Mark.Bytes.get -> byte[]!
+static Wdc.Domain.Mark.Date.get -> System.DateOnly
+static Wdc.Domain.Mark.Enum<TEnum>() -> TEnum
+static Wdc.Domain.Mark.Instant.get -> System.DateTimeOffset
+static Wdc.Domain.Mark.List<T>(T! shape, object? criteria = null, int? limit = null, int? offset = null) -> Wdc.Domain.ProjectionList<T!>!
+static Wdc.Domain.Mark.Uuid.get -> System.Guid
+static Wdc.Domain.Operators.Accepts(this Wdc.Domain.Operator op, int count) -> bool
+static Wdc.Domain.Operators.Arity(this Wdc.Domain.Operator op) -> int
+static Wdc.Domain.Operators.ComparesValues(this Wdc.Domain.Operator op) -> bool
+static Wdc.Domain.Operators.TryParseWireName(string? name, out Wdc.Domain.Operator op) -> bool
+static Wdc.Domain.Operators.WireName(this Wdc.Domain.Operator op) -> string!
+static Wdc.Domain.Page<T>.Of(System.Collections.Generic.IReadOnlyList<T>! items, int page, int pageSize, int totalItems) -> Wdc.Domain.Page<T>!
+static Wdc.Domain.Page<T>.operator !=(Wdc.Domain.Page<T>? left, Wdc.Domain.Page<T>? right) -> bool
+static Wdc.Domain.Page<T>.operator ==(Wdc.Domain.Page<T>? left, Wdc.Domain.Page<T>? right) -> bool
+static Wdc.Domain.PolicyContext.operator !=(Wdc.Domain.PolicyContext? left, Wdc.Domain.PolicyContext? right) -> bool
+static Wdc.Domain.PolicyContext.operator ==(Wdc.Domain.PolicyContext? left, Wdc.Domain.PolicyContext? right) -> bool
+static Wdc.Domain.TextCriterion<TOwner>.Escape(string! text) -> string!
+static Wdc.Domain.TransactionServiceExtensions.Mandatory<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.TransactionServiceExtensions.Never<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.TransactionServiceExtensions.NotSupported<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.TransactionServiceExtensions.Required(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Wdc.Domain.TransactionServiceExtensions.Required<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.TransactionServiceExtensions.RequiresNew(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Wdc.Domain.TransactionServiceExtensions.RequiresNew<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.TransactionServiceExtensions.Supports<T>(this Wdc.Domain.ITransactionService! tx, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+static Wdc.Domain.ValueKind<T>.IsNull(T value) -> bool
+static Wdc.Domain.ValueKinds.Boolean.get -> Wdc.Domain.ValueKind<bool?>!
+static Wdc.Domain.ValueKinds.Bytes.get -> Wdc.Domain.ValueKind<byte[]?>!
+static Wdc.Domain.ValueKinds.Date.get -> Wdc.Domain.ValueKind<System.DateOnly?>!
+static Wdc.Domain.ValueKinds.Decimal.get -> Wdc.Domain.ValueKind<decimal?>!
+static Wdc.Domain.ValueKinds.Double.get -> Wdc.Domain.ValueKind<double?>!
+static Wdc.Domain.ValueKinds.Enum<TEnum>() -> Wdc.Domain.ValueKind<TEnum?>!
+static Wdc.Domain.ValueKinds.Instant.get -> Wdc.Domain.ValueKind<System.DateTimeOffset?>!
+static Wdc.Domain.ValueKinds.Int32.get -> Wdc.Domain.ValueKind<int?>!
+static Wdc.Domain.ValueKinds.Int64.get -> Wdc.Domain.ValueKind<long?>!
+static Wdc.Domain.ValueKinds.String.get -> Wdc.Domain.ValueKind<string?>!
+static Wdc.Domain.ValueKinds.Uuid.get -> Wdc.Domain.ValueKind<System.Guid?>!
+virtual Wdc.Domain.Criteria<TSelf, TEntity>.AcceptedOrderBy.get -> System.Collections.Generic.IReadOnlyList<string!>!
+virtual Wdc.Domain.Criteria<TSelf, TEntity>.OrderByName.get -> string?
+virtual Wdc.Domain.Criteria<TSelf, TEntity>.SetOrderByName(string? name) -> void
+virtual Wdc.Domain.Criterion<TOwner, T>.And() -> Wdc.Domain.Criterion<TOwner!, T>!
+virtual Wdc.Domain.Criterion<TOwner, T>.Or() -> Wdc.Domain.Criterion<TOwner!, T>!
+virtual Wdc.Domain.FieldModel<TEntity>.ScalarKind.get -> Wdc.Domain.IValueKind?
+virtual Wdc.Domain.ValueKind<T>.ToDatabase(T value) -> object?
+Wdc.Domain.AccessDeniedException
+Wdc.Domain.AccessDeniedException.AccessDeniedException() -> void
+Wdc.Domain.AccessDeniedException.AccessDeniedException(string! message) -> void
+Wdc.Domain.AccessDeniedException.AccessDeniedException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.Actor
+Wdc.Domain.Actor.Actor(string! id, System.Collections.Generic.IEnumerable<string!>! roles) -> void
+Wdc.Domain.Actor.HasRole(string! role) -> bool
+Wdc.Domain.Actor.Id.get -> string!
+Wdc.Domain.Actor.Roles.get -> System.Collections.Generic.IReadOnlySet<string!>!
+Wdc.Domain.ActorSource
+Wdc.Domain.ActorSource.ActorSource(Wdc.Domain.Actor? current = null) -> void
+Wdc.Domain.ActorSource.Current.get -> Wdc.Domain.Actor?
+Wdc.Domain.ActorSource.Current.set -> void
+Wdc.Domain.AuthenticationException
+Wdc.Domain.AuthenticationException.AuthenticationException() -> void
+Wdc.Domain.AuthenticationException.AuthenticationException(string! message) -> void
+Wdc.Domain.AuthenticationException.AuthenticationException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.CascadeGuard
+Wdc.Domain.CollectionField<TEntity, TChild>
+Wdc.Domain.CollectionField<TEntity, TChild>.Get.get -> System.Func<TEntity!, System.Collections.Generic.List<TChild!>?>!
+Wdc.Domain.CollectionField<TEntity, TChild>.Model.get -> Wdc.Domain.EntityModel<TChild!>!
+Wdc.Domain.CollectionField<TEntity, TChild>.NewCriteria.get -> System.Func<Wdc.Domain.ICriteria!>?
+Wdc.Domain.CollectionField<TEntity, TChild>.Set.get -> System.Action<TEntity!, System.Collections.Generic.List<TChild!>?>!
+Wdc.Domain.ComparableCriterion<TOwner, T>
+Wdc.Domain.ComparableCriterion<TOwner, T>.Between(T start, T end) -> TOwner!
+Wdc.Domain.ComparableCriterion<TOwner, T>.ComparableCriterion(TOwner! owner, string! name, Wdc.Domain.ValueKind<T>! kind) -> void
+Wdc.Domain.ComparableCriterion<TOwner, T>.Ge(T value) -> TOwner!
+Wdc.Domain.ComparableCriterion<TOwner, T>.Gt(T value) -> TOwner!
+Wdc.Domain.ComparableCriterion<TOwner, T>.Le(T value) -> TOwner!
+Wdc.Domain.ComparableCriterion<TOwner, T>.Lt(T value) -> TOwner!
+Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>
+Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.Criteria() -> void
+Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.OrderBy.get -> TOrderBy?
+Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.OrderBy.set -> void
+Wdc.Domain.Criteria<TSelf, TEntity, TOrderBy>.WithOrderBy(TOrderBy? orderBy) -> TSelf!
+Wdc.Domain.Criteria<TSelf, TEntity>
+Wdc.Domain.Criteria<TSelf, TEntity>.Comparable<T>(Wdc.Domain.ValueKind<T>! kind, string! name) -> Wdc.Domain.ComparableCriterion<TSelf!, T>!
+Wdc.Domain.Criteria<TSelf, TEntity>.Criteria() -> void
+Wdc.Domain.Criteria<TSelf, TEntity>.Criterions.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.Criterion!>!
+Wdc.Domain.Criteria<TSelf, TEntity>.Equality<T>(Wdc.Domain.ValueKind<T>! kind, string! name) -> Wdc.Domain.Criterion<TSelf!, T>!
+Wdc.Domain.Criteria<TSelf, TEntity>.Find(string! name) -> Wdc.Domain.Criterion?
+Wdc.Domain.Criteria<TSelf, TEntity>.HasFilter.get -> bool
+Wdc.Domain.Criteria<TSelf, TEntity>.Projection.get -> TEntity?
+Wdc.Domain.Criteria<TSelf, TEntity>.Projection.set -> void
+Wdc.Domain.Criteria<TSelf, TEntity>.Text(string! name) -> Wdc.Domain.TextCriterion<TSelf!>!
+Wdc.Domain.Criteria<TSelf, TEntity>.WithProjection(TEntity? projection) -> TSelf!
+Wdc.Domain.CriteriaCodec
+Wdc.Domain.Criterion
+Wdc.Domain.Criterion.Criterion(string! name) -> void
+Wdc.Domain.Criterion.Disjunctive.get -> bool
+Wdc.Domain.Criterion.Disjunctive.set -> void
+Wdc.Domain.Criterion.IsRestricted.get -> bool
+Wdc.Domain.Criterion.Name.get -> string!
+Wdc.Domain.Criterion<TOwner, T>
+Wdc.Domain.Criterion<TOwner, T>.Add(Wdc.Domain.Operator op, params T[]! values) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.Clear() -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.Criterion(TOwner! owner, string! name, Wdc.Domain.ValueKind<T>! kind) -> void
+Wdc.Domain.Criterion<TOwner, T>.Eq(T value) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.In(params T[]! values) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.In(System.Collections.Generic.IEnumerable<T>? values) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.IsNotNull() -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.IsNull() -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.Kind.get -> Wdc.Domain.ValueKind<T>!
+Wdc.Domain.Criterion<TOwner, T>.Ne(T value) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.Owner.get -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.Restore(Wdc.Domain.Operator op, System.Collections.Generic.IReadOnlyList<T>? values) -> void
+Wdc.Domain.Criterion<TOwner, T>.RestoreDisjunctive(bool value) -> void
+Wdc.Domain.Criterion<TOwner, T>.Restrict(T value) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.RestrictIn(System.Collections.Generic.IEnumerable<T>! values) -> TOwner!
+Wdc.Domain.Criterion<TOwner, T>.TypedPredicates.get -> System.Collections.Generic.IEnumerable<(Wdc.Domain.Operator Operator, System.Collections.Generic.IReadOnlyList<T>! Values)>!
+Wdc.Domain.EntityModel
+Wdc.Domain.EntityModel<TEntity>
+Wdc.Domain.EntityModel<TEntity>.ChangedFields(TEntity! next, TEntity! previous) -> TEntity!
+Wdc.Domain.EntityModel<TEntity>.EntityType.get -> System.Type!
+Wdc.Domain.EntityModel<TEntity>.Fields.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.FieldModel<TEntity!>!>!
+Wdc.Domain.EntityModel<TEntity>.Find(string! name) -> Wdc.Domain.FieldModel<TEntity!>?
+Wdc.Domain.EntityModel<TEntity>.HeldFields(TEntity! bean) -> TEntity!
+Wdc.Domain.EntityModel<TEntity>.IsKeyOnly(TEntity! projection) -> bool
+Wdc.Domain.EntityModel<TEntity>.Key.get -> Wdc.Domain.FieldModel<TEntity!>?
+Wdc.Domain.EntityModel<TEntity>.KeyOf(TEntity! entity) -> object?
+Wdc.Domain.EntityModel<TEntity>.KeyProjection() -> TEntity!
+Wdc.Domain.EntityModel<TEntity>.Name.get -> string!
+Wdc.Domain.EntityModel<TEntity>.New() -> TEntity!
+Wdc.Domain.EntityModel<TEntity>.OwnFieldsProjection() -> TEntity!
+Wdc.Domain.EntityModel<TEntity>.WriteProjection(TEntity! projection) -> TEntity!
+Wdc.Domain.EntityModelBuilder<TEntity>
+Wdc.Domain.EntityModelBuilder<TEntity>.Build() -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Domain.EntityModelBuilder<TEntity>.Collection<TChild>(string! name, System.Func<TEntity!, System.Collections.Generic.List<TChild!>?>! get, System.Action<TEntity!, System.Collections.Generic.List<TChild!>?>! set, System.Func<Wdc.Domain.EntityModel<TChild!>!>! model, System.Func<Wdc.Domain.ICriteria!>? newCriteria = null) -> Wdc.Domain.EntityModelBuilder<TEntity!>!
+Wdc.Domain.EntityModelBuilder<TEntity>.Field<T>(Wdc.Domain.ValueKind<T>! kind, string! name, System.Func<TEntity!, T>! get, System.Action<TEntity!, T>! set, bool inDefaultProjection = true) -> Wdc.Domain.EntityModelBuilder<TEntity!>!
+Wdc.Domain.EntityModelBuilder<TEntity>.Key<T>(Wdc.Domain.ValueKind<T>! kind, string! name, System.Func<TEntity!, T>! get, System.Action<TEntity!, T>! set) -> Wdc.Domain.EntityModelBuilder<TEntity!>!
+Wdc.Domain.EntityModelBuilder<TEntity>.Reference<TChild>(string! name, System.Func<TEntity!, TChild?>! get, System.Action<TEntity!, TChild?>! set, System.Func<Wdc.Domain.EntityModel<TChild!>!>! model) -> Wdc.Domain.EntityModelBuilder<TEntity!>!
+Wdc.Domain.FieldKind
+Wdc.Domain.FieldKind.Collection = 2 -> Wdc.Domain.FieldKind
+Wdc.Domain.FieldKind.Reference = 1 -> Wdc.Domain.FieldKind
+Wdc.Domain.FieldKind.Scalar = 0 -> Wdc.Domain.FieldKind
+Wdc.Domain.FieldModel<TEntity>
+Wdc.Domain.FieldModel<TEntity>.Copy(TEntity! source, TEntity! target) -> void
+Wdc.Domain.FieldModel<TEntity>.FieldModel(string! name, Wdc.Domain.FieldKind kind, bool isKey, bool inDefault) -> void
+Wdc.Domain.FieldModel<TEntity>.InDefaultProjection.get -> bool
+Wdc.Domain.FieldModel<TEntity>.IsKey.get -> bool
+Wdc.Domain.FieldModel<TEntity>.Kind.get -> Wdc.Domain.FieldKind
+Wdc.Domain.FieldModel<TEntity>.Name.get -> string!
+Wdc.Domain.IActorSource
+Wdc.Domain.IActorSource.Current.get -> Wdc.Domain.Actor?
+Wdc.Domain.ICascadeGuard
+Wdc.Domain.ICascadeGuard.BeforeDelete(System.Type! entityType, System.Collections.Generic.IReadOnlyList<object!>! keys, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Wdc.Domain.ICascadeGuard.BeforeInsert(System.Type! entityType, object! entity, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Wdc.Domain.ICascadeGuard.BeforeUpdate(System.Type! entityType, object! entity, object! projection, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Wdc.Domain.ICriteria
+Wdc.Domain.ICriteria.AcceptedOrderBy.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Wdc.Domain.ICriteria.Criterions.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.Criterion!>!
+Wdc.Domain.ICriteria.Find(string! name) -> Wdc.Domain.Criterion?
+Wdc.Domain.ICriteria.HasFilter.get -> bool
+Wdc.Domain.ICriteria.OrderByName.get -> string?
+Wdc.Domain.ICriteria.SetOrderByName(string? name) -> void
+Wdc.Domain.IDetachedTransaction
+Wdc.Domain.IDetachedTransaction.Commit(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.IDetachedTransaction.IsRollbackOnly.get -> bool
+Wdc.Domain.IDetachedTransaction.Rollback(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Wdc.Domain.IDetachedTransaction.Run<T>(System.Func<System.Threading.Tasks.Task<T>!>! work) -> System.Threading.Tasks.Task<T>!
+Wdc.Domain.IDetachedTransaction.SetRollbackOnly() -> void
+Wdc.Domain.IDetachedTransactionSource
+Wdc.Domain.IDetachedTransactionSource.BeginDetached(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.IDetachedTransaction!>!
+Wdc.Domain.IEntityModel
+Wdc.Domain.IEntityModel.EntityType.get -> System.Type!
+Wdc.Domain.IEntityModel.Name.get -> string!
+Wdc.Domain.IKeyedEntity
+Wdc.Domain.IKeyedEntity.Key.get -> object?
+Wdc.Domain.InvalidRequestException
+Wdc.Domain.InvalidRequestException.InvalidRequestException() -> void
+Wdc.Domain.InvalidRequestException.InvalidRequestException(string! message) -> void
+Wdc.Domain.InvalidRequestException.InvalidRequestException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.IPredicate
+Wdc.Domain.IPredicate.Operator.get -> Wdc.Domain.Operator
+Wdc.Domain.IPredicate.Values.get -> System.Collections.Generic.IReadOnlyList<object?>!
+Wdc.Domain.IProjectionCarrier<TEntity>
+Wdc.Domain.IProjectionCarrier<TEntity>.Projection.get -> TEntity?
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>.Count(TCriteria criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>.Fetch(TCriteria criteria, int offset = 0, int limit = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TEntity!>!>!
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>.FetchById(TKey id, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TEntity?>!
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>.FetchPage(TCriteria criteria, int page, int pageSize, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.Page<TEntity!>!>!
+Wdc.Domain.IReadOnlyRepository<TEntity, TCriteria, TKey>.OwnFieldsProjection() -> TEntity!
+Wdc.Domain.IRepository<TEntity, TCriteria, TKey>
+Wdc.Domain.IRepository<TEntity, TCriteria, TKey>.Delete(TCriteria criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+Wdc.Domain.IRepository<TEntity, TCriteria, TKey>.Insert(TEntity! bean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.IRepository<TEntity, TCriteria, TKey>.InsertOrUpdate(TEntity! newBean, TEntity? oldBean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.IRepository<TEntity, TCriteria, TKey>.Update(TEntity! newBean, TEntity? oldBean = null, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.ITransactionContext
+Wdc.Domain.ITransactionContext.IsActive.get -> bool
+Wdc.Domain.ITransactionContext.IsRollbackOnly.get -> bool
+Wdc.Domain.ITransactionContext.SetRollbackOnly() -> void
+Wdc.Domain.ITransactionService
+Wdc.Domain.ITransactionService.AfterCommit(System.Func<System.Threading.Tasks.Task!>! task) -> System.Threading.Tasks.Task!
+Wdc.Domain.ITransactionService.Execute<T>(Wdc.Domain.Propagation propagation, System.Func<Wdc.Domain.ITransactionContext!, System.Threading.Tasks.Task<T>!>! work, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
+Wdc.Domain.IValueKind
+Wdc.Domain.IValueKind.ClrType.get -> System.Type!
+Wdc.Domain.IValueKind.FromDatabaseObject(object? value) -> object?
+Wdc.Domain.IValueKind.Name.get -> string!
+Wdc.Domain.IValueKind.ToDatabaseObject(object? value) -> object?
+Wdc.Domain.IValueKind.WriteObject(System.Text.Json.Utf8JsonWriter! writer, object? value) -> void
+Wdc.Domain.JsonEntityCodec<TEntity>
+Wdc.Domain.JsonEntityCodec<TEntity>.FromJson(string! json) -> TEntity!
+Wdc.Domain.JsonEntityCodec<TEntity>.JsonEntityCodec(Wdc.Domain.EntityModel<TEntity!>! model) -> void
+Wdc.Domain.JsonEntityCodec<TEntity>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Domain.JsonEntityCodec<TEntity>.Read(ref System.Text.Json.Utf8JsonReader reader) -> TEntity!
+Wdc.Domain.JsonEntityCodec<TEntity>.ReadForUpdate(ref System.Text.Json.Utf8JsonReader reader) -> (TEntity! Entity, TEntity! Presence)
+Wdc.Domain.JsonEntityCodec<TEntity>.ReadForUpdate(string! json) -> (TEntity! Entity, TEntity! Presence)
+Wdc.Domain.JsonEntityCodec<TEntity>.ToJson(TEntity! entity, TEntity? projection = null) -> string!
+Wdc.Domain.JsonEntityCodec<TEntity>.Write(System.Text.Json.Utf8JsonWriter! writer, TEntity! entity, TEntity? projection = null) -> void
+Wdc.Domain.JsonEntityCodec<TEntity>.WriteList(System.Text.Json.Utf8JsonWriter! writer, System.Collections.Generic.IEnumerable<TEntity!>! entities, TEntity? projection = null) -> void
+Wdc.Domain.Mark
+Wdc.Domain.Operator
+Wdc.Domain.Operator.Between = 8 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Eq = 0 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Ge = 3 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Gt = 2 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.ILike = 7 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.In = 9 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.IsNotNull = 11 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.IsNull = 10 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Le = 5 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Like = 6 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Lt = 4 -> Wdc.Domain.Operator
+Wdc.Domain.Operator.Ne = 1 -> Wdc.Domain.Operator
+Wdc.Domain.Operators
+Wdc.Domain.Page<T>
+Wdc.Domain.Page<T>.<Clone>$() -> Wdc.Domain.Page<T>!
+Wdc.Domain.Page<T>.Deconstruct(out System.Collections.Generic.IReadOnlyList<T>! Items, out int Number, out int TotalPages, out int TotalItems) -> void
+Wdc.Domain.Page<T>.Equals(Wdc.Domain.Page<T>? other) -> bool
+Wdc.Domain.Page<T>.Items.get -> System.Collections.Generic.IReadOnlyList<T>!
+Wdc.Domain.Page<T>.Items.init -> void
+Wdc.Domain.Page<T>.Number.get -> int
+Wdc.Domain.Page<T>.Number.init -> void
+Wdc.Domain.Page<T>.Page(System.Collections.Generic.IReadOnlyList<T>! Items, int Number, int TotalPages, int TotalItems) -> void
+Wdc.Domain.Page<T>.TotalItems.get -> int
+Wdc.Domain.Page<T>.TotalItems.init -> void
+Wdc.Domain.Page<T>.TotalPages.get -> int
+Wdc.Domain.Page<T>.TotalPages.init -> void
+Wdc.Domain.PolicyContext
+Wdc.Domain.PolicyContext.<Clone>$() -> Wdc.Domain.PolicyContext!
+Wdc.Domain.PolicyContext.Actor.get -> Wdc.Domain.Actor!
+Wdc.Domain.PolicyContext.Actor.init -> void
+Wdc.Domain.PolicyContext.Deconstruct(out Wdc.Domain.Actor! Actor, out bool InCascade) -> void
+Wdc.Domain.PolicyContext.Equals(Wdc.Domain.PolicyContext? other) -> bool
+Wdc.Domain.PolicyContext.InCascade.get -> bool
+Wdc.Domain.PolicyContext.InCascade.init -> void
+Wdc.Domain.PolicyContext.PolicyContext(Wdc.Domain.Actor! Actor, bool InCascade) -> void
+Wdc.Domain.ProjectionList<T>
+Wdc.Domain.ProjectionList<T>.Criteria.get -> object?
+Wdc.Domain.ProjectionList<T>.Limit.get -> int?
+Wdc.Domain.ProjectionList<T>.Offset.get -> int?
+Wdc.Domain.ProjectionList<T>.ProjectionList(T! shape, object? criteria = null, int? limit = null, int? offset = null) -> void
+Wdc.Domain.ProjectionList<T>.Shape.get -> T!
+Wdc.Domain.Propagation
+Wdc.Domain.Propagation.Mandatory = 2 -> Wdc.Domain.Propagation
+Wdc.Domain.Propagation.Never = 5 -> Wdc.Domain.Propagation
+Wdc.Domain.Propagation.NotSupported = 4 -> Wdc.Domain.Propagation
+Wdc.Domain.Propagation.Required = 0 -> Wdc.Domain.Propagation
+Wdc.Domain.Propagation.RequiresNew = 1 -> Wdc.Domain.Propagation
+Wdc.Domain.Propagation.Supports = 3 -> Wdc.Domain.Propagation
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Count(TCriteria! criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Delete(TCriteria! criteria, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Enter(Wdc.Domain.RepositoryOperation operation) -> Wdc.Domain.PolicyContext!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Fetch(TCriteria! criteria, int offset = 0, int limit = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<TEntity!>!>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.FetchById(TKey id, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TEntity?>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.FetchPage(TCriteria! criteria, int page, int pageSize, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Wdc.Domain.Page<TEntity!>!>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Inner.get -> Wdc.Domain.IRepository<TEntity!, TCriteria!, TKey>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Insert(TEntity! bean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.OwnFieldsProjection() -> TEntity!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Policy.get -> Wdc.Domain.RepositoryPolicy<TEntity!, TCriteria!, TKey>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.ProtectedRepository(Wdc.Domain.IRepository<TEntity!, TCriteria!, TKey>! inner, Wdc.Domain.RepositoryPolicy<TEntity!, TCriteria!, TKey>! policy, Wdc.Domain.Protection! protection) -> void
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Protection.get -> Wdc.Domain.Protection!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Update(TEntity! newBean, TEntity? oldBean = null, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Wdc.Domain.Protection
+Wdc.Domain.Protection.Actors.get -> Wdc.Domain.IActorSource!
+Wdc.Domain.Protection.Protection(Wdc.Domain.IActorSource! actors, Wdc.Domain.ITransactionService! transactions) -> void
+Wdc.Domain.Protection.RequireActor() -> Wdc.Domain.Actor!
+Wdc.Domain.Protection.Transactions.get -> Wdc.Domain.ITransactionService!
+Wdc.Domain.ReferenceField<TEntity, TChild>
+Wdc.Domain.ReferenceField<TEntity, TChild>.Get.get -> System.Func<TEntity!, TChild?>!
+Wdc.Domain.ReferenceField<TEntity, TChild>.Model.get -> Wdc.Domain.EntityModel<TChild!>!
+Wdc.Domain.ReferenceField<TEntity, TChild>.Set.get -> System.Action<TEntity!, TChild?>!
+Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.Count = 3 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.Delete = 2 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.Fetch = 4 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.FetchById = 6 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.FetchPage = 5 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.Insert = 0 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryOperation.Update = 1 -> Wdc.Domain.RepositoryOperation
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.Authorize.get -> System.Action<Wdc.Domain.PolicyContext!, Wdc.Domain.RepositoryOperation>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.Authorize.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeDelete.get -> System.Func<Wdc.Domain.PolicyContext!, TCriteria!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeDelete.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeInsert.get -> System.Func<Wdc.Domain.PolicyContext!, TEntity!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeInsert.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeUpdate.get -> System.Func<Wdc.Domain.PolicyContext!, TEntity!, TEntity!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.BeforeUpdate.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.NewCriteria.get -> System.Func<TCriteria!>!
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.RepositoryPolicy(Wdc.Domain.EntityModel<TEntity!>! model, System.Func<TCriteria!>! newCriteria) -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.RestrictToId.get -> System.Action<TCriteria!, TKey>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.RestrictToId.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.SanitizeOutput.get -> System.Action<Wdc.Domain.PolicyContext!, TEntity!>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.SanitizeOutput.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.SanitizeProjection.get -> System.Action<Wdc.Domain.PolicyContext!, TEntity!>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.SanitizeProjection.set -> void
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.Scope.get -> System.Action<Wdc.Domain.PolicyContext!, TCriteria!>?
+Wdc.Domain.RepositoryPolicy<TEntity, TCriteria, TKey>.Scope.set -> void
+Wdc.Domain.ScalarField<TEntity, T>
+Wdc.Domain.ScalarField<TEntity, T>.Get.get -> System.Func<TEntity!, T>!
+Wdc.Domain.ScalarField<TEntity, T>.Set.get -> System.Action<TEntity!, T>!
+Wdc.Domain.ScalarField<TEntity, T>.ValueKind.get -> Wdc.Domain.ValueKind<T>!
+Wdc.Domain.TextCriterion<TOwner>
+Wdc.Domain.TextCriterion<TOwner>.Containing(string? fragment) -> TOwner!
+Wdc.Domain.TextCriterion<TOwner>.ILike(string? pattern) -> TOwner!
+Wdc.Domain.TextCriterion<TOwner>.Like(string? pattern) -> TOwner!
+Wdc.Domain.TextCriterion<TOwner>.StartingWith(string? prefix) -> TOwner!
+Wdc.Domain.TextCriterion<TOwner>.TextCriterion(TOwner! owner, string! name) -> void
+Wdc.Domain.TransactionConflictException
+Wdc.Domain.TransactionConflictException.TransactionConflictException() -> void
+Wdc.Domain.TransactionConflictException.TransactionConflictException(string! message) -> void
+Wdc.Domain.TransactionConflictException.TransactionConflictException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.TransactionLimitExceededException
+Wdc.Domain.TransactionLimitExceededException.TransactionLimitExceededException() -> void
+Wdc.Domain.TransactionLimitExceededException.TransactionLimitExceededException(string! message) -> void
+Wdc.Domain.TransactionLimitExceededException.TransactionLimitExceededException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.TransactionNotFoundException
+Wdc.Domain.TransactionNotFoundException.TransactionNotFoundException() -> void
+Wdc.Domain.TransactionNotFoundException.TransactionNotFoundException(string! message) -> void
+Wdc.Domain.TransactionNotFoundException.TransactionNotFoundException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.TransactionServiceExtensions
+Wdc.Domain.TransactionSystemException
+Wdc.Domain.TransactionSystemException.TransactionSystemException() -> void
+Wdc.Domain.TransactionSystemException.TransactionSystemException(string! message) -> void
+Wdc.Domain.TransactionSystemException.TransactionSystemException(string! message, System.Exception! innerException) -> void
+Wdc.Domain.ValueKind<T>
+Wdc.Domain.ValueKind<T>.ValueKind() -> void
+Wdc.Domain.ValueKinds

@@ -1,0 +1,257 @@
+#nullable enable
+abstract Wdc.Cube.HistoryManager.Update(Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> void
+abstract Wdc.Cube.PresentationDispatcher.CheckAccess() -> bool
+abstract Wdc.Cube.PresentationDispatcher.Post(System.Threading.SendOrPostCallback! callback, object? state) -> void
+override Wdc.Cube.ApplicationPresenter<TScope>.PublishAllParameters(Wdc.Cube.FlipIntent! intent) -> void
+override Wdc.Cube.ApplicationPresenter<TScope>.Release() -> void
+override Wdc.Cube.FlipIntent.ToString() -> string!
+override Wdc.Cube.MemoryHistoryManager.Location.get -> string!
+override Wdc.Cube.MemoryHistoryManager.Update(Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> void
+override Wdc.Cube.NoopHistoryManager.Update(Wdc.Cube.CubeApplication! app, Wdc.Cube.Place! place) -> void
+override Wdc.Cube.Place.ToString() -> string!
+override Wdc.Cube.SerialDispatcher.CheckAccess() -> bool
+override Wdc.Cube.SerialDispatcher.Post(System.Threading.SendOrPostCallback! callback, object? state) -> void
+static readonly Wdc.Cube.UpdateScheduler.DefaultWindow -> System.TimeSpan
+static Wdc.Cube.FlipIntent.Parse(string? text, System.Func<string!, Wdc.Cube.Place!>? placeResolver = null) -> Wdc.Cube.FlipIntent!
+static Wdc.Cube.Place.Create(string! name, Wdc.Cube.PresenterFactory? factory = null) -> Wdc.Cube.Place!
+static Wdc.Cube.Place.Create<TApp>(string! name, System.Func<TApp!, Wdc.Cube.ICubePresenter!>! factory) -> Wdc.Cube.Place!
+static Wdc.Cube.Place.CreateDetached(string! name) -> Wdc.Cube.Place!
+static Wdc.Cube.Place.Root.get -> Wdc.Cube.Place!
+static Wdc.Cube.Place.Unknown.get -> Wdc.Cube.Place!
+static Wdc.Cube.PresentationDispatcher.FromHost(System.Action<System.Action!>! post, System.Func<bool>! checkAccess) -> Wdc.Cube.PresentationDispatcher!
+static Wdc.Cube.ScopeActions.IsUnbound(System.Delegate? action) -> bool
+static Wdc.Cube.ScopeActions.Unbound(string? name = null) -> System.Func<System.Threading.Tasks.Task!>!
+static Wdc.Cube.ScopeActions.Unbound<T1, T2, T3>(string? name = null) -> System.Func<T1, T2, T3, System.Threading.Tasks.Task!>!
+static Wdc.Cube.ScopeActions.Unbound<T1, T2>(string? name = null) -> System.Func<T1, T2, System.Threading.Tasks.Task!>!
+static Wdc.Cube.ScopeActions.Unbound<T>(string? name = null) -> System.Func<T, System.Threading.Tasks.Task!>!
+static Wdc.Cube.ScopeSlots.Noop.get -> Wdc.Cube.ScopeSlot!
+static Wdc.Cube.ScopeViews.Immediate(System.Action<Wdc.Cube.Scope!>! render) -> Wdc.Cube.IScopeView!
+virtual Wdc.Cube.ApplicationPresenter<TScope>.ApplyParameters(Wdc.Cube.FlipIntent! intent, bool initialization, bool last) -> System.Threading.Tasks.Task<bool>!
+virtual Wdc.Cube.ApplicationPresenter<TScope>.OnBeforeScopeUpdate() -> void
+virtual Wdc.Cube.ApplicationPresenter<TScope>.PublishParameters(Wdc.Cube.FlipIntent! intent) -> void
+virtual Wdc.Cube.CubeApplication.PublishAllParameters(Wdc.Cube.FlipIntent! intent) -> void
+virtual Wdc.Cube.CubeApplication.Release() -> void
+virtual Wdc.Cube.CubeApplication.Unexpected(string! message, System.Exception! error) -> void
+virtual Wdc.Cube.CubeApplication.UpdateHistory() -> void
+virtual Wdc.Cube.CubePresenter<TApp, TScope>.ApplyParameters(Wdc.Cube.FlipIntent! intent, bool initialization, bool last) -> System.Threading.Tasks.Task<bool>!
+virtual Wdc.Cube.CubePresenter<TApp, TScope>.PublishParameters(Wdc.Cube.FlipIntent! intent) -> void
+virtual Wdc.Cube.HistoryManager.Location.get -> string!
+virtual Wdc.Cube.Presenter<TApp, TScope>.OnBeforeScopeUpdate() -> void
+virtual Wdc.Cube.Presenter<TApp, TScope>.Release() -> void
+virtual Wdc.Cube.PresenterFactory.Invoke(Wdc.Cube.CubeApplication! app) -> Wdc.Cube.ICubePresenter!
+virtual Wdc.Cube.ScopeSlot.Invoke(Wdc.Cube.Scope? scope) -> void
+Wdc.Cube.ApplicationPresenter<TScope>
+Wdc.Cube.ApplicationPresenter<TScope>.Action(System.Action! action, string? name = null) -> System.Func<System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.Action(System.Func<System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.Action<T1, T2>(System.Func<T1, T2, System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<T1, T2, System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.Action<T>(System.Action<T>! action, string? name = null) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.Action<T>(System.Func<T, System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.ApplicationPresenter(TScope! scope, Wdc.Cube.HistoryManager! history, System.Collections.Generic.IEnumerable<Wdc.Cube.Place!>! places, Microsoft.Extensions.Logging.ILogger? logger = null, Wdc.Cube.PresentationDispatcher? dispatcher = null, System.TimeProvider? timeProvider = null) -> void
+Wdc.Cube.ApplicationPresenter<TScope>.AutoUpdate.get -> bool
+Wdc.Cube.ApplicationPresenter<TScope>.AutoUpdate.set -> void
+Wdc.Cube.ApplicationPresenter<TScope>.KickStart(Wdc.Cube.Place! safePlace) -> System.Threading.Tasks.Task!
+Wdc.Cube.ApplicationPresenter<TScope>.Mirror<T>(System.Action<T>! handler) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.ApplicationPresenter<TScope>.Scope.get -> TScope!
+Wdc.Cube.ApplicationPresenter<TScope>.Update(Wdc.Cube.Scope? scope = null) -> void
+Wdc.Cube.ApplicationPresenter<TScope>.UpdateManager.get -> Wdc.Cube.ScopeUpdateManager!
+Wdc.Cube.CubeApplication
+Wdc.Cube.CubeApplication.CubeApplication(Wdc.Cube.HistoryManager! history, System.Collections.Generic.IEnumerable<Wdc.Cube.Place!>! places, Wdc.Cube.Place? rootPlace = null, Microsoft.Extensions.Logging.ILogger? logger = null, Wdc.Cube.PresentationDispatcher? dispatcher = null, System.TimeProvider? timeProvider = null) -> void
+Wdc.Cube.CubeApplication.Dispatcher.get -> Wdc.Cube.PresentationDispatcher!
+Wdc.Cube.CubeApplication.Flip(Wdc.Cube.Place! place, System.Action<Wdc.Cube.FlipIntent!>? configure = null) -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.CubeApplication.FlipToIntent(Wdc.Cube.FlipIntent! intent) -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.CubeApplication.FlipToIntentString(string? address) -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.CubeApplication.GetPresenter(Wdc.Cube.Place! place) -> Wdc.Cube.ICubePresenter?
+Wdc.Cube.CubeApplication.GetPresenter<T>(Wdc.Cube.Place! place) -> T?
+Wdc.Cube.CubeApplication.HasNavigated.get -> bool
+Wdc.Cube.CubeApplication.History.get -> Wdc.Cube.HistoryManager!
+Wdc.Cube.CubeApplication.InvokeAsync(System.Action! action) -> System.Threading.Tasks.Task!
+Wdc.Cube.CubeApplication.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! work) -> System.Threading.Tasks.Task!
+Wdc.Cube.CubeApplication.InvokeAsync<T>(System.Func<System.Threading.Tasks.Task<T>!>! work) -> System.Threading.Tasks.Task<T>!
+Wdc.Cube.CubeApplication.IsFlipping.get -> bool
+Wdc.Cube.CubeApplication.IsReleased.get -> bool
+Wdc.Cube.CubeApplication.LastPlace.get -> Wdc.Cube.Place!
+Wdc.Cube.CubeApplication.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Wdc.Cube.CubeApplication.NewFlipIntent(Wdc.Cube.Place! place) -> Wdc.Cube.FlipIntent!
+Wdc.Cube.CubeApplication.NewIntentFromString(string? address) -> Wdc.Cube.FlipIntent!
+Wdc.Cube.CubeApplication.PlacesByPath.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Wdc.Cube.Place!>!
+Wdc.Cube.CubeApplication.PresenterCount.get -> int
+Wdc.Cube.CubeApplication.RootPlace.get -> Wdc.Cube.Place!
+Wdc.Cube.CubeApplication.RunAction(System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+Wdc.Cube.CubeApplication.RunAction<T>(System.Func<System.Threading.Tasks.Task<T>!>! action) -> System.Threading.Tasks.Task<T>!
+Wdc.Cube.CubeApplication.Time.get -> System.TimeProvider!
+Wdc.Cube.CubeApplication.Updates.get -> Wdc.Cube.UpdateScheduler!
+Wdc.Cube.CubeKeys
+Wdc.Cube.CubeKeys.App.get -> Wdc.Cube.CubeApplication!
+Wdc.Cube.CubeKeys.CubeKeys(Wdc.Cube.CubeApplication! app, Wdc.Cube.FlipIntent? intent, Wdc.Cube.Place! place) -> void
+Wdc.Cube.CubeKeys.Flip() -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.CubeKeys.Intent.get -> Wdc.Cube.FlipIntent!
+Wdc.Cube.CubeNavigationException
+Wdc.Cube.CubeNavigationException.CubeNavigationException() -> void
+Wdc.Cube.CubeNavigationException.CubeNavigationException(string! message) -> void
+Wdc.Cube.CubeNavigationException.CubeNavigationException(string! message, System.Exception! innerException) -> void
+Wdc.Cube.CubePresenter<TApp, TScope>
+Wdc.Cube.CubePresenter<TApp, TScope>.CubePresenter(TApp! app, TScope! scope) -> void
+Wdc.Cube.FlipIntent
+Wdc.Cube.FlipIntent.Attributes.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Wdc.Cube.FlipIntent.CopyAttributesFrom(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? source) -> void
+Wdc.Cube.FlipIntent.CopyAttributesFrom(Wdc.Cube.FlipIntent! source) -> void
+Wdc.Cube.FlipIntent.CopyParametersFrom(Wdc.Cube.FlipIntent! source) -> void
+Wdc.Cube.FlipIntent.FlipIntent(Wdc.Cube.Place! place) -> void
+Wdc.Cube.FlipIntent.GetAttribute<T>(string! name) -> T?
+Wdc.Cube.FlipIntent.GetBoolean(string! name) -> bool?
+Wdc.Cube.FlipIntent.GetBoolean(string! name, bool defaultValue) -> bool
+Wdc.Cube.FlipIntent.GetDouble(string! name) -> double?
+Wdc.Cube.FlipIntent.GetDouble(string! name, double defaultValue) -> double
+Wdc.Cube.FlipIntent.GetInt32(string! name) -> int?
+Wdc.Cube.FlipIntent.GetInt32(string! name, int defaultValue) -> int
+Wdc.Cube.FlipIntent.GetInt64(string! name) -> long?
+Wdc.Cube.FlipIntent.GetInt64(string! name, long defaultValue) -> long
+Wdc.Cube.FlipIntent.GetQueryString() -> string!
+Wdc.Cube.FlipIntent.GetScopeSlot(string! slotId) -> Wdc.Cube.ScopeSlot!
+Wdc.Cube.FlipIntent.GetString(string! name) -> string?
+Wdc.Cube.FlipIntent.GetString(string! name, string! defaultValue) -> string!
+Wdc.Cube.FlipIntent.GetValues(string! name) -> System.Collections.Generic.IReadOnlyList<string!>!
+Wdc.Cube.FlipIntent.HasNoParameters.get -> bool
+Wdc.Cube.FlipIntent.HasParameter(string! name) -> bool
+Wdc.Cube.FlipIntent.ParameterNames.get -> System.Collections.Generic.IEnumerable<string!>!
+Wdc.Cube.FlipIntent.Place.get -> Wdc.Cube.Place!
+Wdc.Cube.FlipIntent.Redirect(Wdc.Cube.Place! place) -> Wdc.Cube.FlipIntent!
+Wdc.Cube.FlipIntent.RemoveParameter(string! name) -> bool
+Wdc.Cube.FlipIntent.SetAttribute(string! name, object? value) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, bool? value) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, double? value) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, long? value) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, string? value) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, System.Collections.Generic.IEnumerable<bool>? values) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, System.Collections.Generic.IEnumerable<double>? values) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, System.Collections.Generic.IEnumerable<long>? values) -> void
+Wdc.Cube.FlipIntent.SetParameter(string! name, System.Collections.Generic.IEnumerable<string!>? values) -> void
+Wdc.Cube.FlipIntent.SetScopeSlot(string! slotId, Wdc.Cube.ScopeSlot? slot) -> void
+Wdc.Cube.HistoryManager
+Wdc.Cube.HistoryManager.Changed -> System.Action<Wdc.Cube.HistoryManager!>?
+Wdc.Cube.HistoryManager.Codec.get -> Wdc.Cube.IHistoryCodec?
+Wdc.Cube.HistoryManager.Codec.set -> void
+Wdc.Cube.HistoryManager.DecodeAddress(string! address) -> string!
+Wdc.Cube.HistoryManager.DecodeQuery(string! queryString) -> string!
+Wdc.Cube.HistoryManager.EncodeAddress(string! address) -> string!
+Wdc.Cube.HistoryManager.EncodeQuery(string! queryString) -> string!
+Wdc.Cube.HistoryManager.HistoryManager() -> void
+Wdc.Cube.HistoryManager.IsEnvelope(string! queryString) -> bool
+Wdc.Cube.HistoryManager.NotifyChanges() -> void
+Wdc.Cube.ICubePresenter
+Wdc.Cube.ICubePresenter.ApplyParameters(Wdc.Cube.FlipIntent! intent, bool initialization, bool last) -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.ICubePresenter.PublishParameters(Wdc.Cube.FlipIntent! intent) -> void
+Wdc.Cube.ICubePresenter.Release() -> void
+Wdc.Cube.IHistoryCodec
+Wdc.Cube.IHistoryCodec.Decode(string! payload) -> string?
+Wdc.Cube.IHistoryCodec.Encode(string! queryString) -> string?
+Wdc.Cube.IHistoryCodec.Envelope.get -> string!
+Wdc.Cube.IScopeView
+Wdc.Cube.IScopeView.Invalidate(Wdc.Cube.Scope! scope) -> void
+Wdc.Cube.MemoryHistoryManager
+Wdc.Cube.MemoryHistoryManager.CanGoBack.get -> bool
+Wdc.Cube.MemoryHistoryManager.CanGoForward.get -> bool
+Wdc.Cube.MemoryHistoryManager.EntriesChanged -> System.Action?
+Wdc.Cube.MemoryHistoryManager.GoBack() -> bool
+Wdc.Cube.MemoryHistoryManager.GoForward() -> bool
+Wdc.Cube.MemoryHistoryManager.MemoryHistoryManager(string! location = "") -> void
+Wdc.Cube.NoopHistoryManager
+Wdc.Cube.NoopHistoryManager.NoopHistoryManager() -> void
+Wdc.Cube.Place
+Wdc.Cube.Place.Child(string! name, Wdc.Cube.PresenterFactory? factory = null) -> Wdc.Cube.Place!
+Wdc.Cube.Place.Child<TApp>(string! name, System.Func<TApp!, Wdc.Cube.ICubePresenter!>! factory) -> Wdc.Cube.Place!
+Wdc.Cube.Place.Contains(Wdc.Cube.Place! other) -> bool
+Wdc.Cube.Place.Factory.get -> Wdc.Cube.PresenterFactory?
+Wdc.Cube.Place.Id.get -> int
+Wdc.Cube.Place.IsDetached.get -> bool
+Wdc.Cube.Place.Name.get -> string!
+Wdc.Cube.Place.Parent.get -> Wdc.Cube.Place?
+Wdc.Cube.Place.Path.get -> System.Collections.Generic.IReadOnlyList<Wdc.Cube.Place!>!
+Wdc.Cube.Place.PathName.get -> string!
+Wdc.Cube.PresentationDispatcher
+Wdc.Cube.PresentationDispatcher.InvokeAsync(System.Action! action) -> System.Threading.Tasks.Task!
+Wdc.Cube.PresentationDispatcher.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! work) -> System.Threading.Tasks.Task!
+Wdc.Cube.PresentationDispatcher.InvokeAsync<T>(System.Func<System.Threading.Tasks.Task<T>!>! work) -> System.Threading.Tasks.Task<T>!
+Wdc.Cube.PresentationDispatcher.InvokeAsync<T>(System.Func<T>! func) -> System.Threading.Tasks.Task<T>!
+Wdc.Cube.PresentationDispatcher.OnUnhandledException(System.Exception! error) -> void
+Wdc.Cube.PresentationDispatcher.Post(System.Action! action) -> void
+Wdc.Cube.PresentationDispatcher.PresentationDispatcher() -> void
+Wdc.Cube.PresentationDispatcher.UnhandledException -> System.Action<System.Exception!>?
+Wdc.Cube.PresentationDispatcher.VerifyAccess() -> void
+Wdc.Cube.Presenter<TApp, TScope>
+Wdc.Cube.Presenter<TApp, TScope>.Action(System.Action! action, string? name = null) -> System.Func<System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Action(System.Func<System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Action<T1, T2, T3>(System.Func<T1, T2, T3, System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<T1, T2, T3, System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Action<T1, T2>(System.Func<T1, T2, System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<T1, T2, System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Action<T>(System.Action<T>! action, string? name = null) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Action<T>(System.Func<T, System.Threading.Tasks.Task!>! action, string? name = null) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.App.get -> TApp!
+Wdc.Cube.Presenter<TApp, TScope>.AutoUpdate.get -> bool
+Wdc.Cube.Presenter<TApp, TScope>.AutoUpdate.set -> void
+Wdc.Cube.Presenter<TApp, TScope>.Flip(Wdc.Cube.Place! place, System.Action<Wdc.Cube.FlipIntent!>? configure = null) -> System.Threading.Tasks.Task<bool>!
+Wdc.Cube.Presenter<TApp, TScope>.IsReleased.get -> bool
+Wdc.Cube.Presenter<TApp, TScope>.Mirror<T>(System.Action<T>! handler) -> System.Func<T, System.Threading.Tasks.Task!>!
+Wdc.Cube.Presenter<TApp, TScope>.Presenter(TApp! app, TScope! scope) -> void
+Wdc.Cube.Presenter<TApp, TScope>.Scope.get -> TScope!
+Wdc.Cube.Presenter<TApp, TScope>.Unexpected(string! message, System.Exception! error) -> void
+Wdc.Cube.Presenter<TApp, TScope>.Update(Wdc.Cube.Scope? scope = null) -> void
+Wdc.Cube.Presenter<TApp, TScope>.UpdateHistory() -> void
+Wdc.Cube.Presenter<TApp, TScope>.UpdateManager.get -> Wdc.Cube.ScopeUpdateManager!
+Wdc.Cube.PresenterFactory
+Wdc.Cube.Scope
+Wdc.Cube.Scope.Adopt(Wdc.Cube.Scope! child) -> void
+Wdc.Cube.Scope.Attach(Wdc.Cube.IScopeView! view) -> System.IDisposable!
+Wdc.Cube.Scope.Identity.get -> object?
+Wdc.Cube.Scope.Identity.set -> void
+Wdc.Cube.Scope.Manager.get -> Wdc.Cube.ScopeUpdateManager?
+Wdc.Cube.Scope.MarkDirty(string? propertyName = null) -> void
+Wdc.Cube.Scope.MarkRendered() -> void
+Wdc.Cube.Scope.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler?
+Wdc.Cube.Scope.RenderState.get -> Wdc.Cube.ScopeRenderState
+Wdc.Cube.Scope.Scope() -> void
+Wdc.Cube.Scope.Set<T>(ref T field, T value, string? propertyName = null) -> bool
+Wdc.Cube.ScopeActions
+Wdc.Cube.ScopeList<T>
+Wdc.Cube.ScopeList<T>.Add(T item) -> void
+Wdc.Cube.ScopeList<T>.Assign(System.Collections.Generic.IEnumerable<T>! items) -> void
+Wdc.Cube.ScopeList<T>.Clear() -> void
+Wdc.Cube.ScopeList<T>.CollectionChanged -> System.Collections.Specialized.NotifyCollectionChangedEventHandler?
+Wdc.Cube.ScopeList<T>.Count.get -> int
+Wdc.Cube.ScopeList<T>.GetEnumerator() -> System.Collections.Generic.IEnumerator<T>!
+Wdc.Cube.ScopeList<T>.IndexOf(T item) -> int
+Wdc.Cube.ScopeList<T>.Insert(int index, T item) -> void
+Wdc.Cube.ScopeList<T>.Remove(T item) -> bool
+Wdc.Cube.ScopeList<T>.RemoveAll(System.Predicate<T>! match) -> int
+Wdc.Cube.ScopeList<T>.RemoveAt(int index) -> void
+Wdc.Cube.ScopeList<T>.ScopeList(Wdc.Cube.Scope! owner, string? propertyName = null) -> void
+Wdc.Cube.ScopeList<T>.Set(int index, T item) -> void
+Wdc.Cube.ScopeList<T>.Sort(System.Comparison<T>! comparison) -> void
+Wdc.Cube.ScopeList<T>.this[int index].get -> T
+Wdc.Cube.ScopeRenderState
+Wdc.Cube.ScopeRenderState.Clean = 0 -> Wdc.Cube.ScopeRenderState
+Wdc.Cube.ScopeRenderState.Dirty = 1 -> Wdc.Cube.ScopeRenderState
+Wdc.Cube.ScopeRenderState.Rendering = 2 -> Wdc.Cube.ScopeRenderState
+Wdc.Cube.ScopeSlot
+Wdc.Cube.ScopeSlots
+Wdc.Cube.ScopeUpdateManager
+Wdc.Cube.ScopeUpdateManager.BeforeScopeUpdate -> System.Action?
+Wdc.Cube.ScopeUpdateManager.Dispatcher.get -> Wdc.Cube.PresentationDispatcher!
+Wdc.Cube.ScopeUpdateManager.Hint<TScope>(Wdc.Cube.Scope! fallback, int maxUpdates = 10) -> void
+Wdc.Cube.ScopeUpdateManager.Release() -> void
+Wdc.Cube.ScopeUpdateManager.RemoveHint<TScope>() -> void
+Wdc.Cube.ScopeUpdateManager.Root.get -> Wdc.Cube.Scope!
+Wdc.Cube.ScopeUpdateManager.ScopeUpdateManager(Wdc.Cube.UpdateScheduler! scheduler, Wdc.Cube.Scope! root) -> void
+Wdc.Cube.ScopeUpdateManager.Update(Wdc.Cube.Scope? scope = null) -> void
+Wdc.Cube.ScopeUpdateManager.UpdateCount.get -> int
+Wdc.Cube.ScopeViews
+Wdc.Cube.SerialDispatcher
+Wdc.Cube.SerialDispatcher.Completion.get -> System.Threading.Tasks.Task!
+Wdc.Cube.SerialDispatcher.Dispose() -> void
+Wdc.Cube.SerialDispatcher.SerialDispatcher() -> void
+Wdc.Cube.UpdateScheduler
+Wdc.Cube.UpdateScheduler.Dispatcher.get -> Wdc.Cube.PresentationDispatcher!
+Wdc.Cube.UpdateScheduler.Dispose() -> void
+Wdc.Cube.UpdateScheduler.FlushNow() -> void
+Wdc.Cube.UpdateScheduler.HasPendingUpdates.get -> bool
+Wdc.Cube.UpdateScheduler.UpdateScheduler(Wdc.Cube.PresentationDispatcher! dispatcher, System.TimeProvider? time = null, System.TimeSpan? window = null, System.Action<string!, System.Exception!>? report = null) -> void
+Wdc.Cube.UpdateScheduler.Window.get -> System.TimeSpan
