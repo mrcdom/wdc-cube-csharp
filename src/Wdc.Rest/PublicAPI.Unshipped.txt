@@ -70,3 +70,4 @@ Wdc.Rest.Slice.Slice() -> void
 Wdc.Rest.Slice.Slice(int Offset = 0, int Limit = 0, int Page = 0, int PageSize = 0) -> void
 ~override Wdc.Rest.Slice.Equals(object obj) -> bool
 ~override Wdc.Rest.Slice.ToString() -> string
+static Wdc.Rest.RestErrors.FromResponse(System.Net.HttpStatusCode status, string? message, System.TimeSpan? retryAfter) -> System.Exception!

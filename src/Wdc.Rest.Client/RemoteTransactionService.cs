@@ -87,7 +87,17 @@ public sealed class RemoteTransactionService : ITransactionService
 
     private async Task<T> RunNew<T>(Func<ITransactionContext, Task<T>> work, CancellationToken cancellationToken)
     {
-        var begun = await _client.SendWithTransaction(HttpMethod.Post, $"{_base}/begin", null, cancellationToken).ConfigureAwait(false);
+        byte[]? begun;
+        try
+        {
+            begun = await _client.SendWithTransaction(HttpMethod.Post, $"{_base}/begin", null, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TooManyRequestsException refused) when (refused is not TransactionLimitExceededException)
+        {
+            // A 429 on begin: no transaction could be opened now.
+            throw new TransactionLimitExceededException(refused.Message, refused.RetryAfter);
+        }
+
         var state = new RemoteTransactionState(ReadString(begun!, "txId"));
         _client.Ambient.Value = state; // this flow only: the caller's value is back when we return
         T result;

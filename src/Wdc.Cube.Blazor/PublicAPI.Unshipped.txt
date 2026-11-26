@@ -55,3 +55,5 @@ Wdc.Cube.Blazor.ViewSlot.Empty.set -> void
 Wdc.Cube.Blazor.ViewSlot.Scope.get -> Wdc.Cube.Scope?
 Wdc.Cube.Blazor.ViewSlot.Scope.set -> void
 Wdc.Cube.Blazor.ViewSlot.ViewSlot() -> void
+const Wdc.Cube.Blazor.CubeBlazorMetrics.MeterName = "Wdc.Cube.Blazor" -> string!
+Wdc.Cube.Blazor.CubeBlazorMetrics

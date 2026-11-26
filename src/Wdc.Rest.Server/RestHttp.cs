@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Wdc.Domain;
 
 namespace Wdc.Rest.Server;
@@ -41,6 +42,7 @@ public static class RestHttp
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(handle);
+        RestTiming.Start(context);
         byte[]? body;
         try
         {
@@ -66,6 +68,7 @@ public static class RestHttp
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(body);
         context.Response.StatusCode = (int)status;
+        AddHeaders(context);
         context.Response.ContentType = Json;
         context.Response.ContentLength = body.Length;
         return context.Response.Body.WriteAsync(body, context.RequestAborted).AsTask();
@@ -75,13 +78,45 @@ public static class RestHttp
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(error);
-        var (status, message) = RestErrors.ToResponse(error);
-        if (status >= HttpStatusCode.InternalServerError)
+        var answer = Options(context).Errors.Resolve(error);
+        if (answer.Status >= HttpStatusCode.InternalServerError)
         {
             Logger(context).LogError(error, "{Method} {Path} failed.", context.Request.Method, context.Request.Path);
         }
 
-        return context.Response.HasStarted ? Task.CompletedTask : Write(context, status, RestErrors.Body(message));
+        if (context.Response.HasStarted)
+        {
+            return Task.CompletedTask;
+        }
+
+        foreach (var (name, value) in answer.Headers ?? s_noHeaders)
+        {
+            context.Response.Headers[name] = value;
+        }
+
+        return Write(context, answer.Status, RestErrors.Body(answer.Message));
+    }
+
+    private static readonly Dictionary<string, string> s_noHeaders = [];
+
+    private static void AddHeaders(HttpContext context)
+    {
+        var options = Options(context);
+        var headers = context.Response.Headers;
+        foreach (var (name, value) in options.SecurityHeaders)
+        {
+            headers[name] = value;
+        }
+
+        if (options.CacheControl is { } cacheControl && !headers.ContainsKey(HeaderNames.CacheControl))
+        {
+            headers.CacheControl = cacheControl;
+        }
+
+        if (options.ServerTiming && RestTiming.Header(context, options.ServerTimingDescriptions) is { } timing)
+        {
+            headers["Server-Timing"] = timing;
+        }
     }
 
     internal static RestServerOptions Options(HttpContext context) =>

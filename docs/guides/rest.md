@@ -52,6 +52,10 @@ services.AddCubeRest(
 | `RefuseWritesOutsideOpenTransaction` | `true` | A write without `X-Tx-Id` while its owner has a transaction open is a 409. |
 | `OwnerOf` | `RestServerOptions.DefaultOwner` | Who owns a remote transaction: `user:<id>\|client:<X-Client-Id>`. |
 | `QuotaOf` | `RestServerOptions.DefaultQuota` | Whose cap a new remote transaction counts against: `user:<id>`, or the owner when anonymous, so a new client id doesn't buy a new cap. |
+| `SecurityHeaders` | `nosniff`, `X-Frame-Options: DENY` | Headers on every answer, errors included (see [section 8](#8-headers-timing-limits-and-metrics)). |
+| `CacheControl` | `no-store` | `Cache-Control` of the answers whose route set none; `null` sends none. |
+| `ServerTiming` / `ServerTimingDescriptions` | off / off | Sends `Server-Timing`; with descriptions. |
+| `Errors` | the contract's table | Maps the application's exceptions to answers (see [section 7](#7-handle-errors)). |
 
 | `RemoteTransactionOptions` | Default |
 |---|---|
@@ -268,13 +272,70 @@ statuses:
 | `KeyNotFoundException` | 404 | `KeyNotFoundException` (`FetchById` returns `null` instead) |
 | `TransactionConflictException` | 409 | `TransactionConflictException` (on a remote commit: `TransactionSystemException`) |
 | `TransactionNotFoundException` | 410 | `TransactionNotFoundException` |
-| `TransactionLimitExceededException` | 429 | `TransactionLimitExceededException` |
+| `TooManyRequestsException` (also `TransactionLimitExceededException`) | 429, with `Retry-After` when known | `TooManyRequestsException` with `RetryAfter` (from `begin`: `TransactionLimitExceededException`) |
 | anything else | 500, `"Internal server error"` | `RemoteCallException` (with `Status`) |
 
 - A 500 never sends the server's exception message; the server logs it (`Wdc.Rest.Server` category).
 - A database error (a `NOT NULL` violated, a foreign key) is "anything else". To give the user a 400 with a message,
   validate in the repository and throw `InvalidRequestException`, as `PurchaseItemRepository.Insert` does.
 - A proxy page or any status outside the table also becomes `RemoteCallException`.
+
+Map the application's own exceptions with `RestServerOptions.Errors`. The most specific type is tried first; a map
+that returns `null` passes the exception to the map of its base type, and in the end to the table above:
+
+```csharp
+services.AddCubeRest(o => o.Errors
+    .Map<OutOfStockException>(HttpStatusCode.Conflict)
+    .Map<QuotaException>(e => new RestError(HttpStatusCode.PaymentRequired, e.Message)
+    {
+        Headers = new Dictionary<string, string> { ["X-Quota"] = e.Name },
+    }));
+```
+
+The client still raises the table's exceptions: a status the table does not have becomes `RemoteCallException`.
+
+## 8. Headers, timing, limits and metrics
+
+Every answer the REST routes write, errors included, carries `RestServerOptions.SecurityHeaders`
+(`X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY`, replacing what a route set) and, unless the route set
+its own, `Cache-Control: no-store`. Add, remove or change them in the options.
+
+`ServerTiming = true` sends `Server-Timing` with `total` (from the start of the handler to the serialized answer) and
+what the handler measures:
+
+```csharp
+var rows = await RestTiming.Measure(context, "db", () => repository.Fetch(criteria, cancellationToken: ct), "Fetch");
+```
+
+The descriptions (`desc="Fetch"`) go out only with `ServerTimingDescriptions = true`: they may name internals.
+
+Rate limiting, compression and CORS are ASP.NET's own middleware. `RestRateLimiting.OnRejected` makes the rate
+limiter answer like the routes: 429, `{"error":"…"}`, `Retry-After` and the headers above. A limit per user and
+minute, on the API only:
+
+```csharp
+services.AddRateLimiter(o =>
+{
+    o.OnRejected = RestRateLimiting.OnRejected;
+    o.AddPolicy("api", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirstValue("sub") ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 600, Window = TimeSpan.FromMinutes(1) }));
+});
+
+app.UseRateLimiter(); // after UseAuthentication, so the partition sees the user
+var api = app.MapGroup(string.Empty).RequireRateLimiting("api"); // map the REST routes on it
+api.MapRemoteTransactions();
+```
+
+- A use case can refuse for now itself: `throw new TooManyRequestsException(message, retryAfter)` is a 429 with
+  `Retry-After`, and the client raises it with `RetryAfter`.
+- With CORS, expose the headers a browser client reads: `.WithExposedHeaders("Retry-After", "Server-Timing")`.
+- Compression (`AddResponseCompression`) shrinks large fetches; it is off over HTTPS unless `EnableForHttps`.
+
+The coordinator publishes its numbers on the meter `Wdc.Rest.Server` (`RestServerMetrics.MeterName`):
+`wdc.remote.transactions.open` (open now) and `wdc.remote.transactions` by `event` (`begun`, `committed`,
+`rolledback`, `reaped`, `refused`). The Blazor host publishes `wdc.cube.applications.live` on `Wdc.Cube.Blazor`.
+Read them with `dotnet-counters`, or export them with OpenTelemetry (`AddMeter(RestServerMetrics.MeterName)`).
 
 ## Checklist
 
@@ -284,6 +345,7 @@ statuses:
 - [ ] `MapRemoteTransactions` is mapped when remote transactions are on.
 - [ ] Each `RemoteRepository` uses the same base path, model and criteria as its `RepositoryRpc`.
 - [ ] The signing key and the connection string come from configuration or a secret store.
+- [ ] The rate limiter, if any, answers with `RestRateLimiting.OnRejected`.
 
 ## See also
 

@@ -78,9 +78,17 @@ public sealed class RestClient
                 return null;
             }
 
-            throw RestErrors.FromResponse(response.StatusCode, RestErrors.MessageOf(bytes));
+            throw RestErrors.FromResponse(response.StatusCode, RestErrors.MessageOf(bytes), RetryAfter(response));
         }
     }
+
+    // Seconds or a date; a date already past is "now".
+    private static TimeSpan? RetryAfter(HttpResponseMessage response) => response.Headers.RetryAfter switch
+    {
+        { Delta: { } delta } => delta,
+        { Date: { } date } => date - DateTimeOffset.UtcNow is var wait && wait > TimeSpan.Zero ? wait : TimeSpan.Zero,
+        _ => null,
+    };
 
     private async Task<HttpResponseMessage> SendOnce(HttpMethod method, string path, byte[]? body, string? transactionId,
         CancellationToken cancellationToken)

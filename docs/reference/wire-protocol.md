@@ -414,13 +414,16 @@ Every error answer has the same body:
 | 404 | `KeyNotFoundException`, or a handler that found nothing | `KeyNotFoundException` (`fetch-by-id`: `null`) |
 | 409 | `TransactionConflictException` | `TransactionConflictException` (on a `commit`: `TransactionSystemException`) |
 | 410 | `TransactionNotFoundException` | `TransactionNotFoundException` |
-| 429 | `TransactionLimitExceededException` | `TransactionLimitExceededException` |
+| 429 | `TooManyRequestsException` (remote transaction limit, rate limiter), with `Retry-After` in seconds when known | `TooManyRequestsException` with `RetryAfter` (on `begin`: `TransactionLimitExceededException`) |
 | 500 | anything else, with the fixed message `Internal server error` (the detail is logged, never sent) | `RemoteCallException` |
 | other | not produced by the routes (a proxy, the host) | `RemoteCallException` |
 
 - The message is meant for people and logs. Do not parse it.
 - A client that cannot read an `error` member (an empty body, an HTML page) uses `HTTP <status>` as the message.
 - A route that does not exist answers the host's 404, possibly without a body.
+- Every answer of the routes, errors included, carries `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and,
+  unless the route set its own, `Cache-Control: no-store` (the server can change them). `Server-Timing` is sent only
+  when the server turns it on.
 
 ## Transactions
 

@@ -21,6 +21,7 @@ public sealed class CubeHost<TApp> : IComponent, IAsyncDisposable
     private RenderHandle _renderHandle;
     private NavigationHistoryManager? _history;
     private TApp? _app;
+    private bool _disposed;
 
     /// <summary>Creates the application.</summary>
     [Parameter]
@@ -56,6 +57,7 @@ public sealed class CubeHost<TApp> : IComponent, IAsyncDisposable
 
         _history = new NavigationHistoryManager(Navigation);
         _app = CreateApplication(new CubeHostContext(BlazorPresentation.CreateDispatcher(_renderHandle.Dispatcher), _history));
+        CubeBlazorMetrics.LiveApplications.Add(1);
         Render();
         if (Start is not null)
         {
@@ -66,9 +68,14 @@ public sealed class CubeHost<TApp> : IComponent, IAsyncDisposable
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        if (_app is { } app && !app.IsReleased)
+        if (_app is { } app && !_disposed)
         {
-            await app.InvokeAsync(app.Release);
+            _disposed = true;
+            CubeBlazorMetrics.LiveApplications.Add(-1);
+            if (!app.IsReleased)
+            {
+                await app.InvokeAsync(app.Release);
+            }
         }
 
         _history?.Dispose();
