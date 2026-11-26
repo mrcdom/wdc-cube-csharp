@@ -25,8 +25,10 @@ public sealed class FooterScope : Scope
 
 - Assigning a different value marks the scope dirty; assigning the same value does nothing. `Set` returns whether
   the value changed.
-- Value types and strings compare by value. Other objects compare **by reference**: replacing an object with an
-  equal copy is a change (it tells the view the thing on screen is another one).
+- Assigning a value equal to the current one is no change. Values compare with their own `Equals` (records and
+  value types by value, other classes by reference), strings ordinally, and collections **by content**: sequences
+  element by element in order, dictionaries by key. Scopes always compare by reference: another scope instance is
+  another view.
 - A change *inside* an object already assigned is invisible to `Set`: call `MarkDirty()` on the scope, or
   `UpdateManager.Update(scope)` from the presenter.
 - Nothing is told to the view from the setter. `PropertyChanged` is raised during the flush, once per changed

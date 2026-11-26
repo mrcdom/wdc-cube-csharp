@@ -104,6 +104,54 @@ public sealed class PresenterActionTests
     }
 
     [Fact]
+    public void Actions_RunOneAtATime_EvenAcrossAwaits()
+    {
+        _form.Gate = new TaskCompletionSource();
+        Task? first = null, second = null;
+        _dispatcher.Run(() =>
+        {
+            first = _form.Scope.OnBuy();
+            second = _form.Scope.OnBuy(); // the double click, while the first one waits on I/O
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal(1, _form.BuysStarted); // the second waits for the first to end
+        _form.Gate.SetResult();
+        _dispatcher.Run(() => Task.WhenAll(first!, second!));
+
+        Assert.Equal(2, _form.BuysStarted);
+        Assert.Equal(0, _form.Overlaps);
+    }
+
+    [Fact]
+    public void ActionWaitingBehindOne_ThatLeftTheFace_DoesNothing()
+    {
+        _form.Gate = new TaskCompletionSource();
+        _form.LeaveAfterBuy = true;
+        Task? first = null, second = null;
+        _dispatcher.Run(() =>
+        {
+            first = _form.Scope.OnBuy();
+            second = _form.Scope.OnBuy();
+            return Task.CompletedTask;
+        });
+
+        _form.Gate.SetResult();
+        _dispatcher.Run(() => Task.WhenAll(first!, second!));
+
+        Assert.Equal(1, _form.BuysStarted); // the first went elsewhere: the second click lands on a released presenter
+        Assert.Empty(_app.UnexpectedErrors);
+    }
+
+    [Fact]
+    public void ActionRunningAnother_RunsItAtOnce()
+    {
+        _dispatcher.Run(() => _form.Scope.OnSaveTwice()); // would wait for itself if the lock did not go along
+
+        Assert.Equal(2, _form.Scope.Saved);
+    }
+
+    [Fact]
     public void ChildPresenter_HasItsOwnScopeAndManager_AndIsReleasedByItsOwner()
     {
         Assert.NotNull(_form.Child);
@@ -152,6 +200,10 @@ internal sealed class FormScope : Scope
     public Func<Task> OnNothing { get; set; } = ScopeActions.Unbound();
 
     public Func<Task> OnForgotten { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnBuy { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnSaveTwice { get; set; } = ScopeActions.Unbound();
 }
 
 internal sealed class PanelScope : Scope
@@ -170,6 +222,16 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
 
     public PanelPresenter? Child { get; private set; }
 
+    public TaskCompletionSource? Gate { get; set; }
+
+    public bool LeaveAfterBuy { get; set; }
+
+    public int BuysStarted { get; private set; }
+
+    public int Overlaps { get; private set; }
+
+    private bool _buying;
+
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
         if (initialization)
@@ -178,6 +240,8 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
             Scope.OnFail = Action(OnFail);
             Scope.OnRename = Action<string>(OnRename);
             Scope.OnNothing = Action(DoNothing);
+            Scope.OnBuy = Action(OnBuy);
+            Scope.OnSaveTwice = Action(OnSaveTwice);
             Child = new PanelPresenter(App);
             Scope.Panel = Child.Scope;
         }
@@ -201,6 +265,25 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
         RanOnDispatcher &= App.Dispatcher.CheckAccess();
         Scope.Saved++;
         _saves++;
+    }
+
+    private async Task OnBuy()
+    {
+        BuysStarted++;
+        Overlaps += _buying ? 1 : 0;
+        _buying = true;
+        await (Gate?.Task ?? Task.CompletedTask);
+        _buying = false;
+        if (LeaveAfterBuy)
+        {
+            await App.Flip(ActPlaces.Other);
+        }
+    }
+
+    private async Task OnSaveTwice()
+    {
+        await Scope.OnSave();
+        await Scope.OnSave();
     }
 
     private Task OnFail() => throw new InvalidOperationException("save failed");

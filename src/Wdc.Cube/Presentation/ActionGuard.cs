@@ -12,7 +12,8 @@ internal interface IActionHost
 }
 
 /// <summary>
-/// Builds guarded actions: the wrapper marshals to the dispatcher, reports failures through
+/// Builds guarded actions: the wrapper marshals to the dispatcher, runs one action at a time per application
+/// (<see cref="CubeApplication.RunAction(Func{Task})"/>), reports failures through
 /// <see cref="CubeApplication.Unexpected"/> (an action never faults to its caller), and at the end flushes the scope
 /// updates at once and republishes the address.
 /// </summary>
@@ -22,8 +23,10 @@ internal static class ActionGuard
         () => Run(host, action, name);
 
     private static Task Run(IActionHost host, Func<Task> action, string? name) =>
-        host.Application.Dispatcher.InvokeAsync(async () =>
+        host.Application.Dispatcher.InvokeAsync(() => host.Application.RunAction(async () =>
         {
+            // Checked after the wait too: the action before this one may have taken the presenter off the face (a
+            // second click on "Buy" lands after the first one went to the receipt).
             if (host.IsReleased)
             {
                 return; // a late click on a scope whose presenter already left the face
@@ -41,7 +44,7 @@ internal static class ActionGuard
             {
                 AfterAction(host);
             }
-        });
+        }));
 
     private static void AfterAction(IActionHost host)
     {
