@@ -41,8 +41,11 @@ public sealed class TutorialPageTests : IDisposable
         return page;
     }
 
+    // Finds and acts on the renderer's thread: a render in between would replace the handlers of the element found.
+    private static void On(IRenderedComponent<Shell> page, Action act) => page.InvokeAsync(act).GetAwaiter().GetResult();
+
     private static void Click(IRenderedComponent<Shell> page, string selector, string text) =>
-        page.FindAll(selector).Single(e => e.TextContent.Trim() == text).Click();
+        On(page, () => page.FindAll(selector).Single(e => e.TextContent.Trim() == text).Click());
 
     [Fact]
     public void StartsOnTheHomeBody()
@@ -98,7 +101,7 @@ public sealed class TutorialPageTests : IDisposable
         var page = Open("todos?tm-showing=1");
         page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".todo-list li").Count)); // from the address
 
-        page.FindAll(".todo-list li .toggle")[0].Change(true);
+        On(page, () => page.FindAll(".todo-list li .toggle")[0].Change(true));
 
         page.WaitForAssertion(() => Assert.Single(page.FindAll(".todo-list li")));
         page.WaitForAssertion(() => Assert.Equal("1", page.Find(".todo-count strong").TextContent));
@@ -121,7 +124,7 @@ public sealed class TutorialPageTests : IDisposable
         Assert.Equal(3, page.FindAll(".site").Count); // the list stays beneath
 
         await page.InvokeAsync(() => page.Find(".dialog .email").Input("ana@example.com"));
-        page.Find(".dialog .subscribe").Click();
+        On(page, () => page.Find(".dialog .subscribe").Click());
 
         page.WaitForAssertion(() => Assert.Empty(page.FindAll(".dialog")));
         Assert.Equal("subscriptions", Address);
@@ -137,7 +140,7 @@ public sealed class TutorialPageTests : IDisposable
         Click(page, ".home button", "Warning");
         page.WaitForAssertion(() => Assert.Contains("alert-warning", page.Find(".alert").ClassName, StringComparison.Ordinal));
 
-        page.Find(".alert .close").Click();
+        On(page, () => page.Find(".alert .close").Click());
         page.WaitForAssertion(() => Assert.Empty(page.FindAll(".alert")));
     }
 

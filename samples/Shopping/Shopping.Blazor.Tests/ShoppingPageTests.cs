@@ -49,6 +49,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         return _ctx.Render<Shell>();
     }
 
+    // Finds and acts on the renderer's thread: a render in between would replace the handlers of the element found.
+    private static void On(IRenderedComponent<Shell> page, Action act) => page.InvokeAsync(act).GetAwaiter().GetResult();
+
     private static TimeSpan Wait => TimeSpan.FromSeconds(15);
 
     private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
@@ -56,9 +59,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
     private static IRenderedComponent<Shell> LogIn(IRenderedComponent<Shell> page, string user, string password)
     {
         page.WaitForElement(".login-card", Wait);
-        page.Find(".login-card .user").Input(user);
-        page.Find(".login-card .password").Input(password);
-        page.Find(".login-card").Submit();
+        On(page, () => page.Find(".login-card .user").Input(user));
+        On(page, () => page.Find(".login-card .password").Input(password));
+        On(page, () => page.Find(".login-card").Submit());
         return page;
     }
 
@@ -81,24 +84,24 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         var page = LogIn(Open(), "fulano", "fulano");
         page.WaitForAssertion(() => Assert.Equal(4, page.FindAll(".product-card").Count), Wait);
 
-        page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Volleyball").Click();
+        On(page, () => page.FindAll(".product-card").Single(c => c.QuerySelector(".name")!.TextContent == "Volleyball").Click());
         page.WaitForAssertion(() => Assert.Equal("Volleyball", page.Find(".product-page h2").TextContent), Wait);
         Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key
         Assert.Equal(3, page.FindAll(".description li").Count);
 
         // Each click redraws the page from the action, off the test's thread: wait for it before finding the button again.
-        page.Find(".product-page .plus").Click();
+        On(page, () => page.Find(".product-page .plus").Click());
         page.WaitForAssertion(() => Assert.Equal("2", page.Find(".product-page .quantity .value").TextContent), Wait);
-        page.Find(".product-page .plus").Click();
+        On(page, () => page.Find(".product-page .plus").Click());
         page.WaitForAssertion(() => Assert.Equal("3", page.Find(".product-page .quantity .value").TextContent), Wait);
-        page.Find(".product-page .add").Click();
+        On(page, () => page.Find(".product-page .add").Click());
 
         page.WaitForAssertion(() => Assert.Equal("3", page.Find(".cart-line .value").TextContent), Wait);
         Assert.Equal("home/cart", Address);
         Assert.Equal("3", page.Find(".badge").TextContent);
         Assert.Contains("$135.90", page.Find(".cart-page .total").TextContent, StringComparison.Ordinal);
 
-        page.Find(".cart-page .buy").Click();
+        On(page, () => page.Find(".cart-page .buy").Click());
 
         page.WaitForAssertion(() => Assert.Equal("Purchase completed successfully!", page.Find(".receipt-page .success").TextContent), Wait);
         Assert.StartsWith("home/receipt?_e=", Address, StringComparison.Ordinal);
@@ -132,10 +135,11 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         await store.Purchases.Insert(purchase, cancellationToken: Ct);
 
         var page = LogIn(Open(), "admin", "admin");
-        page.WaitForElement(".admin-button", Wait).Click();
+        page.WaitForElement(".admin-button", Wait);
+        On(page, () => page.Find(".admin-button").Click());
         page.WaitForElement(".admin-page", Wait);
-        page.Find(".admin-filter .customer").Input("Doe");
-        page.Find(".admin-filter").Submit();
+        On(page, () => page.Find(".admin-filter .customer").Input("Doe"));
+        On(page, () => page.Find(".admin-filter").Submit());
         // The list from before the filter can already pass the checks below, and a click on it would land on handlers
         // the filtered list replaces: wait until the filtered list is the one shown.
         page.WaitForAssertion(() =>
@@ -146,29 +150,29 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         }, Wait);
         page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("John Doe", c.TextContent)), Wait);
         page.WaitForAssertion(() => Assert.Single(page.FindAll(".admin-row"), r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}"), Wait);
-        page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}").Click();
+        On(page, () => page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}").Click());
 
         page.WaitForAssertion(() => Assert.Equal(2, page.FindAll(".amend-line").Count), Wait);
         Assert.True(page.Find(".amend-page .confirm").HasAttribute("disabled"));
-        page.FindAll(".amend-line")[0].QuerySelector(".minus")!.Click();
+        On(page, () => page.FindAll(".amend-line")[0].QuerySelector(".minus")!.Click());
         page.WaitForAssertion(() => Assert.Equal("1", page.FindAll(".amend-line")[0].QuerySelector(".new")!.TextContent), Wait);
-        page.Find(".amend-page textarea").Input("One ball was not delivered");
+        On(page, () => page.Find(".amend-page textarea").Input("One ball was not delivered"));
         page.WaitForAssertion(() => Assert.False(page.Find(".amend-page .confirm").HasAttribute("disabled")), Wait);
-        page.Find(".amend-page .confirm").Click();
+        On(page, () => page.Find(".amend-page .confirm").Click());
 
         page.WaitForAssertion(() => Assert.Equal("Correction recorded.", page.Find(".amend-page .success").TextContent), Wait);
         Assert.Contains("One ball was not delivered", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
         Assert.Contains("Volleyball: 2 → 1", page.Find(".amend-page .history").TextContent, StringComparison.Ordinal);
 
-        page.Find(".amend-page .back").Click();
+        On(page, () => page.Find(".amend-page .back").Click());
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".admin-row .corrected")), Wait);
         Assert.Equal("Doe", page.Find(".admin-filter .customer").GetAttribute("value"));
 
-        page.Find(".exit").Click();
+        On(page, () => page.Find(".exit").Click());
         LogIn(page, "fulano", "fulano");
         page.WaitForAssertion(() => Assert.NotEmpty(page.FindAll(".purchase-card")), Wait);
         Assert.Empty(page.FindAll(".admin-button"));
-        page.FindAll(".purchase-card")[0].Click();
+        On(page, () => page.FindAll(".purchase-card")[0].Click());
         page.WaitForAssertion(() => Assert.StartsWith("Purchase corrected on ", page.Find(".receipt-page .correction").TextContent, StringComparison.Ordinal), Wait);
         Assert.Contains("$47.97", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
     }
@@ -177,7 +181,8 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
     public void Exit_GoesBackToLogin()
     {
         var page = LogIn(Open(), "beotrano", "beotrano");
-        page.WaitForElement(".exit", Wait).Click();
+        page.WaitForElement(".exit", Wait);
+        On(page, () => page.Find(".exit").Click());
 
         page.WaitForElement(".login-card", Wait);
         Assert.Equal("login", Address);
