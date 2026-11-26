@@ -86,7 +86,9 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         Assert.StartsWith("home/product?_e=", Address, StringComparison.Ordinal); // sealed with the user's key
         Assert.Equal(3, page.FindAll(".description li").Count);
 
+        // Each click redraws the page from the action, off the test's thread: wait for it before finding the button again.
         page.Find(".product-page .plus").Click();
+        page.WaitForAssertion(() => Assert.Equal("2", page.Find(".product-page .quantity .value").TextContent), Wait);
         page.Find(".product-page .plus").Click();
         page.WaitForAssertion(() => Assert.Equal("3", page.Find(".product-page .quantity .value").TextContent), Wait);
         page.Find(".product-page .add").Click();

@@ -43,12 +43,12 @@ jobs:
           global-json-file: global.json
           dotnet-version: 10.0.x # the libraries and tests also target net10.0
 
-      - name: Start SQL Server
+      - name: Start SQL Server 2025 # the dialect uses JSON_ARRAYAGG ... ORDER BY and BASE64_ENCODE
         run: |
           password="Ci-$(openssl rand -hex 16)"
           echo "::add-mask::$password"
           docker run -d --name mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$password" -p 1433:1433 \
-            mcr.microsoft.com/mssql/server:2022-latest
+            mcr.microsoft.com/mssql/server:2025-latest
           sql() { docker exec mssql /opt/mssql-tools18/bin/sqlcmd -C -b -S localhost -U sa -P "$password" -Q "$1"; }
           for _ in $(seq 1 60); do sql "SELECT 1" >/dev/null 2>&1 && break; sleep 2; done
           sql "CREATE DATABASE [wdc-cube]; ALTER DATABASE [wdc-cube] SET READ_COMMITTED_SNAPSHOT ON;"
