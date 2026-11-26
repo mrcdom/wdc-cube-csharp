@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: nuget # versions are central, in Directory.Packages.props
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14 # take a release only after it has been out for two weeks
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: dotnet-sdk # global.json
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      actions:
+        patterns: ["*"]

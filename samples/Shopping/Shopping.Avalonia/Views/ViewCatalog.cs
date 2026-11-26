@@ -1,3 +1,4 @@
+using Shopping.Presentation.Modules;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
@@ -7,7 +8,6 @@ using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
 using Shopping.Presentation.Modules.Login;
-using Shopping.Presentation.Modules;
 using Wdc.Cube.Avalonia;
 
 namespace Shopping.Avalonia.Views;

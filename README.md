@@ -1,5 +1,7 @@
 # wdc-cube-csharp
 
+[![CI](https://github.com/mrcdom/wdc-cube-csharp/actions/workflows/ci.yml/badge.svg)](https://github.com/mrcdom/wdc-cube-csharp/actions/workflows/ci.yml)
+
 **Cube** is a front-end architecture that keeps application logic out of the view layer. This is its C#/.NET
 implementation, alongside the [TypeScript](https://github.com/mrcdom/wdc-cube) and
 [Kotlin](https://github.com/mrcdom/wdc-cube-kotlin) ones.

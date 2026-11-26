@@ -1,6 +1,6 @@
-using Shopping.Presentation.Modules.Home;
 using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
+using Shopping.Presentation.Modules.Home;
 using Wdc.Cube;
 using Wdc.Domain;
 

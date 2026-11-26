@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, to catch a broken dependency or image between changes
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust # a throwaway server reachable only from this job
+          POSTGRES_DB: wdc_cube_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      WDC_TEST_POSTGRES: Host=localhost;Database=wdc_cube_test;Username=postgres
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.0.x # the libraries and tests also target net10.0
+
+      - name: Start SQL Server 2025 # the dialect uses JSON_ARRAYAGG ... ORDER BY and BASE64_ENCODE
+        run: |
+          password="Ci-$(openssl rand -hex 16)"
+          echo "::add-mask::$password"
+          docker run -d --name mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$password" -p 1433:1433 \
+            mcr.microsoft.com/mssql/server:2025-latest
+          sql() { docker exec mssql /opt/mssql-tools18/bin/sqlcmd -C -b -S localhost -U sa -P "$password" -Q "$1"; }
+          for _ in $(seq 1 60); do sql "SELECT 1" >/dev/null 2>&1 && break; sleep 2; done
+          sql "CREATE DATABASE [wdc-cube]; ALTER DATABASE [wdc-cube] SET READ_COMMITTED_SNAPSHOT ON;"
+          echo "WDC_TEST_SQLSERVER=Server=localhost,1433;Database=wdc-cube;User Id=sa;Password=$password;Encrypt=true;TrustServerCertificate=true" >> "$GITHUB_ENV"
+
+      - run: dotnet restore wdc-cube.slnx
+
+      - name: Check formatting
+        run: dotnet format wdc-cube.slnx --verify-no-changes --no-restore
+
+      - run: dotnet build wdc-cube.slnx --no-restore
+
+      - run: dotnet test --solution wdc-cube.slnx --no-build

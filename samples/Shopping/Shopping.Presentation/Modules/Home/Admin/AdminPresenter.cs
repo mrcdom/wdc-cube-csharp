@@ -1,8 +1,8 @@
-using Shopping.Presentation.Modules.Home;
 using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
 using Shopping.Domain.Users;
 using Shopping.Presentation.Infra;
+using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
 using Wdc.Cube;
 using Wdc.Domain;

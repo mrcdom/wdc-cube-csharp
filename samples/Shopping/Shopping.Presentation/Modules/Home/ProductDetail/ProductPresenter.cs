@@ -1,6 +1,6 @@
+using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Cart;
-using Shopping.Presentation.Infra;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -47,7 +47,10 @@ public sealed class ProductPresenter(RootPresenter app) : CubePresenter<RootPres
     {
         var product = await App.Repositories.Products.FetchById(productId, new Domain.Products.Product
         {
-            Id = Mark.Int64, Name = Mark.String, Price = Mark.Decimal, Description = Mark.String,
+            Id = Mark.Int64,
+            Name = Mark.String,
+            Price = Mark.Decimal,
+            Description = Mark.String,
         }) ?? throw new ProductNotFoundException(productId);
 
         _productId = productId;
