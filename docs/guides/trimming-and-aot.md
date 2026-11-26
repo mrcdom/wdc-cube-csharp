@@ -185,4 +185,4 @@ trimming and AOT support. The Shopping server is not published trimmed.
 - [Writing a SQL repository](sql-repositories.md)
 - [Hosting in Blazor](blazor.md) and [Hosting in Avalonia](avalonia.md): view registration in each host.
 - [The Shopping sample](../samples/shopping.md)
-- [Contributing](../../CONTRIBUTING.md): the conventions behind these guarantees.
+- [Contributing](https://github.com/mrcdom/wdc-cube-csharp/blob/main/CONTRIBUTING.md): the conventions behind these guarantees.

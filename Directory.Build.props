@@ -48,9 +48,8 @@
     last release): a change to it that is not listed breaks the build (RS0016/RS0017), so it is always deliberate.
   -->
   <ItemGroup Condition="$(WdcProjectPath.StartsWith('src/'))">
+    <!-- The package adds the project's PublicAPI.*.txt files itself. -->
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
-    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
   <ItemGroup Condition="$(WdcProjectPath.StartsWith('src/'))">

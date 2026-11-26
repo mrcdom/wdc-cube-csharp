@@ -36,4 +36,4 @@ working. The first versions need the two most common servers in .NET shops.
 - Read isolation is the database's: SQL Server's default read committed blocks readers on uncommitted rows unless
   `READ_COMMITTED_SNAPSHOT` is on.
 
-See [Persistence](../concepts/persistence.md#dialects) and [CONTRIBUTING](../../CONTRIBUTING.md).
+See [Persistence](../concepts/persistence.md#dialects) and [CONTRIBUTING](https://github.com/mrcdom/wdc-cube-csharp/blob/main/CONTRIBUTING.md).

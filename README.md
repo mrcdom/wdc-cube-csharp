@@ -102,6 +102,9 @@ The libraries are trimming- and AOT-compatible: no runtime reflection in the cor
 
 ## Documentation
 
+The documentation below, with the API reference, is also published as a site:
+<https://mrcdom.github.io/wdc-cube-csharp/>.
+
 - [Getting started](docs/getting-started.md): build a small app, step by step.
 - [Concepts](docs/README.md#concepts): how each part works and why.
 - [Guides](docs/README.md#guides): testing, Blazor, Avalonia, SQL repositories, REST, rules per role, sealed
