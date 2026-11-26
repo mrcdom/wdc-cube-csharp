@@ -136,6 +136,14 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         page.WaitForElement(".admin-page", Wait);
         page.Find(".admin-filter .customer").Input("Doe");
         page.Find(".admin-filter").Submit();
+        // The list from before the filter can already pass the checks below, and a click on it would land on handlers
+        // the filtered list replaces: wait until the filtered list is the one shown.
+        page.WaitForAssertion(() =>
+        {
+            var admin = page.FindComponent<AdminView>().Instance.Scope;
+            Assert.Equal("Doe", admin.CustomerFilter);
+            Assert.False(admin.Loading);
+        }, Wait);
         page.WaitForAssertion(() => Assert.All(page.FindAll(".admin-row .customer"), c => Assert.Equal("John Doe", c.TextContent)), Wait);
         page.WaitForAssertion(() => Assert.Single(page.FindAll(".admin-row"), r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}"), Wait);
         page.FindAll(".admin-row").Single(r => r.QuerySelector(".number")!.TextContent == $"#{purchase.Id}").Click();
