@@ -48,7 +48,8 @@ public class ShoppingDatabaseFixture : IAsyncLifetime
     {
         var actors = new ActorSource();
         return (ShoppingProtection.Protect(Store!.Repositories, actors),
-            new LocalAuthentication(Store.Repositories, actors, id => Domain.Users.HistoryKeys.Derive(HistoryMaster, id)));
+            new LocalAuthentication(Store.Repositories, actors, id => Domain.Users.HistoryKeys.Derive(HistoryMaster, id),
+                new LoginThrottle(Store.Security, TimeProvider.System)));
     }
 
     protected virtual Task OnReady() => Task.CompletedTask;

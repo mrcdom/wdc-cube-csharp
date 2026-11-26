@@ -126,7 +126,7 @@ public sealed class RemoteAuthentication : IAuthentication
         var bytes = await answer.Content.ReadAsByteArrayAsync(cancellationToken);
         if (!answer.IsSuccessStatusCode)
         {
-            throw RestErrors.FromResponse(answer.StatusCode, RestErrors.MessageOf(bytes));
+            throw RestErrors.FromResponse(answer.StatusCode, RestErrors.MessageOf(bytes), answer.Headers.RetryAfter?.Delta);
         }
 
         using var document = JsonDocument.Parse(bytes);

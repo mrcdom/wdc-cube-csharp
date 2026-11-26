@@ -33,7 +33,8 @@ public sealed class ShoppingHttpFixture : ShoppingDatabaseFixture
         builder.WebHost.UseTestServer();
         builder.Logging.ClearProviders();
         builder.Services.AddSingleton(TimeProvider.System);
-        builder.Services.AddShoppingApi(Store!, new Server.ShoppingAuthOptions());
+        // Every test client comes from the same address: the per-address limit has its own tests.
+        builder.Services.AddShoppingApi(Store!, new Server.ShoppingAuthOptions { AuthRequestsPerMinute = 0 });
         _server = builder.Build();
         _server.MapShoppingApi();
         await _server.StartAsync();

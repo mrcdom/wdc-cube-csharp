@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Shopping.Blazor.Components;
 using Shopping.Blazor.Infra;
 using Shopping.Blazor.Views;
@@ -29,8 +30,13 @@ var historyMaster = builder.Configuration["Shopping:History:Key"] is { Length: >
     : builder.Environment.IsDevelopment()
         ? System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)
         : throw new InvalidOperationException("Shopping:History:Key is missing (Base64, 32 bytes).");
+var throttle = new LoginThrottle(store.Security, TimeProvider.System); // failed logins, counted in the database
 builder.Services.AddScoped<IAuthentication>(sp => new LocalAuthentication(store.Repositories,
-    sp.GetRequiredService<ActorSource>(), id => Shopping.Domain.Users.HistoryKeys.Derive(historyMaster, id)));
+    sp.GetRequiredService<ActorSource>(), id => Shopping.Domain.Users.HistoryKeys.Derive(historyMaster, id), throttle));
+
+// The keys that protect the browser's session storage, in the database: every instance reads what another wrote.
+builder.Services.AddDataProtection().SetApplicationName("wdc-shopping")
+    .AddKeyManagementOptions(o => o.XmlRepository = new ShoppingKeyRing(store.Security));
 builder.Services.AddCubeViews(ViewCatalog.Register);
 
 var app = builder.Build();

@@ -9,6 +9,11 @@ public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresen
     public const string NotRecognized = "Username or password not recognized!";
     public const string CommunicationFailure = "Could not reach the server. Check your connection.";
 
+    /// <summary>The message after too many failures: how long to wait, when known.</summary>
+    public static string TooManyAttempts(TimeSpan? wait) => wait is { } w
+        ? $"Too many failed attempts. Try again in {Math.Max(1, (int)Math.Ceiling(w.TotalSeconds))} seconds."
+        : "Too many failed attempts. Try again later.";
+
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {
         if (initialization)
@@ -36,6 +41,10 @@ public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresen
 
             await App.SignIn(subject);
             await new HomeKeys(App).Flip();
+        }
+        catch (Wdc.Domain.TooManyRequestsException refused)
+        {
+            Scope.ErrorMessage = TooManyAttempts(refused.RetryAfter);
         }
         catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException or TimeoutException)
         {

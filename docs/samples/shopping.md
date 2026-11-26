@@ -236,6 +236,26 @@ transaction. The buyer sees the correction on the receipt, without the author. I
 [Roles and rules](../guides/roles-and-rules.md#7-model-a-correction-as-its-own-operation); its tests are
 `ErrataTestsBase` (in process, over HTTP and on SQL Server) and `AdminTestsBase`.
 
+## Sign-in
+
+The login never sends the password: the server issues a challenge (a single-use nonce, with the salt and iterations
+of the user's hash) and the client answers with a digest. What the login keeps lives in the database, so any instance
+of a host answers it and a restart signs nobody out (`ISecurityStore`, implemented by `SecurityStore`):
+
+| Table | What it holds |
+|---|---|
+| `auth_nonce` | The challenges in force. A login spends its nonce in one `DELETE`: of two attempts with the same nonce, one wins. |
+| `refresh_token` | The hash of each refresh token in force (never the token). A refresh spends it in one `DELETE ... RETURNING` (`OUTPUT` on SQL Server) and gets a new one. |
+| `login_failure` | The failed logins in a row per user name, known or not. |
+| `data_protection_key` | The Blazor Server host's key ring: a reload on another instance still reads the browser's session storage. |
+
+- **Failed logins** (`LoginThrottle`): five are free; then each attempt waits 30 seconds, doubled at each failure up
+  to 15 minutes, even with the right password. A success clears the count, and so does an hour without failures. The
+  server answers 429 with `Retry-After`, and the login screen says how long to wait. Both hosts apply it.
+- **Requests per address:** the server's `/api/auth` routes take 60 requests a minute per client address
+  (`Shopping:Auth:RequestsPerMinute`; 0 turns it off), with ASP.NET's rate limiter.
+- Expired challenges and tokens, and old failures, are swept at most once a minute, on a challenge.
+
 ## Running it
 
 The commands are in the [sample's README](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md). In short:
@@ -270,7 +290,8 @@ export Shopping__Database__ConnectionString='<your SQL Server connection string>
 ```
 
 On the first start, `ShoppingStore.EnsureCreated` creates the schema, the tables and the demo data, product images
-included. The database itself must exist and the user must be allowed to create a schema in it.
+included; on a database made before the sign-in tables, it adds them and leaves the data alone. The database itself
+must exist and the user must be allowed to create a schema in it.
 
 Outside Development, the hosts also require `Shopping:History:Key` (the master of the address keys) and, on the
 server, `Shopping:Jwt:Key`, both Base64. In Development random keys are used, so sessions and sealed links do not
