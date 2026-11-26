@@ -4,8 +4,8 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Shopping.Domain.Security;
-using Shopping.Persistence;
 using Shopping.Domain.Users;
+using Shopping.Persistence;
 using Wdc.Domain;
 
 namespace Shopping.Server;

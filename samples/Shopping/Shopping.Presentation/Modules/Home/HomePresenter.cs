@@ -1,11 +1,11 @@
+using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Presentation.Modules.Home.Cart;
-using Shopping.Presentation.Modules.Login;
-using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Products;
 using Shopping.Presentation.Modules.Home.Purchases;
 using Shopping.Presentation.Modules.Home.Receipt;
+using Shopping.Presentation.Modules.Login;
 using Wdc.Cube;
 
 namespace Shopping.Presentation.Modules.Home;

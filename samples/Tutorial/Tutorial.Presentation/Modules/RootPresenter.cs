@@ -1,7 +1,7 @@
-using Tutorial.Presentation.Modules.TodoMvc;
-using Tutorial.Presentation.Modules.Subscriptions;
-using Tutorial.Presentation.Modules.Restricted;
 using Microsoft.Extensions.Logging;
+using Tutorial.Presentation.Modules.Restricted;
+using Tutorial.Presentation.Modules.Subscriptions;
+using Tutorial.Presentation.Modules.TodoMvc;
 using Tutorial.Presentation.Services;
 using Wdc.Cube;
 

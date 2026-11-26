@@ -8,6 +8,8 @@ to discuss it.
 
 - .NET 11 SDK (`global.json`). The libraries target `net10.0` and `net11.0`; both are built and tested.
 - `dotnet build wdc-cube.slnx` — warnings are errors.
+- `dotnet format wdc-cube.slnx` — formatting, import order and names follow `.editorconfig`; CI runs it with
+  `--verify-no-changes`.
 - `dotnet test --solution wdc-cube.slnx` — the tests run on the Microsoft Testing Platform (xUnit v3). To run one
   project or one class:
 
@@ -29,6 +31,8 @@ source scripts/test-env.sh
 - **SQL Server**: set `WDC_TEST_SQLSERVER`, or `WDC_TEST_SQLSERVER_HOST` (and optionally `_USER`, `_DATABASE`) with
   the password in the macOS Keychain (see the script).
 - Values for your machine go in `scripts/test-env.local.sh`, which git ignores and the script reads first.
+- CI (`.github/workflows/ci.yml`) runs the whole suite on every pull request, with PostgreSQL and SQL Server in
+  throwaway containers.
 
 ### Browser and desktop
 

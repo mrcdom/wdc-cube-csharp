@@ -287,7 +287,11 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         await Assert.ThrowsAsync<AccessDeniedException>(() => admin.AmendmentLines.Delete(lineById, Ct));
         await Assert.ThrowsAsync<AccessDeniedException>(() => admin.AmendmentLines.Insert(new PurchaseAmendmentLine
         {
-            Amendment = new PurchaseAmendment { Id = errata.Id }, ItemId = items[1].Id, Price = 1m, AmountBefore = 2, AmountAfter = 1,
+            Amendment = new PurchaseAmendment { Id = errata.Id },
+            ItemId = items[1].Id,
+            Price = 1m,
+            AmountBefore = 2,
+            AmountAfter = 1,
             Product = new Product { Id = items[1].Product!.Id },
         }, cancellationToken: Ct));
         Assert.Equal("Correction", Assert.Single(await ErrataOf(purchase)).Reason);

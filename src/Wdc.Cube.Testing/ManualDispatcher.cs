@@ -7,8 +7,10 @@ namespace Wdc.Cube.Testing;
 /// </summary>
 public sealed class ManualDispatcher : PresentationDispatcher
 {
+#pragma warning disable IDE1006 // [ThreadStatic] fields take the t_ prefix, which the naming rules cannot tell apart
     [ThreadStatic]
     private static ManualDispatcher? t_running;
+#pragma warning restore IDE1006
 
     private readonly Queue<(SendOrPostCallback Callback, object? State)> _queue = new();
     private readonly object _lock = new(); // not System.Threading.Lock: Monitor.Wait/PulseAll need a monitor

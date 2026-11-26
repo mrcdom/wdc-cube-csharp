@@ -61,10 +61,10 @@ public static class AuthRoutes
     {
         var fields = ReadFields(await RestHttp.ReadBody(context));
         Tokens(context).Revoke(Field(fields, "refreshToken"));
-        return RepositoryWireSuccess;
+        return s_repositoryWireSuccess;
     });
 
-    private static readonly byte[] RepositoryWireSuccess = RestJson.Write(w =>
+    private static readonly byte[] s_repositoryWireSuccess = RestJson.Write(w =>
     {
         w.WriteStartObject();
         w.WriteBoolean("success", true);

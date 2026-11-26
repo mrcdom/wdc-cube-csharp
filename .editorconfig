@@ -29,7 +29,24 @@ dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 
-# Names: private fields in _camelCase
+# Names, as in the .NET runtime: constants in PascalCase, private static fields in s_camelCase ([ThreadStatic] ones in
+# t_camelCase, which the rules below cannot tell apart), other private fields in _camelCase.
+dotnet_naming_rule.constants.symbols = constants
+dotnet_naming_rule.constants.style = pascal
+dotnet_naming_rule.constants.severity = warning
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.pascal.capitalization = pascal_case
+
+dotnet_naming_rule.private_static_fields.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields.style = s_camel
+dotnet_naming_rule.private_static_fields.severity = warning
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+dotnet_naming_style.s_camel.capitalization = camel_case
+dotnet_naming_style.s_camel.required_prefix = s_
+
 dotnet_naming_rule.private_fields.symbols = private_fields
 dotnet_naming_rule.private_fields.style = underscore_camel
 dotnet_naming_rule.private_fields.severity = warning

@@ -13,8 +13,10 @@ namespace Wdc.Cube;
 /// </remarks>
 public sealed class SerialDispatcher : PresentationDispatcher, IDisposable
 {
+#pragma warning disable IDE1006 // [ThreadStatic] fields take the t_ prefix, which the naming rules cannot tell apart
     [ThreadStatic]
     private static SerialDispatcher? t_running;
+#pragma warning restore IDE1006
 
     private readonly Channel<WorkItem> _queue =
         Channel.CreateUnbounded<WorkItem>(new UnboundedChannelOptions { SingleReader = true });
