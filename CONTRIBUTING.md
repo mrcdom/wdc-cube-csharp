@@ -69,6 +69,13 @@ changing the sample, rewrite the blocks with:
 python3 scripts/update-doc-snippets.py
 ```
 
+To see the documentation as the site publishes it, with the API reference generated from `src/`:
+
+```bash
+dotnet tool restore
+dotnet tool run docfx docs/docfx.json --serve   # http://localhost:8080
+```
+
 ## Releasing
 
 1. In `CHANGELOG.md`, turn *Unreleased* into the version's section, `## [x.y.z] — yyyy-mm-dd`, and add its link at the

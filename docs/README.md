@@ -50,9 +50,9 @@ How to do a given task, step by step.
 ## Samples
 
 - [A walk through Shopping](samples/shopping.md): one feature followed from the view to the database.
-- [`samples/GettingStarted`](../samples/GettingStarted): the app of the tutorial.
-- [`samples/Tutorial`](../samples/Tutorial/README.md): a page frame, a list with a dialog, TodoMVC.
-- [`samples/Shopping`](../samples/Shopping/README.md): a complete application, from the database to three hosts.
+- [`samples/GettingStarted`](https://github.com/mrcdom/wdc-cube-csharp/tree/main/samples/GettingStarted): the app of the tutorial.
+- [`samples/Tutorial`](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Tutorial/README.md): a page frame, a list with a dialog, TodoMVC.
+- [`samples/Shopping`](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md): a complete application, from the database to three hosts.
 
 ## About this documentation
 

@@ -4,7 +4,7 @@ In this tutorial you build a small contacts app: a list of contacts, and the det
 way you meet every piece of Cube: places and addresses, the application presenter, presenters and scopes, keys,
 slots, views, and a test that drives the whole app without any UI.
 
-The finished app is in [`samples/GettingStarted`](../samples/GettingStarted). Every code block on this page is
+The finished app is in [`samples/GettingStarted`](https://github.com/mrcdom/wdc-cube-csharp/tree/main/samples/GettingStarted). Every code block on this page is
 taken from it, and a test checks that they stay the same, so what you read compiles and runs.
 
 ```bash
@@ -495,5 +495,5 @@ dotnet test --project samples/GettingStarted/Contacts.Tests/Contacts.Tests.cspro
 - [Update cycle](concepts/update-cycle.md): how scope changes reach the screen.
 - [Navigation](concepts/navigation.md): what a navigation guarantees when a presenter refuses or fails.
 - [History](concepts/history.md): addresses, Back/Forward, sealed addresses.
-- The [Shopping sample](../samples/Shopping/README.md): a complete app with login, database, rules per role, and
+- The [Shopping sample](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md): a complete app with login, database, rules per role, and
   three hosts (Blazor Server, WebAssembly, Avalonia).

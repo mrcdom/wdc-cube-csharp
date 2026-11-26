@@ -254,7 +254,7 @@ cd samples/Shopping/Shopping.Avalonia
 dotnet run                     # or: dotnet run -- --server http://host:port   (or SHOPPING_SERVER=...)
 ```
 
-See the [Shopping README](../../samples/Shopping/README.md) for the database settings the server needs.
+See the [Shopping README](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md) for the database settings the server needs.
 
 ## 7. Headless tests
 

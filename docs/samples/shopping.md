@@ -238,7 +238,7 @@ transaction. The buyer sees the correction on the receipt, without the author. I
 
 ## Running it
 
-The commands are in the [sample's README](../../samples/Shopping/README.md). In short:
+The commands are in the [sample's README](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md). In short:
 
 ```bash
 cd samples/Shopping/Shopping.Blazor

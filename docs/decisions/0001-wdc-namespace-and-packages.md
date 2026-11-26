@@ -39,4 +39,4 @@ Every namespace and package starts with `Wdc.`, and the project name is the root
 - A new database or renderer is a new `Wdc.Persistence.<Db>` or `Wdc.Cube.<Renderer>` package, not a change to the
   core ones.
 
-See [Architecture](../concepts/architecture.md) and the package table in the [README](../../README.md).
+See [Architecture](../concepts/architecture.md) and the package table in the [README](https://github.com/mrcdom/wdc-cube-csharp/blob/main/README.md).

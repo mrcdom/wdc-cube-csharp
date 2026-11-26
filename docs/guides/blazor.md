@@ -375,5 +375,5 @@ clean only after the component rendered.
 - [Sealing addresses](sealed-addresses.md): the codec, step by step.
 - [Remote](../concepts/remote.md): the data through HTTP, for WebAssembly.
 - [Testing presenters](testing-presenters.md) and [Hosting in Avalonia](avalonia.md).
-- Samples: [`samples/GettingStarted`](../../samples/GettingStarted), [`samples/Tutorial`](../../samples/Tutorial/README.md),
-  [`samples/Shopping`](../../samples/Shopping/README.md).
+- Samples: [`samples/GettingStarted`](https://github.com/mrcdom/wdc-cube-csharp/tree/main/samples/GettingStarted), [`samples/Tutorial`](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Tutorial/README.md),
+  [`samples/Shopping`](https://github.com/mrcdom/wdc-cube-csharp/blob/main/samples/Shopping/README.md).

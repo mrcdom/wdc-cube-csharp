@@ -33,4 +33,4 @@ features to creep into code that must also compile for `net10.0`.
 - When the next LTS ships, the pair is revisited (most likely the then-current LTS plus the newest release).
 - Package versions are managed centrally in `Directory.Packages.props`.
 
-See [CONTRIBUTING](../../CONTRIBUTING.md).
+See [CONTRIBUTING](https://github.com/mrcdom/wdc-cube-csharp/blob/main/CONTRIBUTING.md).
