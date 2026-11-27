@@ -3,37 +3,36 @@ using Wdc.Domain;
 
 namespace Shopping.Domain.Security;
 
-/// <summary>The users: each reaches themselves (unless their reach is everything); the password hash never goes out.</summary>
+/// <summary>The users: a customer reads themselves; the password is written, never read.</summary>
 public static class UserPolicy
 {
-    public static RepositoryPolicy<User, UserCriteria, long> Create() => new(User.Model, () => new UserCriteria())
-    {
-        Authorize = Permissions.Allow("user"),
-        Scope = (c, criteria) => Permissions.Reach(c, id => criteria.UserId.Restrict(id)),
-        RestrictToId = (criteria, id) => criteria.UserId.Restrict(id),
-        SanitizeProjection = (_, p) => p.Password = null,
-        SanitizeOutput = (_, u) => u.Password = null,
-        BeforeInsert = (_, u, _) =>
-        {
-            u.Password = u.Password is null ? null : PasswordHash.Hash(u.Password);
-            return ValueTask.CompletedTask;
-        },
-        BeforeUpdate = (_, u, written, _) =>
-        {
-            if (written.Password is not null && u.Password is not null)
+    public static DataPolicy<User, UserCriteria> Build() =>
+        DataPolicy.For(User.Model, () => new UserCriteria())
+            .WriteOnly("password")
+            .Criterion("userId", "id")
+            .Orderings(c => c.OrderBy switch
             {
-                u.Password = PasswordHash.Hash(u.Password);
-            }
+                UserOrderBy.NameAToZ => ["name"],
+                UserOrderBy.LoginAToZ => ["userName"],
+                _ => [],
+            })
+            .Grant([.. ShoppingPolicies.Super, .. ShoppingPolicies.Admin], g => g
+                .Read("userName", "name", "roles")
+                .Create("userName", "password", "name", "roles")
+                .Update("userName", "password", "name", "roles")
+                .Delete())
+            .Grant(ShoppingPolicies.Manager, g => g.Read("userName", "name", "roles"))
+            .Grant(ShoppingPolicies.Customer, g => g.Rows(OwnUser.Scope).Read("userName", "name", "roles"))
+            .Build();
+}
 
-            return ValueTask.CompletedTask;
-        },
-    };
+/// <summary>The actor's own user.</summary>
+internal sealed class OwnUser : IRowScope<User, UserCriteria>
+{
+    public static readonly OwnUser Scope = new();
 
-    internal static void DropPassword(User? user)
-    {
-        if (user is not null)
-        {
-            user.Password = null;
-        }
-    }
+    public void Restrict(UserCriteria group, Actor actor) => group.UserId.Eq(ShoppingPolicies.IdOf(actor));
+
+    public ValueTask<bool> Covers(User row, Actor actor, CancellationToken cancellationToken) =>
+        ValueTask.FromResult(row.Id == ShoppingPolicies.IdOf(actor));
 }

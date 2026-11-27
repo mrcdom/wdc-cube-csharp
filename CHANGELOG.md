@@ -19,7 +19,8 @@ The first version, not yet published.
 - **`Wdc.Domain`:** entity models, criteria, projections, repository and transaction contracts, protected
   repositories (rules per role), resource calls (a write opens its own transaction), alternative groups in criteria (`anyOf`, server-side
   only: refused on the wire), declarative data policies per role (`DataPolicy`: rows per grant, readable and masked
-  fields, writable fields, deletes).
+  fields, writable fields, deletes), applied by `ProtectedRepository` in every host and to every child written in
+  cascade.
 - **`Wdc.Persistence`, `.PostgreSql`, `.SqlServer`:** SQL repositories built from mappings, one statement per fetch,
   writes in cascade; PostgreSQL and SQL Server 2025. `FilterContext.AnyOf` and `TranslateAny` (a term over several
   columns).

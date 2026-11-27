@@ -327,7 +327,8 @@ POST /api/repo/product/fetch-page
 - `totalItems` is the number of rows that match, regardless of the page.
 - `fetch` with `limit` greater than `MaxItems` is a 400. `fetch` with no `limit` that matches more than `MaxItems`
   rows is a 400 too ("page the request"): the answer is never silently cut.
-- Without a `projection`, the server uses the repository's default projection.
+- Without a `projection`, the repository chooses: its default projection, or, behind a data policy, the default shape
+  trimmed to what the actor may read. The answer is written with the default projection's keys.
 
 ### fetch-by-id
 

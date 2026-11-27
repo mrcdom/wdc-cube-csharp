@@ -188,11 +188,13 @@ the mapping declares the items as a collection the purchase owns:
 
 ### 6. The policy
 
-Before anything is written, the protected repository runs `PurchasePolicy`: the actor must be allowed to write
-purchases, and `BeforeInsert` sets the buyer to the actor, whatever the client sent. Each item, inserted in
-cascade, goes through `PurchaseItemPolicy`, whose `BeforeInsert` replaces the price the cart sent with the product's
-current price, read through the raw store. A refusal anywhere rolls back the purchase and every item. See
-[Roles and rules](../guides/roles-and-rules.md) for how these policies are written.
+Before anything is written, the protected repository applies the purchases' data policy (`PurchasePolicy`):
+- a customer may create a purchase only on their own behalf, so one with someone else's name on it is refused;
+- each item, inserted in cascade, must be creatable and reached under the items' policy.
+
+The business rules (`PurchaseRules`) then replace the price the cart sent with the product's current price, read
+through the store. A refusal anywhere rolls back the purchase and every item. See
+[Roles and rules](../guides/roles-and-rules.md) for how policies and rules are written.
 
 ### 7. The receipt
 
@@ -234,9 +236,9 @@ The same scenario is clicked through the rendered page in `Shopping.Blazor.Tests
 
 A purchase already made never changes for any application role. `Admin` and `Manager` correct one by inserting a
 `PurchaseAmendment`: `AdminPresenter` lists the purchases, `AmendPresenter` lets the user lower quantities and give a
-reason, and `PurchaseAmendmentPolicy` validates the correction and applies it to the items, in the insert's
+reason, and `PurchaseAmendmentRules` validates the correction and applies it to the items, in the insert's
 transaction. The buyer sees the correction on the receipt, without the author. It is the worked example in
-[Roles and rules](../guides/roles-and-rules.md#7-model-a-correction-as-its-own-operation); its tests are
+[Roles and rules](../guides/roles-and-rules.md#10-model-a-correction-as-its-own-operation); its tests are
 `ErrataTestsBase` (in process, over HTTP and on SQL Server) and `AdminTestsBase`.
 
 ## Sign-in
@@ -328,7 +330,8 @@ dotnet test --solution wdc-cube.slnx
 | Paging kept in the address | `HomeKeys.Page`, `PurchasesPanelPresenter` |
 | The session surviving a reload | `RootPresenter.Start`, `SubjectSession`, `BrowserSessionStore` |
 | Per-user sealed addresses | `RootPresenter.InstallCodec`, `HistoryKeys`, `SealedAddressTestsBase` |
-| Rules per role | `Shopping.Domain/Security`, `SecurityTestsBase` |
+| Rules per role | `ShoppingPolicies` and the `*Policy` files in `Shopping.Domain/Security`, `SecurityTestsBase` |
+| Business rules apart from access | `Shopping.Domain/Security/Rules`, `ErrataTestsBase` |
 | Repositories as REST routes | `ShoppingApi.MapRepositories` |
 | Protecting an extra repository member | `ProtectedProductRepository.FetchImage` |
 | Keyboard Back and Forward on the desktop | `Shopping.Avalonia/Views/MainWindow.axaml.cs` |

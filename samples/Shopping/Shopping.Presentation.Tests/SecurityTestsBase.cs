@@ -29,12 +29,14 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
 
     private async Task<Product> AProduct() => (await Store.Products.Fetch(new ProductCriteria(), limit: 1, cancellationToken: Ct))[0];
 
-    /// <summary>A purchase made by <paramref name="buyer"/>, with one item per amount.</summary>
+    /// <summary>A purchase made by the customer <c>fulano</c>, with one item per amount.</summary>
     private async Task<Purchase> APurchase(ShoppingRepositories buyer, params int[] amounts)
     {
         var product = await AProduct();
+        var fulano = (await Store.Users.Fetch(new UserCriteria().UserName.Eq("fulano"), limit: 1, cancellationToken: Ct))[0];
         var purchase = new Purchase
         {
+            User = new User { Id = fulano.Id },
             BuyDate = DateTimeOffset.UtcNow,
             Items = [.. amounts.Select(a => new PurchaseItem { Product = new Product { Id = product.Id }, Amount = a })],
         };
@@ -98,11 +100,12 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
     {
         var (fulano, me) = await As("fulano");
 
-        var users = await fulano.Users.Fetch(
-            new UserCriteria().WithProjection(new User { Id = Mark.Int64, Password = Mark.String }), cancellationToken: Ct);
+        var users = await fulano.Users.Fetch(new UserCriteria(), cancellationToken: Ct);
 
         Assert.Equal([me], users.Select(u => u.Id));
         Assert.All(users, u => Assert.Null(u.Password));
+        await Assert.ThrowsAsync<AccessDeniedException>(() => fulano.Users.Fetch( // asked for, it is refused, not left empty
+            new UserCriteria().WithProjection(new User { Id = Mark.Int64, Password = Mark.String }), cancellationToken: Ct));
     }
 
     [Fact]
@@ -110,8 +113,9 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
     {
         var (suporte, _) = await As("suporte");
 
-        var users = await suporte.Users.Fetch(
-            new UserCriteria().WithProjection(new User { Id = Mark.Int64, Password = Mark.String }), cancellationToken: Ct);
+        var users = await suporte.Users.Fetch(new UserCriteria(), cancellationToken: Ct);
+        await Assert.ThrowsAsync<AccessDeniedException>(() => suporte.Users.Fetch(
+            new UserCriteria().WithProjection(new User { Id = Mark.Int64, Password = Mark.String }), cancellationToken: Ct));
         var purchases = await suporte.Purchases.Count(new PurchaseCriteria(), Ct);
 
         Assert.Equal(await Store.Users.Count(new UserCriteria(), Ct), users.Count);
@@ -128,21 +132,25 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
             fulano.Products.Insert(new Product { Name = "Contraband", Price = 1m }, cancellationToken: Ct));
     }
 
-    // :: A purchase is made by whoever is acting, at the products' prices
+    // :: A customer buys for themselves, at the products' prices
 
     [Fact]
-    public async Task APurchase_BelongsToWhoeverIsLoggedIn_AtTheProductsPrice()
+    public async Task ACustomer_BuysForThemselves_AtTheProductsPrice()
     {
         var (fulano, me) = await As("fulano");
         var admin = (await Store.Users.Fetch(new UserCriteria().UserName.Eq("admin"), limit: 1, cancellationToken: Ct))[0];
         var product = await AProduct();
-        var purchase = new Purchase
+        Purchase NewPurchase(long buyer) => new()
         {
-            User = new User { Id = admin.Id }, // someone else's name on it
+            User = new User { Id = buyer },
             BuyDate = DateTimeOffset.UtcNow,
-            Items = [new PurchaseItem { Product = new Product { Id = product.Id }, Amount = 2, Price = 0.01m }],
+            Items = [new PurchaseItem { Product = new Product { Id = product.Id }, Amount = 2, Price = 0.01m }], // a price of its own
         };
 
+        // Someone else's name on it: their purchases are out of the customer's reach.
+        await Assert.ThrowsAsync<AccessDeniedException>(() => fulano.Purchases.Insert(NewPurchase(admin.Id!.Value), cancellationToken: Ct));
+
+        var purchase = NewPurchase(me);
         Assert.True(await fulano.Purchases.Insert(purchase, cancellationToken: Ct));
 
         var stored = await Store.Purchases.FetchById(purchase.Id!.Value, new Purchase
@@ -157,11 +165,12 @@ public abstract class SecurityTestsBase(ShoppingDatabaseFixture db)
     [Fact]
     public async Task APurchase_IsMadeWhenItIsCreated_SoItNeedsItsDate()
     {
-        var (fulano, _) = await As("fulano");
+        var (fulano, me) = await As("fulano");
         var product = await AProduct();
 
         await Assert.ThrowsAsync<InvalidRequestException>(() => fulano.Purchases.Insert(new Purchase
         {
+            User = new User { Id = me },
             Items = [new PurchaseItem { Product = new Product { Id = product.Id }, Amount = 1 }],
         }, cancellationToken: Ct));
     }

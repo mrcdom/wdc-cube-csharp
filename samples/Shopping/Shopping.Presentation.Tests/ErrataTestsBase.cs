@@ -28,11 +28,12 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
     /// <summary>A purchase made by fulano, one item per amount, each of a different product.</summary>
     private async Task<(Purchase Purchase, IReadOnlyList<PurchaseItem> Items)> FulanoBuys(params int[] amounts)
     {
-        var (fulano, _) = await As("fulano");
+        var (fulano, me) = await As("fulano");
         var products = await Store.Products.Fetch(new ProductCriteria().WithOrderBy(ProductOrderBy.OldestFirst),
             cancellationToken: Ct);
         var purchase = new Purchase
         {
+            User = new User { Id = me },
             BuyDate = DateTimeOffset.UtcNow,
             Items = [.. amounts.Select((a, i) => new PurchaseItem { Product = new Product { Id = products[i].Id }, Amount = a })],
         };
@@ -325,26 +326,30 @@ public abstract class ErrataTestsBase(ShoppingDatabaseFixture db)
         Assert.True(await admin.Amendments.Insert(Errata(purchase, "Correction", (items[1], 0)), cancellationToken: Ct));
         var (fulano, _) = await As("fulano");
         var (beotrano, _) = await As("beotrano");
-        var withErrata = new Purchase
+        Purchase WithErrata(User? author) => new()
         {
             Id = Mark.Int64,
             Amendments = Mark.List(new PurchaseAmendment
             {
                 Reason = Mark.String,
-                Author = new User { Id = Mark.Int64, Name = Mark.String },
+                Author = author,
                 Lines = Mark.List(new PurchaseAmendmentLine { AmountAfter = Mark.Int32 }),
             }),
         };
-        var direct = new PurchaseAmendmentCriteria().PurchaseId.Eq(purchase.Id)
-            .WithProjection(new PurchaseAmendment { Reason = Mark.String, Author = new User { Id = Mark.Int64, Name = Mark.String } });
+        var byKey = new PurchaseCriteria().PurchaseId.Eq(purchase.Id);
 
-        var seen = Assert.Single(await fulano.Purchases.Fetch(
-            new PurchaseCriteria().PurchaseId.Eq(purchase.Id).WithProjection(withErrata), cancellationToken: Ct));
+        var seen = Assert.Single(await fulano.Purchases.Fetch(byKey.WithProjection(WithErrata(null)), cancellationToken: Ct));
         var errata = Assert.Single(seen.Amendments!);
         Assert.Equal("Correction", errata.Reason);
-        Assert.Null(errata.Author);
         Assert.Equal(0, Assert.Single(errata.Lines!).AmountAfter);
-        Assert.Null(Assert.Single(await fulano.Amendments.Fetch(direct, cancellationToken: Ct)).Author);
+        Assert.Equal("Correction", Assert.Single(await fulano.Amendments.Fetch(new PurchaseAmendmentCriteria().PurchaseId.Eq(purchase.Id),
+            cancellationToken: Ct)).Reason);
+
+        // Who made it, asked for, is refused: through the purchase and by itself.
+        await Assert.ThrowsAsync<AccessDeniedException>(() => fulano.Purchases.Fetch(
+            new PurchaseCriteria().PurchaseId.Eq(purchase.Id).WithProjection(WithErrata(new User { Name = Mark.String })), cancellationToken: Ct));
+        await Assert.ThrowsAsync<AccessDeniedException>(() => fulano.Amendments.Fetch(new PurchaseAmendmentCriteria().PurchaseId.Eq(purchase.Id)
+            .WithProjection(new PurchaseAmendment { Reason = Mark.String, Author = new User { Name = Mark.String } }), cancellationToken: Ct));
 
         Assert.Empty(await beotrano.Amendments.Fetch(new PurchaseAmendmentCriteria().PurchaseId.Eq(purchase.Id), cancellationToken: Ct));
         Assert.Equal(0, await beotrano.AmendmentLines.Count(new PurchaseAmendmentLineCriteria().ItemId.Eq(items[1].Id), Ct));

@@ -342,7 +342,6 @@ Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.FetchPage(TCriteria! cr
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Inner.get -> Wdc.Domain.IRepository<TEntity!, TCriteria!, TKey>!
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Insert(TEntity! bean, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.OwnFieldsProjection() -> TEntity!
-Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Policy.get -> Wdc.Domain.RepositoryPolicy<TEntity!, TCriteria!, TKey>!
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.ProtectedRepository(Wdc.Domain.IRepository<TEntity!, TCriteria!, TKey>! inner, Wdc.Domain.RepositoryPolicy<TEntity!, TCriteria!, TKey>! policy, Wdc.Domain.Protection! protection) -> void
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Protection.get -> Wdc.Domain.Protection!
 Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Update(TEntity! newBean, TEntity? oldBean = null, TEntity? projection = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
@@ -481,7 +480,6 @@ Wdc.Domain.DataPolicy<TEntity, TCriteria>.Model.get -> Wdc.Domain.EntityModel<TE
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Build() -> Wdc.Domain.DataPolicy<TEntity!, TCriteria!>!
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Collection<TOther, TOtherCriteria>(string! field, string! inverse, System.Func<Wdc.Domain.DataPolicy<TOther!, TOtherCriteria!>!>! policy) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
-Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Criterion(string! criterion, string! fieldPath) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.DefaultShape(System.Func<TEntity!>! shape) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Grant(System.Collections.Generic.IEnumerable<string!>! roles, System.Action<Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!>! declare) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
 Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Orderings(System.Func<TCriteria!, System.Collections.Generic.IEnumerable<string!>!>! fields) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
@@ -497,3 +495,8 @@ Wdc.Domain.ReadPlan<TEntity>
 Wdc.Domain.ReadPlan<TEntity>.Apply(TEntity! row, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TEntity!>
 Wdc.Domain.ReadPlan<TEntity>.ApplyAll(System.Collections.Generic.IReadOnlyList<TEntity!>! rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<TEntity!>!>
 Wdc.Domain.RowScope
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Data.get -> Wdc.Domain.DataPolicy<TEntity!, TCriteria!>?
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.Policy.get -> Wdc.Domain.RepositoryPolicy<TEntity!, TCriteria!, TKey>?
+Wdc.Domain.ProtectedRepository<TEntity, TCriteria, TKey>.ProtectedRepository(Wdc.Domain.IRepository<TEntity!, TCriteria!, TKey>! inner, Wdc.Domain.DataPolicy<TEntity!, TCriteria!>! data, System.Action<TCriteria!, TKey>! restrictToId, Wdc.Domain.Protection! protection) -> void
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Criterion(string! criterion, params System.Collections.Generic.IEnumerable<string!>! fieldPaths) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!

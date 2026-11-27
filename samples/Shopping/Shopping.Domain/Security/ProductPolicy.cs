@@ -3,11 +3,22 @@ using Wdc.Domain;
 
 namespace Shopping.Domain.Security;
 
-/// <summary>The products: the catalogue every role reads; who writes it is in <see cref="Permissions"/>.</summary>
+/// <summary>The products: the catalogue every role reads; Super, Admin and Manager maintain it.</summary>
 public static class ProductPolicy
 {
-    public static RepositoryPolicy<Product, ProductCriteria, long> Create() => new(Product.Model, () => new ProductCriteria())
-    {
-        Authorize = Permissions.Allow("product"),
-    };
+    private static readonly string[] s_fields = ["name", "price", "description", "image"];
+
+    public static DataPolicy<Product, ProductCriteria> Build() =>
+        DataPolicy.For(Product.Model, () => new ProductCriteria())
+            .Criterion("productId", "id")
+            .Orderings(c => c.OrderBy switch
+            {
+                ProductOrderBy.NameAToZ => ["name"],
+                ProductOrderBy.CheapestFirst or ProductOrderBy.MostExpensiveFirst => ["price"],
+                _ => [],
+            })
+            .Grant([.. ShoppingPolicies.Super, .. ShoppingPolicies.Admin, .. ShoppingPolicies.Manager], g => g
+                .Read(s_fields).Create(s_fields).Update(s_fields).Delete())
+            .Grant(ShoppingPolicies.Customer, g => g.Read(s_fields))
+            .Build();
 }

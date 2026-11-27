@@ -12,7 +12,7 @@ public sealed class DataPolicyBuilder<TEntity, TCriteria>
     private readonly EntityModel<TEntity> _model;
     private readonly Func<TCriteria> _newCriteria;
     private readonly HashSet<string> _writeOnly = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, string> _criterionPaths = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string[]> _criterionPaths = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Func<IDataPolicy>> _targets = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _inverses = new(StringComparer.Ordinal);
     private readonly List<(string[] Roles, Action<DataGrantBuilder<TEntity, TCriteria>> Declare)> _grants = [];
@@ -48,15 +48,22 @@ public sealed class DataPolicyBuilder<TEntity, TCriteria>
     }
 
     /// <summary>
-    /// A criterion whose name is not the field it filters (<c>userId</c> filters <c>user</c>), or that filters a field
-    /// of another entity through a reference (<c>customerName</c> filters <c>user.name</c>: the actor must then read
-    /// <c>user</c> here and <c>name</c> in the user's policy).
+    /// A criterion whose name is not the field it filters (<c>userId</c> filters <c>user</c>), that filters a field of
+    /// another entity through a reference (<c>customerName</c> filters <c>user.name</c>: the actor must then read
+    /// <c>user</c> here and <c>name</c> in the user's policy), or that searches several fields (<c>search</c> in
+    /// <c>name</c> and <c>description</c>: filtering by it takes reading them all).
     /// </summary>
-    public DataPolicyBuilder<TEntity, TCriteria> Criterion(string criterion, string fieldPath)
+    public DataPolicyBuilder<TEntity, TCriteria> Criterion(string criterion, params IEnumerable<string> fieldPaths)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(criterion);
-        ArgumentException.ThrowIfNullOrWhiteSpace(fieldPath);
-        _criterionPaths[criterion] = fieldPath;
+        ArgumentNullException.ThrowIfNull(fieldPaths);
+        var paths = fieldPaths.ToArray();
+        if (paths.Length == 0 || Array.Exists(paths, string.IsNullOrWhiteSpace))
+        {
+            throw new ArgumentException($"{_model.Name}.{criterion}: name the fields it filters.", nameof(fieldPaths));
+        }
+
+        _criterionPaths[criterion] = paths;
         return this;
     }
 
@@ -138,7 +145,7 @@ public sealed class DataPolicyBuilder<TEntity, TCriteria>
 
         var unknown = _newCriteria().Criterions
             .Select(c => c.Name)
-            .Where(c => _model.Find(PolicyEntity<TEntity, TCriteria>.Head(_criterionPaths.GetValueOrDefault(c, c))) is null)
+            .Where(c => Array.Exists(_criterionPaths.GetValueOrDefault(c, [c]), p => _model.Find(PolicyEntity<TEntity, TCriteria>.Head(p)) is null))
             .ToList();
         if (unknown.Count > 0)
         {

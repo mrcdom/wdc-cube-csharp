@@ -163,17 +163,17 @@ sequenceDiagram
     participant S as ASP.NET Core
     participant R as RepositoryRpc
     participant P as ProtectedRepository
-    participant Pol as Policy
+    participant Pol as Data policy
     participant Raw as Raw repository
     C->>S: POST /api/repo/purchase/fetch (Bearer, X-Client-Id)
     S->>S: JWT → ClaimsPrincipal
     S->>R: route
     R->>P: resolve for request (actor from the token)
     R->>P: Fetch(criteria)
-    P->>Pol: Authorize, SanitizeProjection, Scope
-    P->>Raw: Fetch(narrowed criteria)
+    P->>Pol: PrepareRead (fields, filters, rows)
+    P->>Raw: Fetch(restricted criteria)
     Raw-->>P: rows
-    P->>Pol: SanitizeOutput
+    P->>Pol: shape each row
     P-->>R: items
     R-->>C: 200 {"items":[…]} (or {"error"} with 401/403/404…)
 ```
