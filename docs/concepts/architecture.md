@@ -233,8 +233,29 @@ public sealed class ProductScope : Scope
 - `ScopeActions.Unbound()` is a no-op that writes a trace warning when called; `ScopeActions.IsUnbound(action)`
   lets a test assert that every action was bound.
 - `Action(...)` (on every presenter) wraps a handler so that it runs on the application's dispatcher, does nothing if
-  the presenter was already released, and reports exceptions to `CubeApplication.Unexpected` instead of faulting the
-  caller.
+  the presenter was already released, and hands an exception to the presenter's `OnActionFailure` instead of faulting
+  the caller.
+- `OnActionFailure(action, caught)` sends the failure to `CubeApplication.Unexpected` by default. A presenter
+  overrides it to show there what that screen knows how to say, and calls the base for the rest, so what it does not
+  handle still reaches the application:
+
+  ```csharp
+  protected override void OnActionFailure(string action, Exception caught)
+  {
+      if (caught is DbException or HttpRequestException)
+      {
+          App.Unexpected($"During execution of {action} action", caught); // the detail, for the log
+          Show(CartMessages.Unavailable);                                 // the notice, on the cart
+          return;
+      }
+
+      base.OnActionFailure(action, caught);
+  }
+  ```
+
+  Keep in the action what changes its flow (a business refusal shown and the user stays); the hook is for failures any
+  action of the screen may meet. A cancellation after the presenter was released is not a failure; any other one (an
+  HTTP timeout) is. A hook that throws leaves both exceptions to `Unexpected`.
 - When the action ends, if nothing was marked dirty and `AutoUpdate` is on, the root scope is marked dirty; then the
   pending updates are flushed at once and the address is republished (unless a navigation is still running).
 - `Mirror<T>(handler)` binds a handler that mirrors typing: it runs on the dispatcher but does not flush or touch the

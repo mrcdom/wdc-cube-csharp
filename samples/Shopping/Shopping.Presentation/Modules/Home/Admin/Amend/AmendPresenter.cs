@@ -167,10 +167,6 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
             await Load(purchaseId);
             Scope.ErrorMessage = ChangedMeanwhile;
         }
-        catch (Exception caught) when (caught is not OperationCanceledException)
-        {
-            App.Unexpected("Recording the correction", caught);
-        }
         finally
         {
             if (!IsReleased)

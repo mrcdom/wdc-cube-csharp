@@ -37,6 +37,19 @@ public abstract class ApplicationPresenter<TScope> : CubeApplication, IActionHos
     CubeApplication IActionHost.Application => this;
 
     /// <summary>
+    /// A guarded action of this presenter failed. The default hands the failure to the application
+    /// (<see cref="CubeApplication.Unexpected"/>, its own). Override to handle there what this screen knows how to show (a
+    /// service that does not answer becomes a notice on the screen) and call the base for the rest: what the presenter
+    /// does not handle still reaches the application. A cancellation after the presenter was released does not come here.
+    /// </summary>
+    /// <param name="action">The action, as it was bound (<c>OnBuy</c>).</param>
+    /// <param name="caught">What it threw.</param>
+    protected virtual void OnActionFailure(string action, Exception caught) =>
+        Unexpected($"During execution of {action} action", caught);
+
+    void IActionHost.ActionFailed(string action, Exception caught) => OnActionFailure(action, caught);
+
+    /// <summary>
     /// Called before the first place of every navigation, as the root of the path. Returning <see langword="false"/>
     /// stops the walk there (the face becomes the bare root); throwing rolls the navigation back.
     /// </summary>
