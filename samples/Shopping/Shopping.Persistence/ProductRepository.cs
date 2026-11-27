@@ -39,5 +39,6 @@ public sealed class ProductRepository(Database database)
         t.Translate("name", criteria.Name),
         t.Translate("price", criteria.Price),
         t.Translate("description", criteria.Description),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 }

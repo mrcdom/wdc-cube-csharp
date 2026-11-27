@@ -223,6 +223,18 @@ public sealed class ProductRepository(Database database)
 - Translate every criterion the class declares. A criterion that arrives filled and is never translated makes the
   statement throw `InvalidOperationException`, so a forgotten filter is a failure, not a wider result.
 
+Two more translations:
+- **The alternative groups** of the criteria (`criteria.AnyOf`). Each repository translates them with its own
+  `Conditions`, as one more entry of the `And`. Without that line, the groups are ignored and the filter gets looser:
+
+  ```csharp
+  t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
+  ```
+
+- **A term over several columns**, with `t.TranslateAny(["name", "description"], criteria.Search)`. It applies the
+  whole criterion to each column and joins the columns with OR. A criterion with a restriction is refused there,
+  since in an OR it would stop restricting.
+
 A virtual criterion becomes an `EXISTS` subquery correlated by a foreign key:
 
 ```csharp

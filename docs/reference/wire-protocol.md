@@ -260,6 +260,12 @@ operand. A value of another JSON type that converts (`"9.9"` for a decimal) is a
   is not dropped: the list would come back in some order presented as the one asked for.
 - A criteria class without orderings refuses any non-null `orderBy`.
 
+### anyOf
+
+Alternative groups are server-side only and never travel. A criteria with an `anyOf` key, whatever its value, is
+refused with 400, at any depth: the query body, a collection's `where`. Skipping it would answer with a looser filter
+than the one asked for. A client refuses to write a criteria that has groups.
+
 ## Repository routes
 
 ### Base path

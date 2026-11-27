@@ -48,6 +48,7 @@ public sealed class PurchaseItemRepository(Database database)
         t.Translate("amount", criteria.Amount),
         t.Translate("price", criteria.Price),
         ExistsPurchaseOfUser(criteria, t),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 
     /// <summary>

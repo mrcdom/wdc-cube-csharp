@@ -17,9 +17,11 @@ The first version, not yet published.
 - **`Wdc.Cube.Codec`:** sealed addresses (AES-SIV), compatible with the TypeScript implementation.
 - **`Wdc.Cube.Testing`:** driving an application in tests, without a view.
 - **`Wdc.Domain`:** entity models, criteria, projections, repository and transaction contracts, protected
-  repositories (rules per role), resource calls (a write opens its own transaction).
+  repositories (rules per role), resource calls (a write opens its own transaction), alternative groups in criteria (`anyOf`, server-side
+  only: refused on the wire).
 - **`Wdc.Persistence`, `.PostgreSql`, `.SqlServer`:** SQL repositories built from mappings, one statement per fetch,
-  writes in cascade; PostgreSQL and SQL Server 2025.
+  writes in cascade; PostgreSQL and SQL Server 2025. `FilterContext.AnyOf` and `TranslateAny` (a term over several
+  columns).
 - **`Wdc.Rest`, `.Server`, `.Client`:** repositories and remote transactions over HTTP, with the wire of the Kotlin
   implementation. Security and cache headers on every answer, `Server-Timing`, a pluggable error map, 429 with
   `Retry-After` (`TooManyRequestsException`, also for ASP.NET's rate limiter), and metrics of the remote transactions.

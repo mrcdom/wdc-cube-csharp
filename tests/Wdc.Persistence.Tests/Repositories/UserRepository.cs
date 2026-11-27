@@ -17,5 +17,6 @@ public sealed class UserRepository(Database database) : SqlRepository<User, User
     private static ISqlFragment? Conditions(UserCriteria criteria, FilterContext t) => Sql.And([
         t.Translate("user_name", criteria.UserName),
         t.Translate("role", criteria.Role),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 }

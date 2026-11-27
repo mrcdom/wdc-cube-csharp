@@ -37,6 +37,7 @@ public sealed class PurchaseAmendmentRepository(Database database)
         t.Translate("author_id", criteria.AuthorId),
         t.Translate("amend_date", criteria.Date),
         ExistsPurchaseOfUser(criteria, t),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 
     /// <summary>Errata whose purchases belong to the user asked for (the user owns the purchase).</summary>

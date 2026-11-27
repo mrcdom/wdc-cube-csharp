@@ -439,3 +439,7 @@ Wdc.Domain.ResourceSave<TResult>.ResourceSave(Wdc.Domain.ITransactionService? tr
 Wdc.Domain.ResourceUpdate<TResult>
 Wdc.Domain.ResourceUpdate<TResult>.ResourceUpdate(Wdc.Domain.ITransactionService? transactions) -> void
 Wdc.Domain.ResourceWrite<TResult>
+const Wdc.Domain.CriteriaCodec.AnyOfProperty = "anyOf" -> string!
+Wdc.Domain.Criteria<TSelf, TEntity>.AnyOf.get -> System.Collections.Generic.IReadOnlyList<TSelf!>!
+Wdc.Domain.Criteria<TSelf, TEntity>.WithAnyOf(params System.Collections.Generic.IEnumerable<TSelf!>! groups) -> TSelf!
+Wdc.Domain.ICriteria.AnyOf.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.ICriteria!>!

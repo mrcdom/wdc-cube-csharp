@@ -30,6 +30,7 @@ public sealed class PurchaseAmendmentLineRepository(Database database)
         t.Translate("amendment_id", criteria.PurchaseAmendmentId),
         t.Translate("item_id", criteria.ItemId),
         ExistsPurchaseOfUser(criteria, t),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 
     /// <summary>Lines whose errata are of purchases of the user asked for: through the errata, then the purchase.</summary>

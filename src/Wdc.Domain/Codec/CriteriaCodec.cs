@@ -15,6 +15,9 @@ public static class CriteriaCodec
 {
     public const string OrderByProperty = "orderBy";
 
+    /// <summary>The name the alternative groups (<see cref="ICriteria.AnyOf"/>) would have on the wire, where they are refused.</summary>
+    public const string AnyOfProperty = "anyOf";
+
     /// <summary>Writes the criteria as an object.</summary>
     public static void Write(Utf8JsonWriter writer, ICriteria criteria)
     {
@@ -25,10 +28,17 @@ public static class CriteriaCodec
     }
 
     /// <summary>Writes the criteria's properties into an object already open (a request body with more keys).</summary>
+    /// <exception cref="InvalidRequestException">The criteria has alternative groups: leaving them out would send a
+    /// looser filter than the one built, so the side that built it fails.</exception>
     public static void WriteFields(Utf8JsonWriter writer, ICriteria criteria)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(criteria);
+        if (criteria.AnyOf.Count > 0)
+        {
+            throw AnyOfDoesNotTravel();
+        }
+
         foreach (var criterion in criteria.Criterions)
         {
             if (criterion.IsSet)
@@ -70,6 +80,12 @@ public static class CriteriaCodec
     public static bool TryReadField(ref Utf8JsonReader reader, ICriteria criteria, string name)
     {
         ArgumentNullException.ThrowIfNull(criteria);
+        if (name == AnyOfProperty)
+        {
+            // Skipping the key would answer with a looser filter than the one asked for.
+            throw AnyOfDoesNotTravel();
+        }
+
         if (name == OrderByProperty)
         {
             criteria.SetOrderByName(reader.TokenType == JsonTokenType.Null ? null : reader.GetString());
@@ -94,4 +110,8 @@ public static class CriteriaCodec
         Read(ref reader, criteria);
         return criteria;
     }
+
+    private static InvalidRequestException AnyOfDoesNotTravel() => new(
+        "alternative groups (anyOf) are server-side only and do not travel; search several columns with a " +
+        "criteria field of its own");
 }
