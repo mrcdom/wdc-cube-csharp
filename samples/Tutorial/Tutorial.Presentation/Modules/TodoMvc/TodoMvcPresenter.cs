@@ -41,12 +41,12 @@ public sealed class TodoMvcPresenter : CubePresenter<RootPresenter, TodoMvcScope
         if (initialization)
         {
             _header.OnInputChange = Mirror<string>(value => _header.InputValue = value);
-            _header.OnInputKeyDown = Action<string>(OnHeaderKeyDown);
+            _header.OnInputKeyDown = Action<string>(OnInputKeyDown);
             _header.OnToggleAll = Action(OnToggleAll);
             _footer.OnClearCompleted = Action(OnClearCompleted);
-            _footer.OnShowAll = Action(() => _footer.Showing = ShowingOptions.All);
-            _footer.OnShowActives = Action(() => _footer.Showing = ShowingOptions.Active);
-            _footer.OnShowCompleteds = Action(() => _footer.Showing = ShowingOptions.Completed);
+            _footer.OnShowAll = Action(OnShowAll);
+            _footer.OnShowActives = Action(OnShowActives);
+            _footer.OnShowCompleteds = Action(OnShowCompleteds);
             Scope.OnToggleStress = Action(OnToggleStress);
         }
 
@@ -159,15 +159,27 @@ public sealed class TodoMvcPresenter : CubePresenter<RootPresenter, TodoMvcScope
     private ItemScope NewRow()
     {
         var row = new ItemScope();
-        row.OnToggle = Action(() => row.Completed = !row.Completed);
-        row.OnEdit = Action(() => Edit(row));
-        row.OnBlur = Action<string>(value => Save(row, value));
-        row.OnKeyDown = Action<string, string>((value, key) => OnItemKeyDown(row, value, key));
-        row.OnDestroy = Action(() => _all.Remove(row));
+        row.OnToggle = Action(() => OnToggle(row));
+        row.OnEdit = Action(() => OnEdit(row));
+        row.OnBlur = Action<string>(value => OnBlur(row, value));
+        row.OnKeyDown = Action<string, string>((value, key) => OnKeyDown(row, value, key));
+        row.OnDestroy = Action(() => OnDestroy(row));
         return row;
     }
 
-    private void OnHeaderKeyDown(string key)
+    private void OnShowAll() => _footer.Showing = ShowingOptions.All;
+
+    private void OnShowActives() => _footer.Showing = ShowingOptions.Active;
+
+    private void OnShowCompleteds() => _footer.Showing = ShowingOptions.Completed;
+
+    private void OnToggle(ItemScope row) => row.Completed = !row.Completed;
+
+    private void OnBlur(ItemScope row, string value) => Save(row, value);
+
+    private void OnDestroy(ItemScope row) => _all.Remove(row);
+
+    private void OnInputKeyDown(string key)
     {
         if (key == "Escape")
         {
@@ -210,7 +222,7 @@ public sealed class TodoMvcPresenter : CubePresenter<RootPresenter, TodoMvcScope
     /// </summary>
     private async Task OnToggleStress() => await ShowUser(_userId < 0 ? 0 : -1);
 
-    private void Edit(ItemScope row)
+    private void OnEdit(ItemScope row)
     {
         foreach (var other in _all)
         {
@@ -218,7 +230,7 @@ public sealed class TodoMvcPresenter : CubePresenter<RootPresenter, TodoMvcScope
         }
     }
 
-    private Task OnItemKeyDown(ItemScope row, string value, string key)
+    private Task OnKeyDown(ItemScope row, string value, string key)
     {
         if (key == "Escape")
         {

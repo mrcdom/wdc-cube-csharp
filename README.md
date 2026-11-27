@@ -33,7 +33,7 @@ public sealed class ContactListPresenter(ContactsApp app)
 
         if (initialization)
         {
-            Scope.OnOpen = Action<long>(id => new ContactKeys(App) { ContactId = id }.Flip());
+            Scope.OnOpen = Action<long>(OnOpen);
             var contacts = await App.Book.All();
             Scope.Contacts = [.. contacts.Select(c => new ContactRow(c.Id, c.Name))];
         }
@@ -49,6 +49,8 @@ public sealed class ContactListPresenter(ContactsApp app)
 
         return true;
     }
+
+    private Task OnOpen(long contactId) => new ContactKeys(App) { ContactId = contactId }.Flip();
 }
 ```
 

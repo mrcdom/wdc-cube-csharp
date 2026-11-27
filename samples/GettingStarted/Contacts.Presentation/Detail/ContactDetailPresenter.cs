@@ -22,7 +22,7 @@ public sealed class ContactDetailPresenter(ContactsApp app)
 
         if (initialization)
         {
-            Scope.OnClose = Action(() => new ContactListKeys(App).Flip());
+            Scope.OnClose = Action(OnClose);
         }
 
         _contactId = contact.Id;
@@ -35,5 +35,7 @@ public sealed class ContactDetailPresenter(ContactsApp app)
 
     /// <summary>What this place puts in the address when the application publishes it.</summary>
     public override void PublishParameters(FlipIntent intent) => new ContactKeys(App, intent).ContactId = _contactId;
+
+    private Task OnClose() => new ContactListKeys(App).Flip();
 }
 // </snippet:detail-presenter>

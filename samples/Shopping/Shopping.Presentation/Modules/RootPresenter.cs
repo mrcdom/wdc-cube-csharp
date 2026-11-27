@@ -71,7 +71,7 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
     {
         if (initialization)
         {
-            Scope.OnDismissError = Action(() => Scope.ErrorMessage = null);
+            Scope.OnDismissError = Action(OnDismissError);
 
         }
 
@@ -213,4 +213,6 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
         _errorTimer?.Dispose();
         base.Release();
     }
+
+    private void OnDismissError() => Scope.ErrorMessage = null;
 }

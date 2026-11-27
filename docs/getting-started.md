@@ -201,7 +201,7 @@ public sealed class ContactListPresenter(ContactsApp app)
 
         if (initialization)
         {
-            Scope.OnOpen = Action<long>(id => new ContactKeys(App) { ContactId = id }.Flip());
+            Scope.OnOpen = Action<long>(OnOpen);
             var contacts = await App.Book.All();
             Scope.Contacts = [.. contacts.Select(c => new ContactRow(c.Id, c.Name))];
         }
@@ -217,6 +217,8 @@ public sealed class ContactListPresenter(ContactsApp app)
 
         return true;
     }
+
+    private Task OnOpen(long contactId) => new ContactKeys(App) { ContactId = contactId }.Flip();
 }
 ```
 
@@ -291,7 +293,7 @@ public sealed class ContactDetailPresenter(ContactsApp app)
 
         if (initialization)
         {
-            Scope.OnClose = Action(() => new ContactListKeys(App).Flip());
+            Scope.OnClose = Action(OnClose);
         }
 
         _contactId = contact.Id;
@@ -304,6 +306,8 @@ public sealed class ContactDetailPresenter(ContactsApp app)
 
     /// <summary>What this place puts in the address when the application publishes it.</summary>
     public override void PublishParameters(FlipIntent intent) => new ContactKeys(App, intent).ContactId = _contactId;
+
+    private Task OnClose() => new ContactListKeys(App).Flip();
 }
 ```
 

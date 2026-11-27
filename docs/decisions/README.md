@@ -32,13 +32,14 @@ Each record has the same sections: **Status**, **Context**, **Decision**, **Alte
 | [0018](0018-actions-run-one-at-a-time.md) | An application's actions run one at a time | Accepted |
 | [0019](0019-resource-calls.md) | The presentation reaches the data through resource calls | Accepted |
 | [0020](0020-data-policies-per-role.md) | Data policies per role, declared | Accepted |
+| [0021](0021-actions-named-after-what-the-user-does.md) | An action calls the method of its name | Accepted |
 
 ## Reading order
 
 - **Foundations:** 0001–0002.
 - **Presentation:** 0003–0008, in the order a navigation meets them: the dispatcher it runs on, the walk, concurrent
   requests, how scopes reach the screen, the renderers, and sealed addresses; 0017, how an application declares its
-  places; 0018, actions one at a time.
+  places; 0018, actions one at a time; 0021, how actions are named.
 - **Data:** 0009–0014, from the model shared by every layer to the SQL engine, transactions, cascades and the rules
   per role (0020 declares them); 0019, how the presentation reaches the data.
 - **Remote:** 0015–0016, the same contracts over HTTP.

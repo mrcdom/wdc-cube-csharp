@@ -47,11 +47,11 @@ public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
         if (initialization)
         {
             Scope.Greeting = $"Hello, {subject.NickName}";
-            Scope.OnOpenCart = Action(() => new CartKeys(App).Flip());
+            Scope.OnOpenCart = Action(OnOpenCart);
             Scope.OnExit = Action(OnExit);
-            Scope.OnHome = Action(() => new HomeKeys(App).Flip());
+            Scope.OnHome = Action(OnHome);
             Scope.ShowAdmin = subject.Can(Admin.AdminPresenter.Permission);
-            Scope.OnOpenAdmin = Action(() => new AdminKeys(App).Flip());
+            Scope.OnOpenAdmin = Action(OnOpenAdmin);
 
             _products = new ProductsPanelPresenter(App, OpenProduct);
             _purchases = new PurchasesPanelPresenter(App, OpenReceipt);
@@ -132,4 +132,10 @@ public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
         await App.SignOut();
         await new LoginKeys(App).Flip();
     }
+
+    private Task OnOpenCart() => new CartKeys(App).Flip();
+
+    private Task OnHome() => new HomeKeys(App).Flip();
+
+    private Task OnOpenAdmin() => new AdminKeys(App).Flip();
 }

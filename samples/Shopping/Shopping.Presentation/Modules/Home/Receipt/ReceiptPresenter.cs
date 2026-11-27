@@ -23,7 +23,7 @@ public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPres
 
         if (initialization)
         {
-            Scope.OnContinue = Action(() => new HomeKeys(App).Flip());
+            Scope.OnContinue = Action(OnContinue);
         }
 
         Scope.NotifySuccess = keys.PurchaseMade; // the attribute only comes with the flip from the cart
@@ -51,4 +51,6 @@ public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPres
         Scope.Corrections = [.. (purchase.Amendments ?? []).Select(a =>
             $"Purchase corrected on {(a.Date is { } when ? Formats.Date(when) : string.Empty)}: {a.Reason}")];
     }
+
+    private Task OnContinue() => new HomeKeys(App).Flip();
 }

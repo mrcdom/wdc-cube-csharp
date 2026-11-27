@@ -276,7 +276,7 @@ internal sealed class MainApp : ApplicationPresenter<MainScope>
     public MainApp(HistoryManager history)
         : base(new MainScope(), history, MainPlaces.All)
     {
-        Scope.OnToggleTheme = Action(() => Theme = Theme == "dark" ? null : "dark");
+        Scope.OnToggleTheme = Action(OnToggleTheme);
     }
 
     public new TestHistoryManager History => (TestHistoryManager)base.History; // only for apps built on one
@@ -286,6 +286,8 @@ internal sealed class MainApp : ApplicationPresenter<MainScope>
     public List<Exception> UnexpectedErrors { get; } = [];
 
     public string? Theme { get; private set; }
+
+    private void OnToggleTheme() => Theme = Theme == "dark" ? null : "dark";
 
     public bool RefuseAll { get; set; }
 

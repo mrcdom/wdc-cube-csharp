@@ -29,7 +29,7 @@ public sealed class ProductPresenter(RootPresenter app) : CubePresenter<RootPres
         if (initialization)
         {
             Scope.OnAddToCart = Action<int>(OnAddToCart);
-            Scope.OnBack = Action(() => new HomeKeys(App).Flip());
+            Scope.OnBack = Action(OnBack);
         }
 
         if (productId != _productId)
@@ -69,4 +69,6 @@ public sealed class ProductPresenter(RootPresenter app) : CubePresenter<RootPres
         cart.Add(_productId!.Value, Scope.Name, _price, quantity);
         await new CartKeys(App).Flip();
     }
+
+    private Task OnBack() => new HomeKeys(App).Flip();
 }

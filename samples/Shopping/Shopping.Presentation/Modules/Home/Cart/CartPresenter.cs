@@ -32,7 +32,7 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
         if (initialization)
         {
             Scope.OnBuy = Action(OnBuy);
-            Scope.OnContinue = Action(() => new HomeKeys(App).Flip());
+            Scope.OnContinue = Action(OnContinue);
         }
 
         Refresh();
@@ -71,11 +71,13 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
     private CartLineScope NewRow(long productId) => new()
     {
         ProductId = productId,
-        OnChangeQuantity = Action<int>(quantity => ChangeQuantity(productId, quantity)),
-        OnRemove = Action(() => Remove(productId)),
+        OnChangeQuantity = Action<int>(quantity => OnChangeQuantity(productId, quantity)),
+        OnRemove = Action(() => OnRemove(productId)),
     };
 
-    private void ChangeQuantity(long productId, int quantity)
+    private Task OnContinue() => new HomeKeys(App).Flip();
+
+    private void OnChangeQuantity(long productId, int quantity)
     {
         if (quantity < 1)
         {
@@ -89,7 +91,7 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
         }
     }
 
-    private async Task Remove(long productId)
+    private async Task OnRemove(long productId)
     {
         if (Cart.Remove(productId) && Cart.Lines.Count == 0)
         {

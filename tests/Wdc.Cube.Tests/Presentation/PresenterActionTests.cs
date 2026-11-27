@@ -284,7 +284,7 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
             Scope.OnSave = Action(OnSave);
             Scope.OnFail = Action(OnFail);
             Scope.OnRename = Action<string>(OnRename);
-            Scope.OnNothing = Action(DoNothing);
+            Scope.OnNothing = Action(OnNothing);
             Scope.OnBuy = Action(OnBuy);
             Scope.OnSaveTwice = Action(OnSaveTwice);
             Scope.OnTimeout = Action(OnTimeout);
@@ -365,7 +365,7 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
 
     private void OnRename(string name) => Scope.Name = name;
 
-    private void DoNothing()
+    private void OnNothing()
     {
     }
 }

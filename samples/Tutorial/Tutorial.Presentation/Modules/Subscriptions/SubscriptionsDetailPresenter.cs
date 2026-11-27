@@ -40,7 +40,7 @@ public sealed class SubscriptionsDetailPresenter(RootPresenter app)
                 _previousIntent = App.NewFlipIntent(App.LastPlace);
             }
 
-            Scope.OnClose = Action(Close);
+            Scope.OnClose = Action(OnClose);
             Scope.OnSubscribe = Action(OnSubscribe);
             Scope.OnEmailChanged = Mirror<string>(email => Scope.Email = email); // the box shows the scope: keep it in step
         }
@@ -115,6 +115,8 @@ public sealed class SubscriptionsDetailPresenter(RootPresenter app)
         await App.Service.UpdateOrAddSiteSubscription(siteId, email);
         await Close();
     }
+
+    private Task OnClose() => Close();
 
     private async Task Close()
     {

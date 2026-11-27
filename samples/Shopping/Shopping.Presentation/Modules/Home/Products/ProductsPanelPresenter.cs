@@ -9,12 +9,14 @@ public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPa
 {
     public const int MaxProducts = 1000;
 
+    private readonly Func<long, Task> _openProduct;
     private int _pending;
 
     public ProductsPanelPresenter(RootPresenter app, Func<long, Task> openProduct)
         : base(app, new ProductsPanelScope())
     {
-        Scope.OnOpenProduct = Action<long>(openProduct);
+        _openProduct = openProduct;
+        Scope.OnOpenProduct = Action<long>(OnOpenProduct);
     }
 
     public async Task Load()
@@ -48,4 +50,6 @@ public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPa
             }
         }
     }
+
+    private Task OnOpenProduct(long productId) => _openProduct(productId); // the owner decides where it goes
 }
