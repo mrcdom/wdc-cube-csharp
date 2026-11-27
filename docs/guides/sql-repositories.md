@@ -296,23 +296,23 @@ To have a collection written with its parent:
 What is written then follows the call:
 
 ```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Home/CartManager.cs (shortened)
+// samples/Shopping/Shopping.Presentation/Modules/Home/Calls/PurchaseCreate.cs (shortened)
 var purchase = new Purchase
 {
-    User = new Domain.Users.User { Id = subject.Id },
-    BuyDate = time.GetUtcNow(),
+    User = new User { Id = userId },
+    BuyDate = buyDate,
     Items =
     [
-        .. _lines.Select(l => new PurchaseItem
+        .. lines.Select(l => new PurchaseItem
         {
-            Product = new Domain.Products.Product { Id = l.ProductId },
+            Product = new Product { Id = l.ProductId },
             Price = l.Price,
             Amount = l.Quantity,
         }),
     ],
 };
 
-if (!await repositories.Purchases.Insert(purchase)) // the purchase, then each item pointed at it
+if (!await repositories.Purchases.Insert(purchase, cancellationToken: cancellationToken)) // the purchase, then each item
 {
     throw new InvalidOperationException("The purchase was not recorded.");
 }

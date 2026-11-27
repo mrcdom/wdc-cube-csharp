@@ -1,6 +1,6 @@
 using Shopping.Domain;
-using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
+using Shopping.Presentation.Modules.Home.Calls;
 
 namespace Shopping.Presentation.Modules.Home;
 
@@ -89,27 +89,7 @@ public sealed class CartManager(ShoppingRepositories repositories, TimeProvider 
             throw new InvalidCartItemException(CartMessages.QuantityBelowOne);
         }
 
-        var purchase = new Purchase
-        {
-            User = new Domain.Users.User { Id = subject.Id },
-            BuyDate = time.GetUtcNow(),
-            Items =
-            [
-                .. _lines.Select(l => new PurchaseItem
-                {
-                    Product = new Domain.Products.Product { Id = l.ProductId },
-                    Price = l.Price,
-                    Amount = l.Quantity,
-                }),
-            ],
-        };
-
-        if (!await repositories.Purchases.Insert(purchase))
-        {
-            throw new InvalidOperationException("The purchase was not recorded.");
-        }
-
-        var id = purchase.Id!.Value;
+        var id = await new PurchaseCreate(repositories, userId: subject.Id, buyDate: time.GetUtcNow(), lines: [.. _lines]).Run();
         _lines.Clear();
         Changed?.Invoke();
         Committed?.Invoke(id);

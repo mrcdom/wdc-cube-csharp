@@ -82,6 +82,40 @@ For a scope that joined an open transaction (`Required`, `Mandatory`, `Supports`
 - A failing task is logged (on the client, through the logger given to `RemoteTransactionService`) and never changes
   the outcome of the transaction, nor reaches the caller.
 
+## Resource calls
+
+The presentation reaches the data through **resource calls**: one class per operation, named by what it does with
+the resource in the spirit of the HTTP methods. Each use is a new instance, the request goes in its constructor and
+the response comes from `Run`. The base class says whether a transaction is opened:
+
+| Suffix | Base | Transaction |
+|---|---|---|
+| `Query` | `ResourceQuery<T>` | None of its own: it reads in the caller's, if any. |
+| `Create` | `ResourceCreate<T>` (POST) | `Run` opens a `Required` one around `Create`. |
+| `Save` | `ResourceSave<T>` (PUT, idempotent) | `Run` opens a `Required` one around `Save`. |
+| `Update` | `ResourceUpdate<T>` (PATCH) | `Run` opens a `Required` one around `Update`. |
+| `Delete` | `ResourceDelete<T>` (DELETE, idempotent) | `Run` opens a `Required` one around `Delete`. |
+
+```csharp
+public sealed class AmendmentCreate(ShoppingRepositories repositories, PurchaseAmendment errata)
+    : ResourceCreate<bool>(repositories.Transactions)
+{
+    protected override Task<bool> Create(CancellationToken cancellationToken) =>
+        repositories.Amendments.Insert(errata, cancellationToken: cancellationToken);
+}
+
+await new AmendmentCreate(App.Repositories, errata).Run();
+```
+
+- A write is atomic by construction: the call opens its transaction, and the presenter cannot forget to. Only this
+  assembly's four verbs extend `ResourceWrite<T>`, so no write class can skip the transaction.
+- A write given no transaction service (`null`, a test without persistence) runs directly.
+- What fits no verb gets a name of its own and extends `ResourceCall<T>`.
+- The same call runs against the local repositories or the HTTP ones, depending only on what the host handed the
+  application. Over HTTP the write's transaction is a [remote one](#remote-transactions-over-http).
+- Calls with two or more arguments of the same type pass them by name (`page:`, `pageSize:`): swapped by mistake,
+  they would still compile.
+
 ## Reads and writes inside and outside a transaction
 
 `SqlRepository` and `Database.Execute`/`Database.Scalar` follow these rules:

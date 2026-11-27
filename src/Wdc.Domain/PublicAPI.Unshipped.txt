@@ -420,3 +420,22 @@ Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message, Sy
 Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message, System.TimeSpan? retryAfter) -> void
 Wdc.Domain.TooManyRequestsException.TooManyRequestsException(string! message) -> void
 Wdc.Domain.TransactionLimitExceededException.TransactionLimitExceededException(string! message, System.TimeSpan? retryAfter) -> void
+abstract Wdc.Domain.ResourceCall<TResult>.Run(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TResult>!
+abstract Wdc.Domain.ResourceCreate<TResult>.Create(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TResult>!
+abstract Wdc.Domain.ResourceDelete<TResult>.Delete(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TResult>!
+abstract Wdc.Domain.ResourceSave<TResult>.Save(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TResult>!
+abstract Wdc.Domain.ResourceUpdate<TResult>.Update(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TResult>!
+override sealed Wdc.Domain.ResourceWrite<TResult>.Run(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TResult>!
+Wdc.Domain.ResourceCall<TResult>
+Wdc.Domain.ResourceCall<TResult>.ResourceCall() -> void
+Wdc.Domain.ResourceCreate<TResult>
+Wdc.Domain.ResourceCreate<TResult>.ResourceCreate(Wdc.Domain.ITransactionService? transactions) -> void
+Wdc.Domain.ResourceDelete<TResult>
+Wdc.Domain.ResourceDelete<TResult>.ResourceDelete(Wdc.Domain.ITransactionService? transactions) -> void
+Wdc.Domain.ResourceQuery<TResult>
+Wdc.Domain.ResourceQuery<TResult>.ResourceQuery() -> void
+Wdc.Domain.ResourceSave<TResult>
+Wdc.Domain.ResourceSave<TResult>.ResourceSave(Wdc.Domain.ITransactionService? transactions) -> void
+Wdc.Domain.ResourceUpdate<TResult>
+Wdc.Domain.ResourceUpdate<TResult>.ResourceUpdate(Wdc.Domain.ITransactionService? transactions) -> void
+Wdc.Domain.ResourceWrite<TResult>

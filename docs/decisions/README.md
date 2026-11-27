@@ -30,6 +30,7 @@ Each record has the same sections: **Status**, **Context**, **Decision**, **Alte
 | [0016](0016-remote-transactions.md) | Remote transactions held across requests | Accepted (amended) |
 | [0017](0017-keys-classes-declare-their-places.md) | Keys classes declare their places | Accepted |
 | [0018](0018-actions-run-one-at-a-time.md) | An application's actions run one at a time | Accepted |
+| [0019](0019-resource-calls.md) | The presentation reaches the data through resource calls | Accepted |
 
 ## Reading order
 
@@ -38,7 +39,7 @@ Each record has the same sections: **Status**, **Context**, **Decision**, **Alte
   requests, how scopes reach the screen, the renderers, and sealed addresses; 0017, how an application declares its
   places; 0018, actions one at a time.
 - **Data:** 0009–0014, from the model shared by every layer to the SQL engine, transactions, cascades and the rules
-  per role.
+  per role; 0019, how the presentation reaches the data.
 - **Remote:** 0015–0016, the same contracts over HTTP.
 
 ## Adding a record
