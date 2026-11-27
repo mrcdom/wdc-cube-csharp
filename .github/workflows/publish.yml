@@ -45,12 +45,15 @@ jobs:
 
       - name: Pack
         run: |
-          for project in src/*/*.csproj; do
+          for project in src/*/*.csproj templates/*/*.csproj; do
             dotnet pack "$project" -c Release -p:Version="$VERSION" -o out
           done
 
       - name: Check the packages from a project outside the repository
         run: scripts/check-packages.sh out "$VERSION"
+
+      - name: Check the template from a project outside the repository # without a database: its tests are skipped
+        run: scripts/check-template.sh out "$VERSION"
 
       - uses: NuGet/login@v1
         id: login

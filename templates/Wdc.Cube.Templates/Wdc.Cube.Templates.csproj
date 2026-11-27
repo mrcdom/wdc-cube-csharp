@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The dotnet new templates. Packs content/ as it is, except the Wdc.* version, stamped with this package's. -->
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <IsPackable>true</IsPackable>
+    <Title>Cube templates</Title>
+    <Description>dotnet new templates for Cube: cube-blazor, a Blazor Server application on PostgreSQL.</Description>
+    <PackageTags>cube;template;blazor;postgresql</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <!-- A template package has no lib/ folder. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);StampWdcVersion</TargetsForTfmSpecificContentInPackage>
+    <WdcStampedFile>content/cube-blazor/Directory.Packages.props</WdcStampedFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)../../LICENSE" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="content/**" Pack="true" PackagePath="content/%(RecursiveDir)%(Filename)%(Extension)"
+          Exclude="content/**/bin/**;content/**/obj/**;content/**/TestResults/**;content/**/.DS_Store;$(WdcStampedFile)" />
+  </ItemGroup>
+
+  <!-- The generated project references the Wdc.* packages of the same version as this one. -->
+  <Target Name="StampWdcVersion">
+    <PropertyGroup>
+      <_WdcStampedOutput>$(IntermediateOutputPath)stamped/Directory.Packages.props</_WdcStampedOutput>
+      <_WdcStampedText>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/$(WdcStampedFile)').Replace('0.0.0-dev', '$(Version)'))</_WdcStampedText>
+    </PropertyGroup>
+    <Error Condition="!$(_WdcStampedText.Contains('$(Version)'))" Text="$(WdcStampedFile) has no 0.0.0-dev version to stamp." />
+    <WriteLinesToFile File="$(_WdcStampedOutput)" Lines="$([MSBuild]::Escape($(_WdcStampedText)))" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(_WdcStampedOutput)" PackagePath="$(WdcStampedFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

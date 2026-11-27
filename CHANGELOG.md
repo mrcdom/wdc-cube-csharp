@@ -29,6 +29,8 @@ The first version, not yet published.
   implementation. Security and cache headers on every answer, `Server-Timing`, a pluggable error map, 429 with
   `Retry-After` (`TooManyRequestsException`, also for ASP.NET's rate limiter), and metrics of the remote transactions.
 - **`Wdc.Rest.Testing`:** a REST server in memory for tests, its client and raw requests.
+- **`Wdc.Cube.Templates`:** `dotnet new cube-blazor`, a list of tasks with its detail on Blazor Server and
+  PostgreSQL, with tests of the presenters and of the page; `--Framework net10.0|net11.0`.
 - **Metrics:** `Wdc.Rest.Server` and `Wdc.Cube.Blazor` publish their instruments on `System.Diagnostics.Metrics`.
 
 [Unreleased]: https://github.com/mrcdom/wdc-cube-csharp/commits/main

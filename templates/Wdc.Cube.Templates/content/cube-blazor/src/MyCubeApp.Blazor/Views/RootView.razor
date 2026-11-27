@@ -1,0 +1,13 @@
+@inherits ScopeView<RootScope>
+
+<header>Tasks</header>
+<main>
+    @if (Scope.ErrorMessage is { } error)
+    {
+        <p class="alert" role="alert">
+            @T(error)
+            <button class="link" @onclick="Scope.OnDismissError">Dismiss</button>
+        </p>
+    }
+    <ViewSlot Scope="Scope.Body" />
+</main>

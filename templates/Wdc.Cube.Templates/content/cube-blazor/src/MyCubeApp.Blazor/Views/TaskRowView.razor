@@ -1,0 +1,9 @@
+@inherits ScopeView<TaskRowScope>
+
+<li class="task">
+    <label>
+        <input type="checkbox" checked="@Scope.Done" @onchange="Scope.OnToggle" />
+        <span class="@(Scope.Done ? "done" : null)">@Scope.Title</span>
+    </label>
+    <button class="link open" @onclick="Scope.OnOpen">Open</button>
+</li>

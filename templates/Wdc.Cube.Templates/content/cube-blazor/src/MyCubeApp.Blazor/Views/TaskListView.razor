@@ -1,0 +1,34 @@
+@inherits ScopeView<TaskListScope>
+
+<div class="columns">
+    <section class="list">
+        <form class="add" @onsubmit="Add">
+            <input placeholder="What is there to do?" @bind="_title" @bind:event="oninput" />
+            <button type="submit">Add</button>
+        </form>
+        @if (Scope.ErrorMessage is { } error)
+        {
+            <p class="error">@T(error)</p>
+        }
+        <ul>
+            @foreach (var row in Scope.Rows)
+            {
+                <TaskRowView @key="row.Identity" Scope="row" />
+            }
+        </ul>
+        <p class="muted remaining">@Scope.Remaining left</p>
+    </section>
+    <ViewSlot Scope="Scope.Detail" />
+</div>
+
+@code {
+    // What is being typed: the view's own state, until the user adds it.
+    private string _title = string.Empty;
+
+    private Task Add()
+    {
+        var title = _title;
+        _title = string.Empty;
+        return Scope.OnAdd(title);
+    }
+}

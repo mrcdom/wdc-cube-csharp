@@ -64,6 +64,15 @@ jobs:
 
       - run: dotnet test --solution wdc-cube.slnx --no-build
 
+      - name: Pack the libraries and the template
+        run: |
+          for project in src/*/*.csproj templates/*/*.csproj; do
+            dotnet pack "$project" -c Release -o out
+          done
+
+      - name: Check the template from a project outside the repository
+        run: scripts/check-template.sh out "$(dotnet msbuild src/Wdc.Cube/Wdc.Cube.csproj -getProperty:Version)"
+
   compose:
     name: Compose (two instances of each host, nginx, Prometheus)
     runs-on: ubuntu-latest

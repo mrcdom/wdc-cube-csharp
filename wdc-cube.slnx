@@ -49,6 +49,9 @@
     <Project Path="samples/Shopping/Shopping.Avalonia/Shopping.Avalonia.csproj" />
     <Project Path="samples/Shopping/Shopping.Avalonia.Tests/Shopping.Avalonia.Tests.csproj" />
   </Folder>
+  <Folder Name="/templates/">
+    <Project Path="templates/Wdc.Cube.Templates/Wdc.Cube.Templates.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj" />
     <Project Path="tests/Wdc.Cube.Blazor.Tests/Wdc.Cube.Blazor.Tests.csproj" />

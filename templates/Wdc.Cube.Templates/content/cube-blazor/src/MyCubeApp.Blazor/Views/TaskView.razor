@@ -1,0 +1,16 @@
+@inherits ScopeView<TaskScope>
+
+<section class="detail">
+    <h2>Task @Scope.Id</h2>
+    @* Keyed by the task: opening another one reuses this presenter, its scope and this view, but the form is new, and
+       its text starts from the new title instead of keeping what was being typed for the last one. *@
+    <TaskTitleForm @key="Scope.Id" Title="@Scope.Title" OnSave="Scope.OnRename" />
+    @if (Scope.ErrorMessage is { } error)
+    {
+        <p class="error">@T(error)</p>
+    }
+    <div class="actions">
+        <button class="remove" @onclick="Scope.OnRemove">Remove</button>
+        <button class="close" @onclick="Scope.OnClose">Close</button>
+    </div>
+</section>

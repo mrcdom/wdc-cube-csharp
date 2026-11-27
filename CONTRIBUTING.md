@@ -17,6 +17,18 @@ to discuss it.
   dotnet test --project tests/Wdc.Cube.Tests/Wdc.Cube.Tests.csproj -f net10.0 --filter-class "*Navigation*"
   ```
 
+### The template
+
+`templates/Wdc.Cube.Templates/content/cube-blazor` is the project `dotnet new cube-blazor` makes; it is not built with
+`wdc-cube.slnx` (it references the packages, not the projects). Its sources are formatted for the default name,
+`MyCubeApp`. To check a change, pack the libraries and the template, then make and test a project from them outside
+the repository, as CI does:
+
+```bash
+for project in src/*/*.csproj templates/*/*.csproj; do dotnet pack "$project" -c Release -o out; done
+scripts/check-template.sh out 0.1.0    # its tests use TEST_POSTGRES, else WDC_TEST_POSTGRES
+```
+
 ### Databases
 
 The persistence and Shopping tests run against real databases, each test run in a throwaway schema. Without a
