@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The presenters driven without a view, and the page on Blazor's renderer; both on a throwaway schema. -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/MyCubeApp.Blazor/MyCubeApp.Blazor.csproj" />
+    <PackageReference Include="Wdc.Cube.Testing" />
+    <PackageReference Include="bunit" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

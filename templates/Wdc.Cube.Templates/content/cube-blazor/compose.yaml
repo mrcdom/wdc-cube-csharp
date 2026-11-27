@@ -1,0 +1,18 @@
+# The database for development: docker compose up -d. The data stays in a volume; docker compose down -v drops it.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: tasks
+      POSTGRES_USER: tasks
+      POSTGRES_PASSWORD: tasks # reachable only from this machine (see ports)
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "tasks"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  data:

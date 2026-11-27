@@ -1,0 +1,14 @@
+@page "/"
+@page "/{*path}"
+@inject ITaskRepository Tasks
+
+@* Every path is this page: the address belongs to the application, which turns it into a place. *@
+<CubeHost TApp="TasksApp" CreateApplication="host => new TasksApp(host.History, Tasks, host.Dispatcher)"
+          Start="app => app.Start()">
+    <ViewSlot Scope="context.Scope" />
+</CubeHost>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+}

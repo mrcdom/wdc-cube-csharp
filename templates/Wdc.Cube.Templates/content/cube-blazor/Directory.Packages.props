@@ -1,0 +1,17 @@
+<Project>
+  <!-- Package versions, in one place (Central Package Management): the .csproj files reference packages without one. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- The Cube packages are released together: one version for all of them. -->
+    <WdcVersion>0.0.0-dev</WdcVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Wdc.Cube" Version="$(WdcVersion)" />
+    <PackageVersion Include="Wdc.Cube.Blazor" Version="$(WdcVersion)" />
+    <PackageVersion Include="Wdc.Cube.Testing" Version="$(WdcVersion)" />
+    <PackageVersion Include="Wdc.Domain" Version="$(WdcVersion)" />
+    <PackageVersion Include="Wdc.Persistence.PostgreSql" Version="$(WdcVersion)" />
+    <PackageVersion Include="bunit" Version="2.15.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
+  </ItemGroup>
+</Project>

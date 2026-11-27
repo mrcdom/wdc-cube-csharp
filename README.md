@@ -100,6 +100,7 @@ Tests drive the same scopes with no view at all. The full walkthrough, tests inc
 | `Wdc.Persistence.PostgreSql`, `Wdc.Persistence.SqlServer` | The two dialects. |
 | `Wdc.Rest`, `Wdc.Rest.Server`, `Wdc.Rest.Client` | Repositories and transactions over HTTP: the same contracts, local or remote. |
 | `Wdc.Rest.Testing` | Testing a REST server in memory: the real pipeline, its client, raw requests. |
+| `Wdc.Cube.Templates` | `dotnet new cube-blazor`: a new application on Blazor Server and PostgreSQL, with its tests. |
 
 The libraries are trimming- and AOT-compatible: no runtime reflection in the core and the domain.
 
@@ -109,6 +110,9 @@ The documentation below, with the API reference, is also published as a site:
 <https://mrcdom.github.io/wdc-cube-csharp/>.
 
 - [Getting started](docs/getting-started.md): build a small app, step by step.
+- A new project: `dotnet new install Wdc.Cube.Templates`, then `dotnet new cube-blazor -n MyApp`. It makes a list of
+  tasks with its detail, drawn by Blazor Server and kept in PostgreSQL (with a `compose.yaml` for the database), with
+  tests of the presenters and of the page. See [its README](templates/Wdc.Cube.Templates/README.md).
 - [Concepts](docs/README.md#concepts): how each part works and why.
 - [Guides](docs/README.md#guides): testing, Blazor, Avalonia, SQL repositories, REST, rules per role, sealed
   addresses, several instances, trimming.

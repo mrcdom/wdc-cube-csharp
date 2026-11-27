@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The application without any view: the tasks (domain), and the places, keys, presenters and scopes. -->
+  <ItemGroup>
+    <PackageReference Include="Wdc.Cube" />
+    <PackageReference Include="Wdc.Domain" />
+  </ItemGroup>
+</Project>

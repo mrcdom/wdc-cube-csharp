@@ -495,6 +495,10 @@ dotnet test --project samples/GettingStarted/Contacts.Tests/Contacts.Tests.cspro
 
 ## Where to go next
 
+- A project of your own: `dotnet new install Wdc.Cube.Templates`, then `dotnet new cube-blazor -n MyApp`. It is this
+  app's shape (a list with its detail) with what a real one adds: a database (PostgreSQL), messages instead of texts in
+  the scopes, and tests on both the presenters and the page.
+
 - [Architecture](concepts/architecture.md): places, intents, presenters, scopes, slots and keys in depth.
 - [Update cycle](concepts/update-cycle.md): how scope changes reach the screen.
 - [Navigation](concepts/navigation.md): what a navigation guarantees when a presenter refuses or fails.
