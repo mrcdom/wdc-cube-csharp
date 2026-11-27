@@ -9,13 +9,17 @@ internal interface IActionHost
 
     /// <summary>Marks the root scope dirty when nothing was marked since the last flush (auto-update).</summary>
     void UpdateIfNotDirty();
+
+    /// <summary>A guarded action of this host failed (the host's <c>OnActionFailure</c>).</summary>
+    void ActionFailed(string action, Exception caught);
 }
 
 /// <summary>
 /// Builds guarded actions: the wrapper marshals to the dispatcher, runs one action at a time per application
-/// (<see cref="CubeApplication.RunAction(Func{Task})"/>), reports failures through
-/// <see cref="CubeApplication.Unexpected"/> (an action never faults to its caller), and at the end flushes the scope
-/// updates at once and republishes the address.
+/// (<see cref="CubeApplication.RunAction(Func{Task})"/>), hands a failure to the host's <c>OnActionFailure</c> (by
+/// default <see cref="CubeApplication.Unexpected"/>; an action never faults to its caller, and every exception is a
+/// failure, but for a cancellation once the host is gone), and at the end flushes the scope updates at once and
+/// republishes the address.
 /// </summary>
 internal static class ActionGuard
 {
@@ -36,9 +40,24 @@ internal static class ActionGuard
             {
                 await action();
             }
+            catch (OperationCanceledException) when (host.IsReleased)
+            {
+                // Cancelled because the presenter left: nobody is there to hear of it. Any other cancellation (an
+                // HTTP timeout is one) is a failure like any other.
+            }
             catch (Exception caught)
             {
-                host.Application.Unexpected($"During execution of {name ?? "an"} action", caught);
+                var action = name ?? "an";
+                try
+                {
+                    host.ActionFailed(action, caught);
+                }
+                catch (Exception failure)
+                {
+                    // The handler failed too: the application hears of both.
+                    host.Application.Unexpected($"During execution of {action} action", caught);
+                    host.Application.Unexpected($"Handling the failure of {action} action", failure);
+                }
             }
             finally
             {

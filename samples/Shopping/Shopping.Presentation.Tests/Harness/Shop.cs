@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using Shopping.Domain;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules;
 using Shopping.Presentation.Modules.Home;
@@ -14,11 +15,12 @@ namespace Shopping.Presentation.Tests;
 /// <summary>Starts the Shopping application at an address, with no view.</summary>
 internal sealed class Shop
 {
-    private Shop(ShoppingDatabaseFixture fixture, string address, ISessionStore session)
+    private Shop(ShoppingDatabaseFixture fixture, string address, ISessionStore session,
+        Func<(ShoppingRepositories, IAuthentication), (ShoppingRepositories, IAuthentication)>? connect)
     {
         History = new TestHistoryManager(address);
         Session = session;
-        var (repositories, authentication) = fixture.Connect();
+        var (repositories, authentication) = connect is null ? fixture.Connect() : connect(fixture.Connect());
         App = new RootPresenter(History, repositories, session, timeProvider: Time, authentication: authentication);
     }
 
@@ -30,10 +32,12 @@ internal sealed class Shop
 
     public RootPresenter App { get; }
 
-    public static async Task<Shop> Start(ShoppingDatabaseFixture fixture, string address = "", ISessionStore? session = null)
+    /// <param name="connect">Changes what the session gets (a service that fails, say).</param>
+    public static async Task<Shop> Start(ShoppingDatabaseFixture fixture, string address = "", ISessionStore? session = null,
+        Func<(ShoppingRepositories Repositories, IAuthentication Authentication), (ShoppingRepositories, IAuthentication)>? connect = null)
     {
         Assert.SkipWhen(fixture.Store is null, fixture.SkipReason);
-        var shop = new Shop(fixture, address, session ?? new MemorySessionStore());
+        var shop = new Shop(fixture, address, session ?? new MemorySessionStore(), connect);
         await shop.App.Start();
         await shop.Settle();
         return shop;

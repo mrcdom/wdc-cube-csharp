@@ -53,7 +53,8 @@ sequenceDiagram
   something deeper, and `LastPlace` becomes this presenter's place — not the leaf that was asked for. The address
   published is that place's.
 - An exception: the only way to refuse the navigation and keep the previous state. The flip rolls back and the
-  exception is rethrown to the caller of `Flip`. (Inside a guarded action, it reaches `Unexpected`.)
+  exception is rethrown to the caller of `Flip`. (Inside a guarded action, it reaches the
+  presenter's `OnActionFailure`, and by default `Unexpected`.)
 
 **Release:**
 

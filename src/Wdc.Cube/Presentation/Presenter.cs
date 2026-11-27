@@ -45,6 +45,19 @@ public abstract class Presenter<TApp, TScope> : IActionHost
 
     CubeApplication IActionHost.Application => App;
 
+    /// <summary>
+    /// A guarded action of this presenter failed. The default hands the failure to the application
+    /// (<see cref="CubeApplication.Unexpected"/>). Override to handle there what this screen knows how to show (a
+    /// service that does not answer becomes a notice on the screen) and call the base for the rest: what the presenter
+    /// does not handle still reaches the application. A cancellation after the presenter was released does not come here.
+    /// </summary>
+    /// <param name="action">The action, as it was bound (<c>OnBuy</c>).</param>
+    /// <param name="caught">What it threw.</param>
+    protected virtual void OnActionFailure(string action, Exception caught) =>
+        App.Unexpected($"During execution of {action} action", caught);
+
+    void IActionHost.ActionFailed(string action, Exception caught) => OnActionFailure(action, caught);
+
     /// <summary>Marks <paramref name="scope"/> (the root scope when omitted) dirty by hand.</summary>
     public void Update(Scope? scope = null) => UpdateManager.Update(scope);
 

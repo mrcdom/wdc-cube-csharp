@@ -255,3 +255,5 @@ Wdc.Cube.UpdateScheduler.FlushNow() -> void
 Wdc.Cube.UpdateScheduler.HasPendingUpdates.get -> bool
 Wdc.Cube.UpdateScheduler.UpdateScheduler(Wdc.Cube.PresentationDispatcher! dispatcher, System.TimeProvider? time = null, System.TimeSpan? window = null, System.Action<string!, System.Exception!>? report = null) -> void
 Wdc.Cube.UpdateScheduler.Window.get -> System.TimeSpan
+virtual Wdc.Cube.ApplicationPresenter<TScope>.OnActionFailure(string! action, System.Exception! caught) -> void
+virtual Wdc.Cube.Presenter<TApp, TScope>.OnActionFailure(string! action, System.Exception! caught) -> void

@@ -110,11 +110,6 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
         {
             Show(caught.Message);
         }
-        catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException)
-        {
-            App.Unexpected("Recording the purchase", caught);
-            Show(CartMessages.Unavailable);
-        }
         finally
         {
             if (!IsReleased)
@@ -135,5 +130,18 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
                 Scope.ErrorMessage = null;
             }
         }), null, MessageDuration, Timeout.InfiniteTimeSpan);
+    }
+
+    /// <summary>The database or the server not answering is a notice on the cart; the cart is kept.</summary>
+    protected override void OnActionFailure(string action, Exception caught)
+    {
+        if (caught is System.Data.Common.DbException or HttpRequestException)
+        {
+            App.Unexpected($"During execution of {action} action", caught); // the detail, for the log
+            Show(CartMessages.Unavailable);
+            return;
+        }
+
+        base.OnActionFailure(action, caught);
     }
 }

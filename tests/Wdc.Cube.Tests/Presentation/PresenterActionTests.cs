@@ -61,6 +61,45 @@ public sealed class PresenterActionTests
     }
 
     [Fact]
+    public void Action_Failure_ThePresenterHandlesWhatItKnows_AndTheRestReachesTheApplication()
+    {
+        _form.Handles = caught => caught is TimeoutException;
+
+        _dispatcher.Run(() => _form.Scope.OnTimeout());
+        _dispatcher.Run(() => _form.Scope.OnFail());
+
+        Assert.Equal([("OnTimeout", "service did not answer")], _form.Handled.Select(h => (h.Action, h.Error.Message)));
+        Assert.Equal("Unavailable", _form.Scope.Name); // the screen's own notice
+        var (message, error) = Assert.Single(_app.UnexpectedErrors);
+        Assert.Contains("OnFail", message, StringComparison.Ordinal);
+        Assert.Equal("save failed", error.Message);
+    }
+
+    [Fact]
+    public void Action_Failure_AHandlerThatFails_LeavesBothToTheApplication()
+    {
+        _form.Handles = _ => throw new InvalidOperationException("handler broke");
+
+        _dispatcher.Run(() => _form.Scope.OnFail());
+
+        Assert.Equal(["save failed", "handler broke"], _app.UnexpectedErrors.Select(e => e.Error.Message));
+    }
+
+    [Fact]
+    public void Action_Cancellation_IsAFailure_WhileThePresenterIsThere_AndNothingOnceItLeft()
+    {
+        _dispatcher.Run(() => _form.Scope.OnCancelled()); // a timeout of an HTTP call is a cancellation too
+
+        Assert.IsType<OperationCanceledException>(Assert.Single(_app.UnexpectedErrors).Error);
+
+        _app.UnexpectedErrors.Clear();
+        _dispatcher.Run(() => _form.Scope.OnLeaveCancelled());
+
+        Assert.True(_form.IsReleased);
+        Assert.Empty(_app.UnexpectedErrors);
+    }
+
+    [Fact]
     public void Action_WithArgument()
     {
         _dispatcher.Run(() => _form.Scope.OnRename("Ana"));
@@ -204,6 +243,12 @@ internal sealed class FormScope : Scope
     public Func<Task> OnBuy { get; set; } = ScopeActions.Unbound();
 
     public Func<Task> OnSaveTwice { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnTimeout { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnCancelled { get; set; } = ScopeActions.Unbound();
+
+    public Func<Task> OnLeaveCancelled { get; set; } = ScopeActions.Unbound();
 }
 
 internal sealed class PanelScope : Scope
@@ -242,6 +287,9 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
             Scope.OnNothing = Action(DoNothing);
             Scope.OnBuy = Action(OnBuy);
             Scope.OnSaveTwice = Action(OnSaveTwice);
+            Scope.OnTimeout = Action(OnTimeout);
+            Scope.OnCancelled = Action(OnCancelled);
+            Scope.OnLeaveCancelled = Action(OnLeaveCancelled);
             Child = new PanelPresenter(App);
             Scope.Panel = Child.Scope;
         }
@@ -287,6 +335,33 @@ internal sealed class FormPresenter(ActApp app) : CubePresenter<ActApp, FormScop
     }
 
     private Task OnFail() => throw new InvalidOperationException("save failed");
+
+    private Task OnTimeout() => throw new TimeoutException("service did not answer");
+
+    private Task OnCancelled() => throw new OperationCanceledException();
+
+    private async Task OnLeaveCancelled()
+    {
+        await App.Flip(ActPlaces.Other);
+        throw new OperationCanceledException();
+    }
+
+    /// <summary>Which failures this screen shows by itself; the others go on to the application.</summary>
+    public Func<Exception, bool>? Handles { get; set; }
+
+    public List<(string Action, Exception Error)> Handled { get; } = [];
+
+    protected override void OnActionFailure(string action, Exception caught)
+    {
+        if (Handles?.Invoke(caught) == true)
+        {
+            Handled.Add((action, caught));
+            Scope.Name = "Unavailable";
+            return;
+        }
+
+        base.OnActionFailure(action, caught);
+    }
 
     private void OnRename(string name) => Scope.Name = name;
 

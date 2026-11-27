@@ -46,11 +46,6 @@ public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresen
         {
             Scope.ErrorMessage = TooManyAttempts(refused.RetryAfter);
         }
-        catch (Exception caught) when (caught is System.Data.Common.DbException or HttpRequestException or TimeoutException)
-        {
-            App.Unexpected("Logging in", caught);
-            Scope.ErrorMessage = CommunicationFailure;
-        }
         finally
         {
             if (!IsReleased)
@@ -58,5 +53,18 @@ public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresen
                 Scope.Loading = false;
             }
         }
+    }
+
+    /// <summary>The database or the server not answering is said on the login card.</summary>
+    protected override void OnActionFailure(string action, Exception caught)
+    {
+        if (caught is System.Data.Common.DbException or HttpRequestException or TimeoutException)
+        {
+            App.Unexpected($"During execution of {action} action", caught); // the detail, for the log
+            Scope.ErrorMessage = CommunicationFailure;
+            return;
+        }
+
+        base.OnActionFailure(action, caught);
     }
 }
