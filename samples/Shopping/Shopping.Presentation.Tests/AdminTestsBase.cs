@@ -21,11 +21,12 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
     {
         Assert.SkipWhen(db.Store is null, db.SkipReason);
         var (fulano, authentication) = db.Connect();
-        Assert.NotNull(await authentication.Login("fulano", "fulano", Ct));
+        var me = (await authentication.Login("fulano", "fulano", Ct))!.Id;
         var products = await db.Store!.Repositories.Products.Fetch(new ProductCriteria().WithOrderBy(ProductOrderBy.NameAToZ),
             cancellationToken: Ct);
         var purchase = new Purchase
         {
+            User = new Domain.Users.User { Id = me },
             BuyDate = new DateTimeOffset(2026, 11, 18, 15, 0, 0, TimeSpan.Zero),
             Items = [.. amounts.Select((a, i) => new PurchaseItem { Product = new Product { Id = products[i].Id }, Amount = a })],
         };

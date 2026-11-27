@@ -1,416 +1,282 @@
 # Writing roles and rules
 
-This guide shows how to write the `RepositoryPolicy` of an entity: who may do each operation, which rows each actor
-reaches, which fields they read, what every write must satisfy, and how to let maintenance through without opening
-the rules to everyone. It is a how-to; for how a protected repository runs a policy, and why the rules live in the
-repository rather than in the presenters, read [Protected repositories](../concepts/protected-repositories.md) first.
+This guide shows how to protect an entity's data:
+- write its **data policy**: which rows each role reaches, which fields it reads, writes or sees masked, and whether
+  it deletes;
+- keep the **business rules** apart: what holds whoever acts, and how maintenance gets through without opening the
+  rules to everyone.
 
-The examples come from the Shopping sample (`samples/Shopping/Shopping.Domain/Security`) and from the framework's own
-tests (`tests/Wdc.Persistence.Tests/ProtectedRepositoryTests.cs`). The framework types are in the `Wdc.Domain`
-namespace (`src/Wdc.Domain/Security` and `src/Wdc.Domain/Cascade`).
+It is a how-to. For how a protected repository applies the rules, and why they live in the repository rather than in
+the presenters, read [Protected repositories](../concepts/protected-repositories.md) first.
 
-## The shape of a policy
+The examples come from the Shopping sample (`samples/Shopping/Shopping.Domain/Security`) and from the framework's
+tests (`tests/Wdc.Domain.Tests/Policy`, `tests/Wdc.Persistence.Tests/DataPolicyRepositoryTests.cs`). The framework
+types are in the `Wdc.Domain` namespace.
 
-A policy is one object per entity, built from the entity's model and a criteria factory. Every rule is an optional
-delegate; leave out what the entity does not need.
+## 1. Start the policy
+
+A data policy is one object per entity, built from the entity's model and a criteria factory, and finished with
+`Build()`:
 
 ```csharp
 // samples/Shopping/Shopping.Domain/Security/ProductPolicy.cs
-public static RepositoryPolicy<Product, ProductCriteria, long> Create() => new(Product.Model, () => new ProductCriteria())
-{
-    Authorize = Permissions.Allow("product"),
-};
+private static readonly string[] s_fields = ["name", "price", "description", "image"];
+
+public static DataPolicy<Product, ProductCriteria> Build() =>
+    DataPolicy.For(Product.Model, () => new ProductCriteria())
+        .Criterion("productId", "id")
+        .Orderings(c => c.OrderBy switch
+        {
+            ProductOrderBy.NameAToZ => ["name"],
+            ProductOrderBy.CheapestFirst or ProductOrderBy.MostExpensiveFirst => ["price"],
+            _ => [],
+        })
+        .Grant(["Super", "Admin", "Manager"], g => g.Read(s_fields).Create(s_fields).Update(s_fields).Delete())
+        .Grant(["Customer"], g => g.Read(s_fields))
+        .Build();
 ```
 
-The policy holds no actor. It is created once and every rule receives a `PolicyContext(Actor, InCascade)`, so the same
-instance serves every session. Write each policy as a static factory (`ProductPolicy.Create()`) and pass it what its
-rules need to read, such as the raw repositories (`PurchasePolicy.Create(store)`) or a clock
-(`PurchaseAmendmentPolicy.Create(store, time)`).
+The policy holds no actor: `AccessFor(actor)` applies it to one, so the same instance serves every session. Fields are
+named as in the entity model. `Build()` checks every name, and fails on a gap or a contradiction, so a mistake shows
+when the policy is built.
 
-## 1. Authorize each operation
+## 2. Say what each criterion and ordering reveals
 
-`Authorize` is asked about a `RepositoryOperation` (`Insert`, `Update`, `Delete`, `Count`, `Fetch`, `FetchPage`,
-`FetchById`) and throws `AccessDeniedException` to refuse. It runs first, before anything touches the database.
+Filtering or sorting by a field reveals its values as much as reading it, so the policy must know which field each
+criterion and each ordering touches:
 
-The framework does not interpret roles: `Actor` is an id and a set of strings, and `actor.HasRole(...)` is all it
-offers. Keep the mapping from roles to operations in one place of the application. Shopping uses grants of the form
-`entity:verb`:
+- A criterion named as its field (`name`) needs nothing.
+- `Criterion("userId", "user")` maps a criterion to a field of another name.
+- `Criterion("customerName", "user.name")` maps one to a field of another entity, through a reference. Filtering by it
+  takes reading `user` here **and** `name` in the user's policy.
+- `Criterion("search", "name", "description")` maps a term searched in several fields (translated with
+  `FilterContext.TranslateAny`). Filtering by it takes reading them all.
+- `Orderings(criteria => fields)` names the fields of each ordering. The key, the tie-breaker, never counts.
 
-```csharp
-// samples/Shopping/Shopping.Domain/Security/Permissions.cs
-public static void Require(Actor actor, string entity, RepositoryOperation operation)
-{
-    var verb = operation switch
-    {
-        RepositoryOperation.Insert or RepositoryOperation.Update => "write",
-        RepositoryOperation.Delete => "delete",
-        _ => "read",
-    };
-    if (!Has(actor, $"{entity}:{verb}"))
-    {
-        throw new AccessDeniedException($"Not allowed: {entity}:{verb}.");
-    }
-}
+A criterion that maps to no field fails `Build()`.
 
-internal static Action<PolicyContext, RepositoryOperation> Allow(string entity) =>
-    (context, operation) => Require(context.Actor, entity, operation);
-```
+## 3. Give each role its grants
 
-A policy can also decide inline, which is fine for a rule that only one entity has:
+`Grant(roles, g => ...)` adds a grant to each role named. A grant says:
 
-```csharp
-// tests/Wdc.Persistence.Tests/ProtectedRepositoryTests.cs
-Authorize = (p, operation) =>
-{
-    if (operation == RepositoryOperation.Delete && !p.Actor.HasRole("keeper"))
-    {
-        throw new AccessDeniedException("Only a keeper deletes purchases.");
-    }
-},
-```
-
-Two things to keep in mind:
-
-- `Authorize` also runs for an entity written in cascade (with `InCascade: true`). A customer who inserts a purchase
-  with its items needs the grant to write items too.
-- Nobody acting is not a role. With no actor, the protected repository throws `AuthenticationException` before
-  `Authorize` is called.
-
-## 2. Limit the reach
-
-`Scope` narrows a criteria to the rows the actor may reach. It is applied to every read, and to update and delete.
-`RestrictToId` turns a key into a criteria, so that the repository can check one row against the scope (fetch by id,
-update, and children written in cascade).
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/PurchasePolicy.cs
-Scope = (c, criteria) => Permissions.Reach(c, id => criteria.UserId.Restrict(id)),
-RestrictToId = (criteria, id) => criteria.PurchaseId.Restrict(id),
-```
-
-`Permissions.Reach` restricts to the actor's own id unless the actor has `data:all`. Write your own helper the same
-way when reach depends on the role.
-
-Rules:
-
-- Narrow with `Restrict`, never with `Eq`. A restriction is ANDed outside whatever the caller asked on the same field,
-  so `UserId.Or()` plus `UserId.IsNotNull()` still returns only the actor's rows
-  (`Reach_ADisjunctiveCriteriaDoesNotWidenIt` in the framework tests).
-- A policy with a `Scope` or a `BeforeDelete` must set `RestrictToId`. Without it, the first operation that needs a
-  single-key criteria throws `InvalidOperationException`.
-- The scope changes the criteria the caller passed. Callers must not reuse it expecting the original.
-
-What a row out of reach looks like to the caller (`Reach_GuardsFetchByIdUpdateAndDelete`):
-
-| Operation | Row out of reach |
+| Call | What it allows |
 |---|---|
-| `FetchById` | `null`, as if it did not exist |
-| `Fetch`, `FetchPage`, `Count` | not counted, not returned |
-| `Update` | `KeyNotFoundException` |
-| `Delete` | not deleted (the count returned excludes it) |
+| `Read(fields)` | Reading the fields as they are, and filtering and sorting by them. The key is always read. |
+| `Mask(Mask.KeepFirst(n) or KeepLast(n), fields)` | Reading text fields partially (`"j***"`): not filtering or sorting by them, not writing them in the same grant. |
+| `Create(fields)` | Setting the fields when creating a row. A reference is sent by its key. |
+| `Update(fields)` | Changing the fields of a reachable row. |
+| `Delete()` | Deleting the reachable rows. |
 
-A delete with no filter at all is refused with `InvalidRequestException` before the scope is added: "delete
-everything I can reach" is not an operation the repository offers.
+- An actor with several roles gets every grant of every role; a request passes when **one** grant allows all of it.
+  So "filter by name and by login" needs one grant that reads both.
+- A role that reaches different rows with different fields has one grant per set of rows: one's own user in full,
+  everyone's name.
+- A grant named for several roles counts once.
 
-Reach is not a replacement for the presentation's own intent. The receipt asks for the logged-in user's purchase
-explicitly, because a manager reaches every purchase but should still see only their own receipts there:
+## 4. Limit the rows
 
-```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Home/Receipt/ReceiptPresenter.cs
-var criteria = new PurchaseCriteria()
-    .PurchaseId.Eq(purchaseId)
-    .UserId.Eq(subject.Id) // ownership: never only by key
-```
-
-## 3. Remove what the actor may not read
-
-Two hooks keep fields away from the actor:
-
-- `SanitizeProjection` edits the projection *before* the query, so the database is not even asked for the field.
-- `SanitizeOutput` edits each result *after* it, and the bean returned by an insert.
-
-Set both when a field must never leave. The user's password is the plain case:
+`Rows(scope)` limits a grant to the rows an `IRowScope` reaches. The scope says it twice, and both must agree:
 
 ```csharp
-// samples/Shopping/Shopping.Domain/Security/UserPolicy.cs
-SanitizeProjection = (_, p) => p.Password = null,
-SanitizeOutput = (_, u) => u.Password = null,
-```
-
-A projection can reach the same entity through another one: a purchase projects its user, an errata projects its
-author. The user policy does not run for those, because the user is not the entity being read. Each policy cleans
-what its own projections can carry:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/PurchasePolicy.cs
-private static void Sanitize(PolicyContext context, Purchase purchase)
+// samples/Shopping/Shopping.Domain/Security/PurchaseItemPolicy.cs
+internal sealed class OwnItems(ShoppingRepositories store) : IRowScope<PurchaseItem, PurchaseItemCriteria>
 {
-    UserPolicy.DropPassword(purchase.User);
-    PurchaseAmendmentPolicy.Sanitize(context, purchase.Amendments);
+    public void Restrict(PurchaseItemCriteria group, Actor actor) => group.UserId.Eq(ShoppingPolicies.IdOf(actor));
+
+    public async ValueTask<bool> Covers(PurchaseItem row, Actor actor, CancellationToken cancellationToken) =>
+        await Owners.OfPurchase(store, row.Purchase, cancellationToken) == ShoppingPolicies.IdOf(actor);
+
+    public PurchaseItem? Projection() => new() { Purchase = new Purchase { User = new User { Id = Mark.Int64 } } };
 }
 ```
 
-A projected collection arrives as a `ProjectionList<T>`, whose `Shape` is the projection of one element.
-`PurchaseAmendmentPolicy.Sanitize(PolicyContext, List<PurchaseAmendment>?)` handles both cases: it cleans the shape
-when it is a projection and each element when it is data. Sanitizers can also depend on the role: the errata's
-`Author` is removed for every actor whose reach is only their own data.
+- `Restrict` fills an empty criteria with what selects the rows. The policy adds one such group per scope to the
+  request, as an alternative, so a request cannot widen it.
+- `Covers` checks one row in memory: a row read, to decide its fields; a row created; the stored row of an update, and
+  the row as it would be after it.
+- `Projection` names what `Covers` reads beyond the key. It is fetched for the check and cleared before the rows leave.
+- `Covers` may look up what the row does not carry, through the trusted inside (the store). An item sent with only its
+  purchase's key looks the purchase's owner up.
+- Policies compare scopes by identity. Declare a scope once (a `static readonly` instance, or one per policy built)
+  and share it.
 
-## 4. Check each write
+## 5. Fields that never leave
 
-The `Before*` hooks run inside the write's transaction. Throwing from one rolls back everything the write did,
-children included. Throw `AccessDeniedException` for "you may not", `InvalidRequestException` for "this request is
-wrong", and `KeyNotFoundException` for "no such row within reach"; over [REST](../concepts/remote.md) they become
-403, 400 and 404.
+- `WriteOnly("password")`: no grant may read or mask it, and asking for it is refused, even without an actor. It is
+  out of the default shape.
+- Every refusal is an `AccessDeniedException` naming the fields: the client asked for something its roles do not
+  allow, and a correct client never does. Only a read **without** a projection is trimmed to what the actor may read.
 
-### BeforeInsert: complete, or overwrite, what the server owns
+## 6. References and collections
 
-Insert does not apply the scope; ownership on insert is `BeforeInsert`'s job. Treat what the client sent as a
-request and set the fields that belong to the server:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/PurchasePolicy.cs
-BeforeInsert = (c, purchase, _) =>
-{
-    if (Permissions.ReachOf(c.Actor) is { } owner)
-    {
-        purchase.User = new User { Id = owner }; // bought by whoever is acting, whatever was sent
-    }
-    else if (purchase.User?.Id is null)
-    {
-        // Whoever reaches all the data may name the buyer; without one, it is themselves.
-        purchase.User = new User { Id = long.Parse(c.Actor.Id, System.Globalization.CultureInfo.InvariantCulture) };
-    }
-
-    // The items, inserted in cascade, go through the purchase-item policy (price from the product).
-    return ValueTask.CompletedTask;
-},
-```
-
-The cart sends each line's price (`CartManager.Commit`), and `PurchaseItemPolicy.BeforeInsert` replaces it with the
-product's current price, read through the raw store. The client's value never reaches the table.
-
-### BeforeUpdate: look at what is being written
-
-`BeforeUpdate(context, newBean, written, ct)` receives `written`, a projection that marks the fields of this update.
-It comes from the caller's projection, or from the fields that changed against `oldBean`, or, failing both, from the
-fields `newBean` holds. Test `written`, not `newBean`, to know whether a field is being changed:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/UserPolicy.cs
-BeforeUpdate = (_, u, written, _) =>
-{
-    if (written.Password is not null && u.Password is not null)
-    {
-        u.Password = PasswordHash.Hash(u.Password);
-    }
-
-    return ValueTask.CompletedTask;
-},
-```
-
-Before `BeforeUpdate` runs, the repository has already checked that the row is within reach.
-
-### BeforeDelete: the criteria of what would go
-
-`BeforeDelete` receives the criteria of the delete, already narrowed by the scope, so it only sees rows the actor
-could delete. When a rule needs to look at those rows, read them through the raw store and leave the criteria as you
-found it:
+A reference or a collection is one field of the grant (`Read("user")`). What is read **inside** it goes through the
+policy of the entity it points to, row by row. So an entity has one set of rules wherever it appears:
 
 ```csharp
 // samples/Shopping/Shopping.Domain/Security/PurchasePolicy.cs
-internal static async Task<bool> AnyMade(ShoppingRepositories store, PurchaseCriteria criteria, CancellationToken cancellationToken)
+DataPolicy.For(Purchase.Model, () => new PurchaseCriteria())
+    .Reference("user", () => all.Users)
+    .Collection("items", inverse: "purchase", () => all.Items)
+    .Collection("amendments", inverse: "purchase", () => all.Amendments)
+```
+
+- Every reference and collection of the model needs its policy, or `Build()` fails.
+- The policies refer to each other, so they are given as functions and built together. In Shopping,
+  `ShoppingPolicies` builds the six and hands each one the others.
+- `inverse` names the reference of each child that points back to its owner. A child of a new row is checked as a
+  row of it.
+
+## 7. Writes and their children
+
+The checks of a write, and of every child it writes in cascade:
+
+- **Insert.** One grant must allow every field sent and reach the new row. Each child of a collection must be creatable
+  and reached by its own policy, as a row of the new one: a customer's new purchase, and each of its items, must be
+  theirs.
+- **Update.** One grant must reach the stored row, allow every changed field, and still reach the row after the change.
+  When the update carries a collection (its full state), each child answers to its own policy:
+  - a new child needs a create grant;
+  - a changed one needs an update grant for the fields that changed;
+  - an orphan needs a delete grant.
+
+  A child sent as it is stored needs none.
+- **Delete.** Only the rows of grants that delete, which must read what the criteria filters by. The children deleted
+  with their parent need a delete grant of their own.
+- An update of a row the actor cannot reach is "not found" when they cannot read it either, and "not allowed" when they
+  can.
+
+Everything a write does runs in one transaction: a refusal anywhere rolls back the parent and every child.
+
+## 8. Keep the business rules apart
+
+What holds whoever acts is not access, and has no place in a policy:
+- a price taken from the product;
+- a record that does not change once made;
+- a password stored as its hash.
+
+Put it in repositories that wrap the store and implement the same contract, between the protected repositories and
+the store:
+
+```csharp
+// samples/Shopping/Shopping.Domain/Security/Rules/PurchaseItemRules.cs
+public override async Task<bool> Insert(PurchaseItem bean, PurchaseItem? projection = null, CancellationToken cancellationToken = default)
 {
-    var projection = criteria.Projection;
-    try
+    if (bean.Purchase?.Id is not { } purchaseId)
     {
-        criteria.Projection = new Purchase { BuyDate = Mark.Instant };
-        var purchases = await store.Purchases.Fetch(criteria, cancellationToken: cancellationToken);
-        return purchases.Any(p => p.BuyDate is not null);
+        throw new InvalidRequestException("An item needs its purchase.");
     }
-    finally
+
+    if (!Maintains && await PurchaseRules.AnyMade(store, new PurchaseCriteria().PurchaseId.Eq(purchaseId), cancellationToken))
     {
-        criteria.Projection = projection;
+        throw new AccessDeniedException("The purchase was already made: no item enters it.");
     }
+
+    bean.Price = await Prices.Of(store, bean.Product?.Id, cancellationToken);
+    return await base.Insert(bean, projection, cancellationToken);
 }
 ```
 
-### Rules read the truth
+- **They run after the policy**, inside the same transaction, and read the truth through the store.
+- **Children written in cascade** do not go through the rule repositories: the store writes them. A rule about
+  children belongs to the parent's rules. For example, `PurchaseRules` takes each item's price from its product, on
+  insert and on update.
+- **Server-owned fields:** the rules set them, whatever was sent (a price, a date, an author).
 
-A rule that needs data reads it through the *raw* repositories, not the protected ones. The rule must see what is in
-the database, not the actor's view of it, and reading through a protected repository from inside a rule would apply
-the actor's scope and sanitizers to the rule itself. This is why `PurchasePolicy.Create` takes the store.
+## 9. Leave room for maintenance
 
-## 5. What applies in cascade
+A maintenance role needs to fix what the application's roles may not touch.
+- **In the policy:** it gets the grants (`Update`, `Delete`) the others lack.
+- **In the business rules:** the rules that may be relaxed check who acts. `ShoppingRules` is built per session with
+  the `IActorSource`, and `Permissions.Maintains(actor)` is true for `Super`.
 
-A write reaches other entities through its projection: a purchase inserted with its items, a full-state update that
-deletes orphans, a declared cascade delete. The raw repository writes those children, but reports each one to the
-cascade guard, which runs the *child's* policy with `InCascade: true`:
+Relax only what maintenance needs: in Shopping, a purchase made changes for `Super`, but an item's price still comes
+from its product.
 
-| Child written in cascade | The child's policy runs |
-|---|---|
-| Inserted | `Authorize(Insert)` → `BeforeInsert` |
-| Updated | `Authorize(Update)` → within reach → `BeforeUpdate` |
-| Deleted | `Authorize(Delete)` → for each key: within reach → `BeforeDelete` with that key's criteria |
-
-The sanitizers do not run for children written in cascade (they are about what the actor reads), and the child's
-`Scope` applies only as the "within reach" check of an update or a delete.
-
-Use `InCascade` when an entity may only be written through its parent, or only on its own:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/PurchaseAmendmentLinePolicy.cs
-BeforeInsert = (c, _, _) => c.InCascade || Permissions.Maintains(c.Actor)
-    ? ValueTask.CompletedTask
-    : throw new AccessDeniedException("A line enters only with its errata."),
-```
-
-`PurchaseItemPolicy` does the opposite check: an item inserted on its own into a purchase already made is refused,
-while one inserted with its purchase (`InCascade`) enters.
-
-For cascades to be guarded, every entity a write can reach must have a protected repository in the *same*
-`Protection`. A child whose entity is not registered there is refused with `AccessDeniedException` ("not protected
-here"). Build all of a session's protected repositories together, as `ShoppingProtection.Protect` does.
-
-What a rule writes through the raw store is not reported: rules run outside the guard, both the parent's and each
-child's. That is what lets a rule apply a correction the actor could not make directly (section 7).
-
-## 6. Leave room for maintenance
-
-Business rules hold for every role of the application, administrators included. Some systems still need a role that
-can repair data, for example to remove an item from a purchase recorded by mistake. Make that role explicit, and
-relax specific checks for it instead of skipping the policy:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/Permissions.cs
-public static bool Maintains(Actor actor)
-{
-    ArgumentNullException.ThrowIfNull(actor);
-    return actor.HasRole(nameof(Role.Super));
-}
-```
-
-Each rule then decides whether it is relaxable:
-
-```csharp
-// samples/Shopping/Shopping.Domain/Security/PurchasePolicy.cs
-BeforeDelete = async (c, criteria, ct) =>
-{
-    if (!Permissions.Maintains(c.Actor) && await AnyMade(store, criteria, ct))
-    {
-        throw new AccessDeniedException("The purchase was already made: it is not deleted.");
-    }
-},
-```
-
-In Shopping, `Super` may change, delete or add items to a purchase already made, and may update or delete an errata.
-`Admin` has every grant and still may not: "a purchase made does not change" is a business rule, not a permission.
-What stays in force for `Super`:
-
-- `Authorize`: `Super` has every grant, but the hook still runs.
-- Data that must never leave: no role gets a password back.
-- Values the server owns: an item inserted by `Super` still takes the product's price
-  (`Super_AmendsItsItems_AndANewOneTakesTheProductsPrice`), and `Super` cannot write an item's price on update
-  either (`Super_DoesNotWriteThePriceOfAnItem`): `BeforeUpdate` checks the price before it returns early.
-
-When you relax a rule, return early only past the checks that are meant to be relaxed, and keep the others before
-the early return.
-
-## 7. Model a correction as its own operation
+## 10. Model a correction as its own operation
 
 When a record must not change, but mistakes in it must be fixable by people who are not maintenance, do not open the
-update. Add an entity whose insertion *is* the correction, and give its policy the job of applying it. The record of
-the correction (who, when, why, what) comes for free, because it is the entity.
+update. Add an entity whose insertion **is** the correction, and let its rules apply it. The record of the correction
+(who, when, why, what) comes for free, because it is the entity.
 
-In Shopping a purchase already made never changes for an application role. `Admin` and `Manager` correct one by
-inserting a `PurchaseAmendment` (an errata) with one `PurchaseAmendmentLine` per item corrected. The presenter only
-says what the user asked:
+In Shopping, `Admin` and `Manager` correct a purchase by inserting a `PurchaseAmendment` (an errata) with one
+`PurchaseAmendmentLine` per item corrected. Their grants allow creating errata, not updating items.
+`PurchaseAmendmentRules.Insert` then works in five steps:
 
-```csharp
-// samples/Shopping/Shopping.Presentation/Modules/Home/Admin/Amend/AmendPresenter.cs
-var errata = new PurchaseAmendment
-{
-    Purchase = new Purchase { Id = purchaseId },
-    Reason = Scope.Reason.Trim(),
-    Lines = [.. Scope.Lines.Where(l => l.NewQuantity < l.Quantity).Select(l => new PurchaseAmendmentLine
-    {
-        ItemId = l.ItemId,
-        AmountBefore = l.Quantity, // what was on screen: refused if someone corrected it meanwhile
-        AmountAfter = l.NewQuantity,
-    })],
-};
-```
+1. **Refuse what is not a correction:** a purchase, a reason and at least one line are required.
+2. **Lock the purchase:** require it to be made, and write `BuyDate` back to the value it holds. Writing the row takes
+   its lock in every database, so two errata of the same purchase run one after the other.
+3. **Validate against the current data.**
+   - Each line names an item of that purchase, once.
+   - `AmountBefore` must match the item; otherwise someone corrected it meanwhile.
+   - The amount only goes down, and 0 removes the item. Not every item may be removed.
+4. **Apply it through the store**, in the insert's transaction.
+5. **Fill the record from the data**, whatever was sent: each line's previous amount, price and product, the date from
+   the `TimeProvider`, and the author from the actor.
 
-`PurchaseAmendmentPolicy.BeforeInsert` does the rest (`Apply` in the same file):
+The lines are inserted in cascade with the errata, through the line policy. The line rules refuse a line inserted by
+itself.
 
-1. **Refuse what is not a correction.** Not in cascade, with a purchase, a reason and at least one line.
-2. **Lock the purchase.** Read it within the actor's reach (else `KeyNotFoundException`), require it to be made, and
-   write `BuyDate` back to the value it holds through the raw store. Writing the row takes its lock in every
-   database, so two errata of the same purchase run one after the other, each on what the other left.
-3. **Validate against the current data.** Each line names an item of that purchase, once; `AmountBefore`, if sent,
-   must match the item (otherwise someone corrected it meanwhile); the amount only goes down (0 removes the item);
-   not every item is removed.
-4. **Apply it through the raw store**, in the insert's transaction: `store.PurchaseItems.Update` or `Delete`. The
-   generic item update stays refused to every application role.
-5. **Fill the record from the data**, whatever was sent: each line's previous amount, price and product, the date
-   from the `TimeProvider`, the author from the actor.
+## 11. Protect what the repository adds
 
-The lines are then inserted in cascade and pass `PurchaseAmendmentLinePolicy`, which admits a line only in cascade.
-Once inserted, the errata and its lines do not change and are not deleted, except by `Super`.
-
-The pattern, in general:
-
-- The correction is narrower than an update: it says what may change (here, amounts going down), and every other
-  field stays out of reach.
-- The rule reads and writes through the raw store, inside the protected write's transaction, so the correction and
-  its record commit or roll back together.
-- The server fills in every field that describes the past (previous values, date, author). The client's version of
-  them is ignored, or checked and refused when it disagrees.
-
-## 8. Protect what the repository adds
-
-When an application repository has members beyond `IRepository`, subclass `ProtectedRepository` and call `Enter`
-with the operation they amount to. `Enter` checks that someone is acting and runs `Authorize`:
+When an application repository has members beyond `IRepository`, subclass `ProtectedRepository` and go through the
+policy. `FetchImage` reads the image as the product's field it is:
 
 ```csharp
 // samples/Shopping/Shopping.Domain/Security/ProtectedProductRepository.cs
-public sealed class ProtectedProductRepository(IProductRepository inner, Protection protection)
-    : ProtectedRepository<Product, ProductCriteria, long>(inner, ProductPolicy.Create(), protection), IProductRepository
+public async Task<byte[]?> FetchImage(long productId, CancellationToken cancellationToken = default)
 {
-    public Task<byte[]?> FetchImage(long productId, CancellationToken cancellationToken = default)
-    {
-        Enter(RepositoryOperation.FetchById);
-        return inner.FetchImage(productId, cancellationToken);
-    }
+    var product = await FetchById(productId, new Product { Image = Mark.Bytes }, cancellationToken)
+                  ?? throw new KeyNotFoundException($"No product {productId}.");
+    return product.Image;
 }
 ```
 
-## 9. Test the rules
+## 12. When a declaration is not enough: hooks
 
-Test the policy through the repositories a session gets, and assert on the raw store:
+An entity whose access no declaration expresses can be protected by hooks instead: a `RepositoryPolicy` of optional
+delegates, given to the other constructor of `ProtectedRepository`. The hooks are `Authorize`, `Scope`,
+`RestrictToId`, `SanitizeProjection`, `SanitizeOutput`, `BeforeInsert`, `BeforeUpdate` and `BeforeDelete`.
 
-- `Shopping.Presentation.Tests/SecurityTestsBase.cs` and `ErrataTestsBase.cs` log in as demo users and try what each
-  role may and may not do. Each base runs twice: in process (`SecurityTests`, `ErrataTests`) and through the HTTP
-  server (`SecurityHttpTests`, `ErrataHttpTests`), so the rules are shown to hold over the wire too.
-- `tests/Wdc.Persistence.Tests/ProtectedRepositoryTests.cs` exercises the framework with small inline policies: reach,
-  sanitizing, the `written` marks, rollback on refusal, and every cascade case.
+- It is one or the other: an entity has a data policy or hooks, never both.
+- A hook may still apply a data policy: `policy.AccessFor(context.Actor).PrepareRead(criteria)`, or `CheckCreate`,
+  `CheckUpdate` and `RestrictDelete`.
+- Scope with `Restrict`, never `Eq`, so a disjunctive request cannot widen the reach.
+- A child written in cascade runs its own hooks with `InCascade: true`.
 
-Cover, for each rule, the role it allows, the role it refuses, and the case where the request tries to go around it
-(a disjunctive criteria, a field sent that the server owns, a child written through its parent).
+`tests/Wdc.Persistence.Tests/ProtectedRepositoryTests.cs` shows each hook at work.
+
+## 13. Test the rules
+
+Test through the repositories a session gets, and assert on the store:
+
+- **The policy alone.** `tests/Wdc.Domain.Tests/Policy/DataPolicyTests.cs` checks it with no database: refusals by
+  name, rows as groups, fields per row, masks, writes, declaration errors.
+- **Protected repositories on a database.** `tests/Wdc.Persistence.Tests/DataPolicyRepositoryTests.cs` covers reads,
+  reach, and the children of an insert, an update and a delete.
+- **The application.** `Shopping.Presentation.Tests/SecurityTestsBase.cs` and `ErrataTestsBase.cs` log in as demo
+  users and try what each role may and may not do. Each runs in process and through the HTTP server, so the rules are
+  shown to hold over the wire too.
+
+Cover, for each rule:
+- the role it allows;
+- the role it refuses;
+- the request that tries to go around it: a disjunctive criteria, a field the server owns, a child written through its
+  parent, a filter on a field of another entity.
 
 ## Checklist
 
-- [ ] `Authorize` covers every operation, including the ones the entity is written through in cascade.
-- [ ] `Scope` uses `Restrict`; `RestrictToId` is set whenever `Scope` or `BeforeDelete` is.
-- [ ] Every field that must not leave is removed by both sanitizers, and by the policies of the entities that project it.
-- [ ] `BeforeInsert` sets what the server owns (owner, price, dates, author).
-- [ ] `BeforeUpdate` tests `written`; rules read through the raw store.
-- [ ] Every entity reachable by cascade is protected in the same `Protection`.
-- [ ] Relaxations for maintenance are explicit and leave the other checks in force.
+- [ ] Every criterion and ordering says which fields it reveals.
+- [ ] Each role reaches only its rows (`Rows`), and `Restrict` and `Covers` agree.
+- [ ] Every field that must not be read is `WriteOnly`, or out of every grant.
+- [ ] Every reference and collection names its policy, and the children's grants allow what their parent writes.
+- [ ] Server-owned fields are set by the business rules, whatever was sent.
+- [ ] Relaxations for maintenance are explicit and leave the other rules in force.
 
 ## See also
 
-- [Protected repositories](../concepts/protected-repositories.md): the order in which a protected repository runs a policy.
+- [Protected repositories](../concepts/protected-repositories.md): how the rules are applied, in each operation and in
+  cascade.
 - [Persistence](../concepts/persistence.md): writes in cascade and the cascade guard.
-- [Transactions](../concepts/transactions.md): the transaction the hooks run in.
+- [Transactions](../concepts/transactions.md): the transaction the rules run in.
 - [Remote](../concepts/remote.md): the same rules behind REST routes.
 - [The Shopping sample](../samples/shopping.md)

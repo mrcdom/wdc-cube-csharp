@@ -10,14 +10,14 @@ internal sealed class PolicyEntity<TEntity, TCriteria>
     where TCriteria : Criteria<TCriteria, TEntity>
 {
     private readonly HashSet<string> _writeOnly;
-    private readonly Dictionary<string, string> _criterionPaths;
+    private readonly Dictionary<string, string[]> _criterionPaths;
     private readonly Func<TCriteria, IEnumerable<string>> _orderings;
     private readonly Func<TEntity>? _defaultShape;
     private readonly Dictionary<string, Func<IDataPolicy>> _targets;
     private readonly Dictionary<string, string> _inverses;
 
     internal PolicyEntity(EntityModel<TEntity> model, Func<TCriteria> newCriteria, HashSet<string> writeOnly,
-        Dictionary<string, string> criterionPaths, Func<TCriteria, IEnumerable<string>> orderings, Func<TEntity>? defaultShape,
+        Dictionary<string, string[]> criterionPaths, Func<TCriteria, IEnumerable<string>> orderings, Func<TEntity>? defaultShape,
         Dictionary<string, Func<IDataPolicy>> targets, Dictionary<string, string> inverses)
     {
         Model = model;
@@ -228,7 +228,10 @@ internal sealed class PolicyEntity<TEntity, TCriteria>
         {
             if (criterion.IsSet)
             {
-                Add(paths, _criterionPaths.GetValueOrDefault(criterion.Name, criterion.Name));
+                foreach (var path in _criterionPaths.GetValueOrDefault(criterion.Name, [criterion.Name]))
+                {
+                    Add(paths, path);
+                }
             }
         }
 

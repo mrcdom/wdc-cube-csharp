@@ -93,7 +93,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
             throw new InvalidRequestException($"More than {max} items match: page the request (offset/limit).");
         }
 
-        return Wire.WriteItems(items, criteria.Projection);
+        return Wire.WriteItems(items, criteria.Projection ?? Repository(context).OwnFieldsProjection());
     }
 
     private async Task<byte[]?> FetchPage(HttpContext context, byte[] body)
@@ -106,7 +106,7 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
         }
 
         var page = await Repository(context).FetchPage(criteria, slice.Page, slice.PageSize, context.RequestAborted);
-        return Wire.WriteItems(page.Items, criteria.Projection, page.TotalItems);
+        return Wire.WriteItems(page.Items, criteria.Projection ?? Repository(context).OwnFieldsProjection(), page.TotalItems);
     }
 
     private Task<byte[]?> FetchById(HttpContext context, byte[] body)
@@ -123,10 +123,10 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
 
     private async Task<byte[]?> FetchOne(HttpContext context, TKey key, TEntity? projection)
     {
+        // Without a projection the repository chooses what to fetch (its default, or what the actor may read).
         var repository = Repository(context);
-        projection ??= repository.OwnFieldsProjection();
         var found = await repository.FetchById(key, projection, context.RequestAborted);
-        return found is null ? null : Wire.WriteEntity(found, projection); // null: 404
+        return found is null ? null : Wire.WriteEntity(found, projection ?? repository.OwnFieldsProjection()); // null: 404
     }
 
     // :: Writes
@@ -163,12 +163,8 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
 
     // :: Internals
 
-    private (TCriteria Criteria, Slice Slice) ReadQuery(HttpContext context, byte[] body)
-    {
-        var (criteria, slice) = Wire.ReadQuery(body);
-        criteria.Projection ??= Repository(context).OwnFieldsProjection();
-        return (criteria, slice);
-    }
+    // Without a projection the repository chooses what to fetch (its default, or what the actor may read).
+    private (TCriteria Criteria, Slice Slice) ReadQuery(HttpContext context, byte[] body) => Wire.ReadQuery(body);
 
     private TKey KeyOf(TEntity holder) => (TKey)Wire.Model.KeyOf(holder)!;
 

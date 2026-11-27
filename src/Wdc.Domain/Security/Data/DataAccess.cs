@@ -334,11 +334,18 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
     public ValueTask CheckCreate(TEntity row, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(row);
-        return _actor is null ? ValueTask.CompletedTask : CheckCreate(row, null, cancellationToken);
+        return _actor is null ? ValueTask.CompletedTask : CheckCreate(row, null, inCascade: false, cancellationToken);
     }
 
+    /// <summary>
+    /// Checks a row the repository inserts in cascade, its reference to the parent already set: the fields and the
+    /// reach, without the rule on references (a cascade writes them by key) nor the children (the cascade reports them).
+    /// </summary>
+    internal ValueTask CheckCreateInCascade(TEntity row, CancellationToken cancellationToken) =>
+        _actor is null ? ValueTask.CompletedTask : CheckCreate(row, null, inCascade: true, cancellationToken);
+
     // owner: the reference pointing to the row this one is created inside, set by the owner's check.
-    private async ValueTask CheckCreate(TEntity row, string? owner, CancellationToken cancellationToken)
+    private async ValueTask CheckCreate(TEntity row, string? owner, bool inCascade, CancellationToken cancellationToken)
     {
         var fields = _entity.FieldsSetIn(row);
         var creators = _grants.Where(g => g.Create.Count > 0).ToList();
@@ -347,7 +354,11 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
             throw Denied($"not allowed to create {_entity.Name}");
         }
 
-        RequireReferencesByKey(row, fields, owner);
+        if (!inCascade)
+        {
+            RequireReferencesByKey(row, fields, owner);
+        }
+
         var allowed = false;
         foreach (var grant in creators)
         {
@@ -361,6 +372,11 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
         if (!allowed)
         {
             throw Denied($"not allowed to create {_entity.Name} with [{string.Join(", ", NotIn(fields, creators, g => g.Create))}]");
+        }
+
+        if (inCascade)
+        {
+            return;
         }
 
         foreach (var name in fields)
@@ -460,12 +476,7 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
 
         RequireReferencesByKey(row, fields, null);
         var readers = _grants.Where(g => g.Reads).ToList();
-        var scope = _entity.Model.KeyProjection();
-        foreach (var grant in updaters.Concat(readers))
-        {
-            _entity.Merge(scope, grant.Rows.Projection());
-        }
-
+        var scope = ScopeProjection();
         if (await load(row, scope, cancellationToken) is not { } stored)
         {
             return;
@@ -514,6 +525,37 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
         }
 
         throw Denied($"not allowed to update {_entity.Name} [{string.Join(", ", NotIn(fields, reaching, g => g.Update))}]");
+    }
+
+    /// <summary>The key and what every grant's row check reads: how to load a stored row to check it.</summary>
+    internal TEntity ScopeProjection()
+    {
+        var scope = _entity.Model.KeyProjection();
+        foreach (var grant in _grants)
+        {
+            _entity.Merge(scope, grant.Rows.Projection());
+        }
+
+        return scope;
+    }
+
+    /// <summary>Checks a stored row the repository deletes in cascade: some grant that deletes must reach it.</summary>
+    internal async ValueTask CheckDeleteInCascade(TEntity stored, CancellationToken cancellationToken)
+    {
+        if (_actor is null)
+        {
+            return;
+        }
+
+        foreach (var grant in _grants.Where(g => g.Delete))
+        {
+            if (await Covers(grant, stored, cancellationToken))
+            {
+                return;
+            }
+        }
+
+        throw Denied($"not allowed to delete this {_entity.Name}");
     }
 
     /// <summary>Restricts a delete to the rows of the grants that delete and read every field the criteria filters by.</summary>
@@ -643,7 +685,7 @@ public sealed class DataAccess<TEntity, TCriteria> : IDataAccess
     IShape IDataAccess.Plan(object requested, ICriteria? criteria, bool trim) => Plan((TEntity)requested, (TCriteria?)criteria, trim);
 
     ValueTask IDataAccess.CheckCreate(object row, string? owner, CancellationToken cancellationToken) =>
-        CheckCreate((TEntity)row, owner, cancellationToken);
+        CheckCreate((TEntity)row, owner, inCascade: false, cancellationToken);
 
     void IDataAccess.RequireFilterable(string path) => RequireFilterable(path);
 }

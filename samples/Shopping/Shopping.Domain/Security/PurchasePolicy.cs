@@ -1,88 +1,48 @@
 using Shopping.Domain.Purchases;
-using Shopping.Domain.Users;
 using Wdc.Domain;
 
 namespace Shopping.Domain.Security;
 
 /// <summary>
-/// The purchases. A purchase belongs to whoever bought it; once made (it has its date) it does not change, for every
-/// role of the application — not its fields, not its items, and it is not deleted. Only the maintenance role
-/// (<see cref="Permissions.Maintains"/>) may amend or delete it.
+/// The purchases: a customer reads and makes their own; Admin reads every one and buys for anyone; only Super changes
+/// or deletes one (that a purchase made does not change is a rule of <see cref="ShoppingRules"/>, and Super's
+/// exemption with it).
 /// </summary>
 public static class PurchasePolicy
 {
-    /// <param name="store">The repositories the rules read (the trusted inside, not the protected ones).</param>
-    public static RepositoryPolicy<Purchase, PurchaseCriteria, long> Create(ShoppingRepositories store)
+    private static readonly string[] s_read = ["buyDate", "user", "items", "amendments"];
+
+    private static readonly string[] s_create = ["buyDate", "user", "items"];
+
+    public static DataPolicy<Purchase, PurchaseCriteria> Build(ShoppingPolicies all)
     {
-        ArgumentNullException.ThrowIfNull(store);
-        return new RepositoryPolicy<Purchase, PurchaseCriteria, long>(Purchase.Model, () => new PurchaseCriteria())
-        {
-            Authorize = Permissions.Allow("purchase"),
-            Scope = (c, criteria) => Permissions.Reach(c, id => criteria.UserId.Restrict(id)),
-            RestrictToId = (criteria, id) => criteria.PurchaseId.Restrict(id),
-            SanitizeProjection = Sanitize,
-            SanitizeOutput = Sanitize,
-            BeforeInsert = (c, purchase, _) =>
-            {
-                if (Permissions.ReachOf(c.Actor) is { } owner)
-                {
-                    purchase.User = new User { Id = owner }; // bought by whoever is acting, whatever was sent
-                }
-                else if (purchase.User?.Id is null)
-                {
-                    // Whoever reaches all the data may name the buyer; without one, it is themselves.
-                    purchase.User = new User { Id = long.Parse(c.Actor.Id, System.Globalization.CultureInfo.InvariantCulture) };
-                }
-
-                // The items, inserted in cascade, go through the purchase-item policy (price from the product).
-                return ValueTask.CompletedTask;
-            },
-            BeforeUpdate = async (c, purchase, written, ct) =>
-            {
-                if (Permissions.Maintains(c.Actor))
-                {
-                    return;
-                }
-
-                if (await AnyMade(store, new PurchaseCriteria().PurchaseId.Eq(purchase.Id), ct))
-                {
-                    throw new AccessDeniedException("The purchase was already made: it does not change.");
-                }
-
-                if (written.User is not null && Permissions.ReachOf(c.Actor) is not null)
-                {
-                    throw new AccessDeniedException("A purchase cannot change hands.");
-                }
-            },
-            BeforeDelete = async (c, criteria, ct) =>
-            {
-                if (!Permissions.Maintains(c.Actor) && await AnyMade(store, criteria, ct))
-                {
-                    throw new AccessDeniedException("The purchase was already made: it is not deleted.");
-                }
-            },
-        };
+        ArgumentNullException.ThrowIfNull(all);
+        return DataPolicy.For(Purchase.Model, () => new PurchaseCriteria())
+            .Reference("user", () => all.Users)
+            .Collection("items", inverse: "purchase", () => all.Items)
+            .Collection("amendments", inverse: "purchase", () => all.Amendments)
+            .Criterion("purchaseId", "id")
+            .Criterion("userId", "user")
+            .Criterion("productId", "items.product")
+            .Criterion("customerName", "user.name")
+            .Orderings(c => c.OrderBy is PurchaseOrderBy.MostRecentPurchaseFirst or PurchaseOrderBy.EarliestPurchaseFirst ? ["buyDate"] : [])
+            .Grant(ShoppingPolicies.Super, g => g.Read(s_read).Create(s_create).Update(s_create).Delete())
+            .Grant([.. ShoppingPolicies.Admin, .. ShoppingPolicies.Manager], g => g.Read(s_read))
+            .Grant(ShoppingPolicies.Admin, g => g.Create(s_create))
+            .Grant(ShoppingPolicies.Customer, g => g.Rows(OwnPurchases.Scope).Read(s_read).Create(s_create))
+            .Build();
     }
+}
 
-    private static void Sanitize(PolicyContext context, Purchase purchase)
-    {
-        UserPolicy.DropPassword(purchase.User);
-        PurchaseAmendmentPolicy.Sanitize(context, purchase.Amendments);
-    }
+/// <summary>The purchases the actor made.</summary>
+internal sealed class OwnPurchases : IRowScope<Purchase, PurchaseCriteria>
+{
+    public static readonly OwnPurchases Scope = new();
 
-    /// <summary>Whether any of the purchases that match was already made.</summary>
-    internal static async Task<bool> AnyMade(ShoppingRepositories store, PurchaseCriteria criteria, CancellationToken cancellationToken)
-    {
-        var projection = criteria.Projection;
-        try
-        {
-            criteria.Projection = new Purchase { BuyDate = Mark.Instant };
-            var purchases = await store.Purchases.Fetch(criteria, cancellationToken: cancellationToken);
-            return purchases.Any(p => p.BuyDate is not null);
-        }
-        finally
-        {
-            criteria.Projection = projection;
-        }
-    }
+    public void Restrict(PurchaseCriteria group, Actor actor) => group.UserId.Eq(ShoppingPolicies.IdOf(actor));
+
+    public ValueTask<bool> Covers(Purchase row, Actor actor, CancellationToken cancellationToken) =>
+        ValueTask.FromResult(row.User?.Id == ShoppingPolicies.IdOf(actor));
+
+    public Purchase? Projection() => new() { User = new Users.User { Id = Mark.Int64 } };
 }

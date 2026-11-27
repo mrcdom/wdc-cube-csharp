@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted (2026-11-19).
+Accepted (2026-11-19). Amended by [0020](0020-data-policies-per-role.md): access per role can be declared as a data
+policy, and the hooks below remain the alternative for an entity that needs them.
 
 ## Context
 

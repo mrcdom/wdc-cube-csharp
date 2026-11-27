@@ -37,7 +37,7 @@ How to do a given task, step by step.
 | [Avalonia](guides/avalonia.md) | Hosting a Cube application on the desktop, and testing it headless. |
 | [SQL repositories](guides/sql-repositories.md) | Writing a repository for a new entity, on PostgreSQL or SQL Server. |
 | [REST](guides/rest.md) | Serving repositories and transactions over HTTP, and calling them. |
-| [Roles and rules](guides/roles-and-rules.md) | Writing the policy of an entity: who does what, and what reaches whom. |
+| [Roles and rules](guides/roles-and-rules.md) | Writing the data policy of an entity (rows, fields, writes per role) and keeping the business rules apart. |
 | [Sealed addresses](guides/sealed-addresses.md) | Encrypting the addresses, with a key per user. |
 | [Several instances](guides/several-instances.md) | What instances share, routing, health checks and metrics, with a compose setup. |
 | [Trimming and AOT](guides/trimming-and-aot.md) | What the libraries guarantee and what an application must do. |
