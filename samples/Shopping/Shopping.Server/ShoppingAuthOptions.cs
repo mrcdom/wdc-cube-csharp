@@ -20,5 +20,8 @@ public sealed class ShoppingAuthOptions
     /// <summary>The master key the users' address keys derive from.</summary>
     public byte[] HistoryMasterKey { get; set; } = RandomNumberGenerator.GetBytes(32);
 
+    /// <summary>Requests per minute and client address to <c>/api/auth</c>; 0 turns the limit off (a proxy in front limits).</summary>
+    public int AuthRequestsPerMinute { get; set; } = 60;
+
     public SymmetricSecurityKey SigningKey => new(Key);
 }

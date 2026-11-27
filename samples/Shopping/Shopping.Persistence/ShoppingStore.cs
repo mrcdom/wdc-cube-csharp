@@ -1,7 +1,9 @@
+using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Shopping.Domain;
+using Shopping.Domain.Security;
 using Wdc.Persistence;
 using Wdc.Persistence.PostgreSql;
 using Wdc.Persistence.SqlServer;
@@ -16,11 +18,13 @@ public sealed class ShoppingStore : IAsyncDisposable
 {
     private readonly IAsyncDisposable? _owned;
 
-    private ShoppingStore(DatabaseProvider provider, Database database, IAsyncDisposable? owned)
+    private ShoppingStore(DatabaseProvider provider, Database database, IAsyncDisposable? owned,
+        Func<CancellationToken, Task<DbConnection>> open)
     {
         Provider = provider;
         Database = database;
         _owned = owned;
+        Security = new SecurityStore(provider, database, database.Schema!, open);
         var items = new PurchaseItemRepository(database);
         Repositories = new ShoppingRepositories(
             new UserRepository(database),
@@ -38,6 +42,9 @@ public sealed class ShoppingStore : IAsyncDisposable
 
     public ShoppingRepositories Repositories { get; }
 
+    /// <summary>The login's challenges, refresh tokens and failures, and the data protection keys.</summary>
+    public ISecurityStore Security { get; }
+
     public static ShoppingStore Open(DatabaseProvider provider, string connectionString, string schema, ILogger? logger = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
@@ -46,34 +53,51 @@ public sealed class ShoppingStore : IAsyncDisposable
         {
             case DatabaseProvider.PostgreSql:
                 var dataSource = NpgsqlDataSource.Create(connectionString);
-                return new ShoppingStore(provider, PostgreSql.CreateDatabase(dataSource, schema, logger), dataSource);
+                return new ShoppingStore(provider, PostgreSql.CreateDatabase(dataSource, schema, logger), dataSource,
+                    async ct => await dataSource.OpenConnectionAsync(ct));
             case DatabaseProvider.SqlServer:
-                return new ShoppingStore(provider, SqlServer.CreateDatabase(connectionString, schema, logger), null);
+                return new ShoppingStore(provider, SqlServer.CreateDatabase(connectionString, schema, logger), null, async ct =>
+                {
+                    var connection = new SqlConnection(connectionString);
+                    await connection.OpenAsync(ct);
+                    return connection;
+                });
             default:
                 throw new ArgumentOutOfRangeException(nameof(provider), provider, null);
         }
     }
 
-    /// <summary>Creates the schema, the tables and the demo data, unless the tables already exist.</summary>
-    /// <returns>Whether anything was created.</returns>
+    /// <summary>
+    /// Creates the schema, the tables and the demo data, unless the tables already exist; the login's tables are
+    /// added to a database made before them.
+    /// </summary>
+    /// <returns>Whether the schema and the demo data were created.</returns>
     public async Task<bool> EnsureCreated(CancellationToken cancellationToken = default)
     {
         var schema = Database.Schema!;
         var exists = await Database.Scalar(Statement(
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = @p0 AND table_name = 'product'", schema),
             cancellationToken);
-        if (Convert.ToInt64(exists, System.Globalization.CultureInfo.InvariantCulture) > 0)
+        var created = Convert.ToInt64(exists, System.Globalization.CultureInfo.InvariantCulture) == 0;
+        if (created)
         {
-            return false;
+            foreach (var ddl in ShoppingSchema.Create(Provider, schema))
+            {
+                await Database.Execute(Statement(ddl), cancellationToken);
+            }
         }
 
-        foreach (var ddl in ShoppingSchema.Create(Provider, schema))
+        foreach (var ddl in ShoppingSchema.Security(Provider, schema))
         {
             await Database.Execute(Statement(ddl), cancellationToken);
         }
 
-        await ShoppingDemoData.Load(Repositories, cancellationToken);
-        return true;
+        if (created)
+        {
+            await ShoppingDemoData.Load(Repositories, cancellationToken);
+        }
+
+        return created;
     }
 
     /// <summary>Drops every table and the schema (tests).</summary>
@@ -104,10 +128,66 @@ public sealed class ShoppingStore : IAsyncDisposable
 /// <summary>The DDL of each database. Indexes back each named ordering.</summary>
 internal static class ShoppingSchema
 {
-    private static readonly string[] s_tables = ["purchase_amendment_line", "purchase_amendment", "purchase_item", "purchase", "user_account", "product"];
+    private static readonly string[] s_tables = ["data_protection_key", "login_failure", "refresh_token", "auth_nonce", "purchase_amendment_line", "purchase_amendment", "purchase_item", "purchase", "user_account", "product"];
 
     public static IEnumerable<string> Create(DatabaseProvider provider, string schema) =>
         provider == DatabaseProvider.PostgreSql ? PostgreSql(schema) : SqlServer(schema);
+
+    /// <summary>The login's tables, each created only when missing.</summary>
+    public static IEnumerable<string> Security(DatabaseProvider provider, string s) =>
+        provider == DatabaseProvider.PostgreSql
+            ? [
+                $"""
+                CREATE TABLE IF NOT EXISTS "{s}".auth_nonce (
+                    nonce varchar(64) PRIMARY KEY,
+                    user_name varchar(255) NOT NULL,
+                    expires_at timestamptz NOT NULL)
+                """,
+                $"""
+                CREATE TABLE IF NOT EXISTS "{s}".refresh_token (
+                    token_hash varchar(64) PRIMARY KEY,
+                    user_id bigint NOT NULL REFERENCES "{s}".user_account (id) ON DELETE CASCADE,
+                    expires_at timestamptz NOT NULL)
+                """,
+                $"""
+                CREATE TABLE IF NOT EXISTS "{s}".login_failure (
+                    user_key varchar(255) PRIMARY KEY,
+                    failures int NOT NULL,
+                    last_failure timestamptz NOT NULL)
+                """,
+                $"""
+                CREATE TABLE IF NOT EXISTS "{s}".data_protection_key (
+                    id bigint GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+                    name varchar(255) NOT NULL,
+                    xml text NOT NULL)
+                """,
+            ]
+            : [
+                $"""
+                IF OBJECT_ID(N'[{s}].[auth_nonce]', N'U') IS NULL CREATE TABLE [{s}].[auth_nonce] (
+                    nonce nvarchar(64) PRIMARY KEY,
+                    user_name nvarchar(255) NOT NULL,
+                    expires_at datetimeoffset NOT NULL)
+                """,
+                $"""
+                IF OBJECT_ID(N'[{s}].[refresh_token]', N'U') IS NULL CREATE TABLE [{s}].[refresh_token] (
+                    token_hash nvarchar(64) PRIMARY KEY,
+                    user_id bigint NOT NULL REFERENCES [{s}].[user_account] (id) ON DELETE CASCADE,
+                    expires_at datetimeoffset NOT NULL)
+                """,
+                $"""
+                IF OBJECT_ID(N'[{s}].[login_failure]', N'U') IS NULL CREATE TABLE [{s}].[login_failure] (
+                    user_key nvarchar(255) PRIMARY KEY,
+                    failures int NOT NULL,
+                    last_failure datetimeoffset NOT NULL)
+                """,
+                $"""
+                IF OBJECT_ID(N'[{s}].[data_protection_key]', N'U') IS NULL CREATE TABLE [{s}].[data_protection_key] (
+                    id bigint IDENTITY(1, 1) PRIMARY KEY,
+                    name nvarchar(255) NOT NULL,
+                    xml nvarchar(max) NOT NULL)
+                """,
+            ];
 
     public static IEnumerable<string> Drop(DatabaseProvider provider, string schema) =>
         provider == DatabaseProvider.PostgreSql

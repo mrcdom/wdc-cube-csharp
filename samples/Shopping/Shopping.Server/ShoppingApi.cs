@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Shopping.Domain;
@@ -18,6 +19,9 @@ namespace Shopping.Server;
 /// </summary>
 public static class ShoppingApi
 {
+    /// <summary>The rate limit policy of <c>/api/auth</c>: per client address and minute.</summary>
+    public const string AuthRateLimit = "shopping-auth";
+
     public static IServiceCollection AddShoppingApi(this IServiceCollection services, ShoppingStore store, ShoppingAuthOptions auth)
     {
         ArgumentNullException.ThrowIfNull(store);
@@ -34,6 +38,14 @@ public static class ShoppingApi
         services.AddSingleton(auth);
         services.AddSingleton<ShoppingTokens>();
         services.AddCubeRest();
+        services.AddRateLimiter(o =>
+        {
+            o.OnRejected = RestRateLimiting.OnRejected;
+            o.AddPolicy(AuthRateLimit, context => auth.AuthRequestsPerMinute <= 0
+                ? RateLimitPartition.GetNoLimiter(string.Empty)
+                : RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = auth.AuthRequestsPerMinute, Window = TimeSpan.FromMinutes(1) }));
+        });
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
         {
             o.MapInboundClaims = false; // keep "sub" and "role" as issued
@@ -63,6 +75,7 @@ public static class ShoppingApi
     {
         ArgumentNullException.ThrowIfNull(app);
         app.UseAuthentication();
+        app.UseRateLimiter();
         app.Use(RequireAuthentication);
         app.MapShoppingAuth();
         app.MapRemoteTransactions();
@@ -131,7 +144,11 @@ public static class ShoppingApi
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(environment);
         var section = configuration.GetSection("Shopping:Jwt");
-        var options = new ShoppingAuthOptions { Issuer = section["Issuer"] ?? "wdc-shopping" };
+        var options = new ShoppingAuthOptions
+        {
+            Issuer = section["Issuer"] ?? "wdc-shopping",
+            AuthRequestsPerMinute = configuration.GetValue("Shopping:Auth:RequestsPerMinute", 60),
+        };
         if (configuration["Shopping:History:Key"] is { Length: > 0 } historyKey)
         {
             options.HistoryMasterKey = Convert.FromBase64String(historyKey);

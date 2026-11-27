@@ -16,7 +16,7 @@ public static class AuthRoutes
     public static void MapShoppingAuth(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        var group = app.MapGroup("/api/auth");
+        var group = app.MapGroup("/api/auth").RequireRateLimiting(ShoppingApi.AuthRateLimit);
         group.MapGet("challenge", Challenge);
         group.MapPost("login", Login);
         group.MapPost("refresh", Refresh);
@@ -60,7 +60,7 @@ public static class AuthRoutes
     private static Task Logout(HttpContext context) => RestHttp.Respond(context, async () =>
     {
         var fields = ReadFields(await RestHttp.ReadBody(context));
-        Tokens(context).Revoke(Field(fields, "refreshToken"));
+        await Tokens(context).Revoke(Field(fields, "refreshToken"), context.RequestAborted);
         return s_repositoryWireSuccess;
     });
 

@@ -12,7 +12,9 @@ namespace Shopping.Presentation.Infra;
 /// <param name="store">Where the users are: the trusted inside (nobody is acting before the login).</param>
 /// <param name="actors">The actor of the session's protected repositories: set at login and resume, cleared at logout.</param>
 /// <param name="historyKeyOf">The address key of a user (the host derives it from its master key); none: plain addresses.</param>
-public sealed class LocalAuthentication(ShoppingRepositories store, ActorSource actors, Func<long, string>? historyKeyOf = null)
+/// <param name="throttle">Slows down password guessing (a server host); none: every attempt is checked.</param>
+public sealed class LocalAuthentication(ShoppingRepositories store, ActorSource actors, Func<long, string>? historyKeyOf = null,
+    LoginThrottle? throttle = null)
     : IAuthentication
 {
     private static readonly User s_projection = new() { Id = Mark.Int64, Name = Mark.String, Password = Mark.String, Roles = Mark.String };
@@ -25,9 +27,21 @@ public sealed class LocalAuthentication(ShoppingRepositories store, ActorSource 
             return null;
         }
 
-        var criteria = new UserCriteria().UserName.Eq(userName.Trim()).WithProjection(s_projection);
+        userName = userName.Trim();
+        if (throttle is not null)
+        {
+            await throttle.Check(userName, cancellationToken);
+        }
+
+        var criteria = new UserCriteria().UserName.Eq(userName).WithProjection(s_projection);
         var user = (await store.Users.Fetch(criteria, limit: 1, cancellationToken: cancellationToken)).FirstOrDefault();
-        return user is { Id: not null } && PasswordHash.Verify(password, user.Password) ? Enter(user, userName) : null;
+        var matches = user is { Id: not null } && PasswordHash.Verify(password, user.Password);
+        if (throttle is not null)
+        {
+            await (matches ? throttle.Succeeded(userName, cancellationToken) : throttle.Failed(userName, cancellationToken));
+        }
+
+        return matches ? Enter(user!, userName) : null;
     }
 
     /// <summary>Reads the user again: one deleted since, or whose roles changed, does not go on as before.</summary>

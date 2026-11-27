@@ -20,9 +20,12 @@ get an answer as soon as possible; a fix for a package goes out in its next vers
 These are accepted in the samples, which keep their infrastructure small; a report is welcome when it shows a way
 to make one of them worse than described.
 
-- **Shopping server, one process:** login challenges and refresh tokens are kept in memory. A restart signs everyone
-  out, and two instances do not share them.
-- **Shopping, sign-in failures:** there is no limit on failed sign-ins yet.
+- **Shopping, per-address limit of the login routes:** counted in the memory of each instance, by the client address
+  the server sees. Behind a proxy that address is the proxy's: let the proxy limit (and set
+  `Shopping:Auth:RequestsPerMinute` to 0), or configure forwarded headers. The limit on failed sign-ins per user name is
+  in the database and holds across instances.
+- **Shopping, data protection keys:** the Blazor Server host keeps its key ring in the database without an XML
+  encryptor, so whoever reads that table can read the session storage of the browsers.
 - **Shopping, development mode:** without `Shopping:Jwt:Key` and `Shopping:History:Key`, the server signs tokens and
   seals addresses with random keys that die with the process; outside development it refuses to start without them.
 - **Shopping, stored password hash:** the login digest is checked with the stored PBKDF2 hash as its key, so a
