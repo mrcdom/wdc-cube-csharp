@@ -1,3 +1,4 @@
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Presentation.Modules.Home.Cart;
@@ -16,8 +17,9 @@ namespace Shopping.Presentation.Modules.Home;
 /// </summary>
 public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
 {
-    public const string ProductNotFound = "Product code not found.";
-    public const string ReceiptNotFound = "Receipt code not found.";
+    public static Message ProductNotFound => Texts.ErrorProductNotFound();
+
+    public static Message ReceiptNotFound => Texts.ErrorReceiptNotFound();
 
     private ProductsPanelPresenter? _products;
     private PurchasesPanelPresenter? _purchases;
@@ -46,7 +48,7 @@ public sealed class HomePresenter : CubePresenter<RootPresenter, HomeScope>
 
         if (initialization)
         {
-            Scope.Greeting = $"Hello, {subject.NickName}";
+            Scope.Greeting = Texts.HomeGreeting(name: subject.NickName);
             Scope.OnOpenCart = Action(OnOpenCart);
             Scope.OnExit = Action(OnExit);
             Scope.OnHome = Action(OnHome);

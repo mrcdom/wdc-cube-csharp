@@ -1,6 +1,7 @@
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Login;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -41,7 +42,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
         await shop.Login("admin", "admin");
 
         var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
-        Assert.Equal("Hello, John Smith", home.Scope.Greeting);
+        Assert.Equal("Hello, John Smith", En(home.Scope.Greeting));
         Assert.Equal("home", shop.History.Token);
         Assert.NotNull(await shop.Session.Get(SubjectSession.Key));
     }
@@ -53,7 +54,7 @@ public abstract class SessionTestsBase(ShoppingDatabaseFixture db)
 
         var reloaded = await Shop.Start(db, "home", first.Session); // F5: same tab, same session storage
 
-        Assert.Equal("Hello, John Doe", reloaded.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting);
+        Assert.Equal("Hello, John Doe", En(reloaded.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting));
     }
 
     [Fact]

@@ -20,6 +20,23 @@ public sealed class GeneratedFilesTests
     }
 
     [Fact]
+    public void TheMessageKeysFactoriesAndLanguages_AreGenerated()
+    {
+        var catalogs = Catalogs();
+        var reference = catalogs[MessageCatalog.DefaultLanguage];
+
+        AssertInStep(Path.Combine("Shopping.I18n", "MessageKeys.cs"), MessageCatalog.Keys(reference));
+        AssertInStep(Path.Combine("Shopping.I18n", "Texts.cs"), MessageCatalog.Factories(reference));
+        AssertInStep(Path.Combine("Shopping.I18n", "Languages.cs"), MessageCatalog.Languages(catalogs.Keys));
+    }
+
+    /// <summary>Every catalog of Shopping.I18n, by language tag.</summary>
+    internal static Dictionary<string, IReadOnlyDictionary<string, string>> Catalogs() =>
+        Directory.GetFiles(Path.Combine(s_shopping, "Shopping.I18n", "Catalog"), "messages.*.json").ToDictionary(
+            f => Path.GetFileName(f)["messages.".Length..^".json".Length],
+            f => MessageCatalog.Read(File.ReadAllText(f)));
+
+    [Fact]
     public void AColorWithAlpha_IsWrittenInTheOrderOfEachRenderer()
     {
         const string Tokens = """{"color": {"$type": "color", "toast": {"$value": "#333333E6"}}}""";

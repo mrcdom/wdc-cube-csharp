@@ -110,7 +110,7 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
         }
         catch (InvalidCartItemException caught)
         {
-            Show(caught.Message);
+            Show(new Message(caught.Message)); // the exception carries the key of its message
         }
         finally
         {
@@ -121,7 +121,7 @@ public sealed class CartPresenter(RootPresenter app) : CubePresenter<RootPresent
         }
     }
 
-    private void Show(string message)
+    private void Show(Message message)
     {
         Scope.ErrorMessage = message;
         _messageTimer?.Dispose(); // a new message restarts the countdown

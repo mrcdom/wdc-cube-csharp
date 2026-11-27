@@ -9,7 +9,7 @@ namespace Shopping.Presentation.Modules.Home.ProductDetail;
 /// <summary>A product, under Home. A product that does not exist refuses the navigation.</summary>
 public sealed class ProductPresenter(RootPresenter app) : CubePresenter<RootPresenter, ProductScope>(app, new ProductScope())
 {
-    public const string QuantityBelowOne = "The quantity of items in the cart must be at least 1 (one).";
+    public static Message QuantityBelowOne => CartMessages.QuantityBelowOne;
 
     private long? _productId;
     private decimal _price;

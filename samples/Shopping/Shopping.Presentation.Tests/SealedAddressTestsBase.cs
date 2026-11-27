@@ -1,5 +1,6 @@
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.ProductDetail;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -40,7 +41,7 @@ public abstract class SealedAddressTestsBase(ShoppingDatabaseFixture db)
         var opened = await Shop.Start(db, sealedLink, beotrano.Session);
 
         Assert.NotEqual(productId, opened.Maybe<ProductPresenter>(ProductKeys.Place)?.Scope.Id); // the parameters are dropped
-        Assert.Equal("Hello, Jane Roe", opened.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting);
+        Assert.Equal("Hello, Jane Roe", En(opened.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Greeting));
     }
 
     [Fact]

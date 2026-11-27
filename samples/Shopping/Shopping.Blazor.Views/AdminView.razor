@@ -7,7 +7,7 @@
 else
 {
     <section class="card admin-page">
-        <h2>Administration <span class="chip">@Scope.CountLabel</span></h2>
+        <h2>Administration <span class="chip">@T(Scope.CountLabel)</span></h2>
         <form class="admin-filter" @onsubmit="() => Scope.OnFilter(_customer)" @onsubmit:preventDefault>
             <input class="customer" placeholder="Customer name" value="@_customer"
                    @oninput="e => _customer = e.Value?.ToString() ?? string.Empty" />
@@ -20,9 +20,9 @@ else
         @foreach (var purchase in Scope.Purchases)
         {
             <button @key="purchase.Id" class="admin-row" @onclick="() => Scope.OnOpenPurchase(purchase.Id)">
-                <span class="number">@purchase.NumberLabel</span>
+                <span class="number">@T(purchase.NumberLabel)</span>
                 <span class="customer">@purchase.CustomerLabel</span>
-                <span class="date">@purchase.DateLabel</span>
+                <span class="date">@T(purchase.DateLabel)</span>
                 <span class="items">@purchase.ItemsLabel</span>
                 <span class="price">@purchase.TotalLabel</span>
                 @if (purchase.Corrected)
@@ -33,7 +33,7 @@ else
         }
         <nav class="pager">
             <button class="previous" disabled="@(!Scope.HasPrevious)" @onclick="Scope.OnPrevious">◀ Previous</button>
-            <span class="page">@Scope.PageLabel</span>
+            <span class="page">@T(Scope.PageLabel)</span>
             <button class="next" disabled="@(!Scope.HasNext)" @onclick="Scope.OnNext">Next ▶</button>
         </nav>
         <div class="actions">

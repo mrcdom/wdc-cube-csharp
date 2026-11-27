@@ -7,7 +7,7 @@ namespace Shopping.Presentation.Modules.Home;
 public sealed class HomeScope : Scope
 {
     /// <summary>"Hello, {name}".</summary>
-    public string? Greeting { get; set => Set(ref field, value); }
+    public Message? Greeting { get; set => Set(ref field, value); }
 
     /// <summary>The cart badge: the sum of the quantities.</summary>
     public int CartCount { get; set => Set(ref field, value); }

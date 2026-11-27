@@ -1,4 +1,5 @@
 using Shopping.Domain.Purchases;
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Purchases.Calls;
 using Wdc.Cube;
@@ -53,8 +54,8 @@ public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, Purchases
             Page = result.Page;
             _loadedPage = result.Page;
             Scope.Purchases = [.. result.Purchases.Select(ToCard)];
-            Scope.CountLabel = $"{result.Total} {(result.Total == 1 ? "purchase" : "purchases")}";
-            Scope.PageLabel = $"{result.Page} / {result.TotalPages}";
+            Scope.CountLabel = Texts.CommonPurchaseCount(count: result.Total);
+            Scope.PageLabel = Texts.CommonPageOf(page: result.Page, pages: result.TotalPages);
             Scope.HasPrevious = result.Page > 1;
             Scope.HasNext = result.Page < result.TotalPages;
         }
@@ -76,7 +77,7 @@ public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, Purchases
         var items = p.Items ?? [];
         return new PurchaseCard(
             p.Id!.Value,
-            p.BuyDate is { } date ? Formats.Date(date) : string.Empty,
+            p.BuyDate is { } date ? Formats.Date(date) : null,
             string.Join(", ", items.Select(i => i.Product?.Name).Where(n => !string.IsNullOrWhiteSpace(n))),
             Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0))));
     }

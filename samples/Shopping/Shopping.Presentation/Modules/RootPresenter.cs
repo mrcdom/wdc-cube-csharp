@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Shopping.Domain;
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Admin;
@@ -171,7 +172,7 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
     }
 
     /// <summary>Shows <paramref name="message"/> in the error toast for a few seconds.</summary>
-    public void ShowError(string message)
+    public void ShowError(Message message)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -183,14 +184,14 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
         _errorTimer?.Dispose();
         _errorTimer = Time.CreateTimer(_ => Dispatcher.Post(() =>
         {
-            if (Scope.ErrorMessage == message)
+            if (Equals(Scope.ErrorMessage, message))
             {
                 Scope.ErrorMessage = null;
             }
         }), null, ErrorToastDuration, Timeout.InfiniteTimeSpan);
     }
 
-    public const string GenericError = "An unexpected error occurred. Please try again shortly.";
+    public static Message GenericError => Texts.ErrorUnexpected();
 
     /// <summary>
     /// Errors nobody handled: the detail goes to the log, the user reads a message meant for them. Refusals the

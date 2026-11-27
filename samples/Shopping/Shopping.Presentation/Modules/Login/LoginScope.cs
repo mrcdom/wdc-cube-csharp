@@ -6,7 +6,7 @@ public sealed class LoginScope : Scope
 {
     public string? UserName { get; set => Set(ref field, value); }
 
-    public string? ErrorMessage { get; set => Set(ref field, value); }
+    public Message? ErrorMessage { get; set => Set(ref field, value); }
 
     /// <summary>While checking the credentials: the view shows a spinner and disables the form.</summary>
     public bool Loading { get; set => Set(ref field, value); }

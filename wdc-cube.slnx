@@ -42,6 +42,7 @@
     <Project Path="samples/Shopping/Shopping.Blazor.Tests/Shopping.Blazor.Tests.csproj" />
     <Project Path="samples/Shopping/Shopping.Generators/Shopping.Generators.csproj" />
     <Project Path="samples/Shopping/Shopping.Hosting/Shopping.Hosting.csproj" />
+    <Project Path="samples/Shopping/Shopping.I18n/Shopping.I18n.csproj" />
     <Project Path="samples/Shopping/Shopping.Server/Shopping.Server.csproj" />
     <Project Path="samples/Shopping/Shopping.Wasm/Shopping.Wasm.csproj" />
     <Project Path="samples/Shopping/Shopping.Client/Shopping.Client.csproj" />

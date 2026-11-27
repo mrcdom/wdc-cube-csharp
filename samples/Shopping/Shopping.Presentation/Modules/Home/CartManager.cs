@@ -1,4 +1,5 @@
 using Shopping.Domain;
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Calls;
 
@@ -81,12 +82,12 @@ public sealed class CartManager(ShoppingRepositories repositories, TimeProvider 
         ArgumentNullException.ThrowIfNull(subject);
         if (_lines.Count == 0)
         {
-            throw new InvalidCartItemException(CartMessages.Empty);
+            throw new InvalidCartItemException(MessageKeys.CartEmpty); // the key of what the cart shows
         }
 
         if (_lines.Exists(l => l.Quantity < 1))
         {
-            throw new InvalidCartItemException(CartMessages.QuantityBelowOne);
+            throw new InvalidCartItemException(MessageKeys.CartQuantityBelowOne);
         }
 
         var id = await new PurchaseCreate(repositories, userId: subject.Id, buyDate: time.GetUtcNow(), lines: [.. _lines]).Run();

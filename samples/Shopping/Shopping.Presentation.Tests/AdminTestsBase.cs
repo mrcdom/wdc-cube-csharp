@@ -5,6 +5,7 @@ using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
 using Shopping.Presentation.Modules.Home.Receipt;
 using Wdc.Domain;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -98,7 +99,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         var shop = await Shop.LoggedIn(db, "gerente");
         var amend = await Open(shop, purchaseId);
         var form = amend.Scope;
-        Assert.Equal($"Purchase #{purchaseId}", form.TitleLabel);
+        Assert.Equal($"Purchase #{purchaseId}", En(form.TitleLabel));
         Assert.Equal("John Doe", form.CustomerLabel);
         Assert.Equal([3, 2], form.Lines.Select(l => l.Quantity));
         Assert.False(form.CanConfirm);
@@ -114,7 +115,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         Assert.Equal([1], form.Lines.Select(l => l.Quantity));
         var entry = Assert.Single(form.History);
         Assert.Equal(("Store Manager", "Short delivery"), (entry.AuthorLabel, entry.Reason));
-        Assert.Equal(["Italian Design Coffee Maker: 3 → 1", "Thread Seal Tape: 2 → 0"], entry.Changes);
+        Assert.Equal(["Italian Design Coffee Maker: 3 → 1", "Thread Seal Tape: 2 → 0"], En(entry.Changes));
         Assert.Equal(string.Empty, form.Reason);
         Assert.Contains(shop.PresenterOf<AdminPresenter>(AdminKeys.Place).Scope.Purchases, p => p.Id == purchaseId && p.Corrected);
 
@@ -122,7 +123,7 @@ public abstract class AdminTestsBase(ShoppingDatabaseFixture db)
         await buyer.Do(() => buyer.PresenterOf<HomePresenter>(HomeKeys.Place).Scope.Purchases!.OnOpenReceipt(purchaseId));
         var receipt = buyer.PresenterOf<ReceiptPresenter>(ReceiptKeys.Place).Scope;
         Assert.Equal("$199.99", receipt.TotalLabel);
-        Assert.Equal(["Purchase corrected on " + Infra.Formats.Date(DateTimeOffset.UtcNow) + ": Short delivery"], receipt.Corrections);
+        Assert.Equal(["Purchase corrected on " + En(Infra.Formats.Date(DateTimeOffset.UtcNow)) + ": Short delivery"], En(receipt.Corrections));
     }
 
     [Fact]

@@ -96,7 +96,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
 
                 if (DateTime.UtcNow > deadline)
                 {
-                    throw new TimeoutException($"Waited 15 s for: {what}. Error toast: {Presenter.Scope.ErrorMessage ?? "(none)"}. "
+                    throw new TimeoutException($"Waited 15 s for: {what}. Error toast: {Presenter.Scope.ErrorMessage?.ToString() ?? "(none)"}. "
                                                + $"Logged: {string.Join(" | ", log.Errors)}");
                 }
 
@@ -190,7 +190,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         desktop.Capture("6-admin");
 
         // The demo purchase of 2011: a ball and a tape. The tape was not delivered.
-        Desktop.Click(desktop.All<Button>().First(b => b is { IsEffectivelyVisible: true, DataContext: Presentation.Modules.Home.Admin.AdminPurchaseRow { DateLabel: "04/03/2011" } }));
+        Desktop.Click(desktop.All<Button>().First(b => b is { IsEffectivelyVisible: true, DataContext: Presentation.Modules.Home.Admin.AdminPurchaseRow row } && Shopping.I18n.Messages.Default.Text(row.DateLabel) == "04/03/2011"));
         await desktop.Until(() => desktop.All<AmendLineView>().Count() == 2, "the purchase's items");
         Assert.False(desktop.Find<Button>("ConfirmButton").IsEnabled);
         var tape = desktop.All<AmendLineView>().Last();
@@ -225,7 +225,7 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         desktop.Find<TextBox>("PasswordBox").Text = "wrong";
         Desktop.Click(desktop.Find<Button>("EnterButton"));
 
-        await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == Presentation.Modules.Login.LoginPresenter.NotRecognized
+        await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text == Shopping.I18n.Messages.Default.Text(Presentation.Modules.Login.LoginPresenter.NotRecognized)
                                                                     && t.IsEffectivelyVisible), "the message");
         Assert.Null(desktop.Presenter.Subject);
         desktop.Presenter.Release();

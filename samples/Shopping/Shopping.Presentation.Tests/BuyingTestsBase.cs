@@ -2,6 +2,7 @@ using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Receipt;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -111,7 +112,7 @@ public abstract class BuyingTestsBase(ShoppingDatabaseFixture db)
         Assert.True(receipt.Scope.NotifySuccess);
         Assert.Equal([("Italian Design Coffee Maker", 2, "$199.99")], receipt.Scope.Lines.Select(l => (l.Description, l.Quantity, l.ValueLabel)));
         Assert.Equal("$399.98", receipt.Scope.TotalLabel);
-        Assert.Equal("11/18/2026", receipt.Scope.DateLabel); // the application's clock
+        Assert.Equal("11/18/2026", En(receipt.Scope.DateLabel)); // the application's clock
         Assert.StartsWith("home/receipt?rc-id=", shop.History.Token, StringComparison.Ordinal);
 
         var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);

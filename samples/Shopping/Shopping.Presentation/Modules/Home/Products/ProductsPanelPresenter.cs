@@ -1,3 +1,4 @@
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Products.Calls;
 using Wdc.Cube;
@@ -36,7 +37,7 @@ public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPa
                 .. products.Select(p => new ProductCard(p.Id!.Value, p.Name ?? string.Empty, Formats.Money(p.Price ?? 0),
                     Formats.ProductImageUrl(p.Id!.Value))),
             ];
-            Scope.CountLabel = $"{products.Count} {(products.Count == 1 ? "item" : "items")}";
+            Scope.CountLabel = Texts.CommonItemCount(count: products.Count);
         }
         catch (Exception caught)
         {

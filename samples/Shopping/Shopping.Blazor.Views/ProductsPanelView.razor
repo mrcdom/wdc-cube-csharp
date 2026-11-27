@@ -1,7 +1,7 @@
 @inherits ScopeView<ProductsPanelScope>
 
 <section class="card products-panel">
-    <h2>Products <span class="chip">@Scope.CountLabel</span></h2>
+    <h2>Products <span class="chip">@T(Scope.CountLabel)</span></h2>
     @if (Scope.Loading && Scope.Products.Count == 0)
     {
         <p class="muted">Loading…</p>

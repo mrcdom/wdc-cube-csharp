@@ -2,6 +2,7 @@
   <!-- Shopping presentation: places, keys, presenters, scopes. No view technology, no database. -->
   <ItemGroup>
     <ProjectReference Include="../Shopping.Domain/Shopping.Domain.csproj" />
+    <ProjectReference Include="../Shopping.I18n/Shopping.I18n.csproj" />
     <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
     <ProjectReference Include="../../../src/Wdc.Cube.Codec/Wdc.Cube.Codec.csproj" />
   </ItemGroup>

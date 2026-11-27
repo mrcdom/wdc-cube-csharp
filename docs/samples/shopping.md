@@ -37,6 +37,7 @@ Demo users (the password is the login):
 | `Shopping.Presentation` | `Shopping.Domain`, `Wdc.Cube`, `Wdc.Cube.Codec` | Places, keys, presenters, scopes, the session (`Infra/`). No view, no database. |
 | `Shopping.Blazor.Views` | `Shopping.Presentation`, `Wdc.Cube.Blazor` | Razor views, the host page and CSS, shared by both Blazor hosts. |
 | `Shopping.Generators` | | The design tokens (`Design/tokens.json`) as CSS and as Avalonia resources, written by `generate.cs`. |
+| `Shopping.I18n` | `Wdc.Cube` | The texts in en-US and pt-BR, the typed messages generated from them, and the translation. |
 | `Shopping.Hosting` | `Shopping.Persistence` | Health checks and metrics (OpenTelemetry), shared by the two web hosts. |
 | `Shopping.Blazor` | `Shopping.Blazor.Views`, `Shopping.Persistence` | Blazor Server host: one application per circuit, repositories protected per circuit, image endpoint. |
 | `Shopping.Server` | `Shopping.Persistence`, `Wdc.Rest.Server`, `Shopping.Wasm` | REST backend: repositories as routes, remote transactions, JWT login, images; also serves the WebAssembly app. |

@@ -1,15 +1,15 @@
 @inherits ScopeView<AmendScope>
 
 <section class="card amend-page">
-    <h2>@Scope.TitleLabel <span class="chip">@Scope.DateLabel</span></h2>
+    <h2>@T(Scope.TitleLabel) <span class="chip">@T(Scope.DateLabel)</span></h2>
     <p class="customer">Customer: <strong>@Scope.CustomerLabel</strong></p>
     @if (Scope.SuccessMessage is { } success)
     {
-        <p class="success">@success</p>
+        <p class="success">@T(success)</p>
     }
     @if (Scope.ErrorMessage is { } error)
     {
-        <p class="error">@error</p>
+        <p class="error">@T(error)</p>
     }
     <table>
         <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>New qty</th></tr></thead>
@@ -38,9 +38,9 @@
             @foreach (var entry in Scope.History)
             {
                 <li>
-                    <span class="when">@entry.DateLabel — @entry.AuthorLabel</span>
+                    <span class="when">@T(entry.DateLabel) — @entry.AuthorLabel</span>
                     <span class="why">@entry.Reason</span>
-                    <span class="what muted">@string.Join("; ", entry.Changes)</span>
+                    <span class="what muted">@string.Join("; ", entry.Changes.Select(T))</span>
                 </li>
             }
         </ul>

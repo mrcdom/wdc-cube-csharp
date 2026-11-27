@@ -1,5 +1,6 @@
 using Shopping.Domain.Users;
 using Shopping.Presentation.Modules.Login;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -28,7 +29,7 @@ public abstract class LoginThrottleTestsBase(ShoppingDatabaseFixture db)
 
         await shop.Login(userName, "right");
 
-        Assert.Matches(@"^Too many failed attempts\. Try again in (2\d|30) seconds\.$", login.Scope.ErrorMessage);
+        Assert.Matches(@"^Too many failed attempts\. Try again in (2\d|30) seconds\.$", En(login.Scope.ErrorMessage));
         Assert.Null(shop.App.Subject);
         Assert.False(login.Scope.Loading);
     }

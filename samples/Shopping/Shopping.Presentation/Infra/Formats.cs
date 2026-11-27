@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
+using Shopping.I18n;
+using Wdc.Cube;
 
 namespace Shopping.Presentation.Infra;
 
@@ -10,9 +12,16 @@ public static partial class Formats
     /// <summary><c>$1,234.56</c>, whatever the culture of the machine.</summary>
     public static string Money(decimal value) => "$" + value.ToString("N2", CultureInfo.InvariantCulture);
 
-    /// <summary><c>11/18/2026</c>, the day in UTC (the instant the database stores).</summary>
-    public static string Date(DateTimeOffset value) =>
-        value.UtcDateTime.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+    /// <summary>
+    /// The day in UTC (the instant the database stores), written by the language's own pattern (<c>format.date</c>:
+    /// <c>11/18/2026</c> in en-US, <c>18/11/2026</c> in pt-BR).
+    /// </summary>
+    public static Message Date(DateTimeOffset value)
+    {
+        var day = value.UtcDateTime;
+        return Texts.FormatDate(year: day.Year, month: day.Month.ToString("00", CultureInfo.InvariantCulture),
+            day: day.Day.ToString("00", CultureInfo.InvariantCulture));
+    }
 
     /// <summary>
     /// A product description as the screen shows it: the items of an HTML list, or the plain text as a single item.

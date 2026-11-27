@@ -3,7 +3,7 @@ using Wdc.Cube;
 namespace Shopping.Presentation.Modules.Home.Purchases;
 
 /// <summary>A purchase card: date, what was bought, total.</summary>
-public sealed record PurchaseCard(long Id, string DateLabel, string ItemsLabel, string TotalLabel);
+public sealed record PurchaseCard(long Id, Message? DateLabel, string ItemsLabel, string TotalLabel);
 
 public sealed class PurchasesPanelScope : Scope
 {
@@ -12,10 +12,10 @@ public sealed class PurchasesPanelScope : Scope
     public bool Loading { get; set => Set(ref field, value); }
 
     /// <summary>"{n} purchases".</summary>
-    public string CountLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? CountLabel { get; set => Set(ref field, value); }
 
     /// <summary>"page / total".</summary>
-    public string PageLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? PageLabel { get; set => Set(ref field, value); }
 
     public bool HasPrevious { get; set => Set(ref field, value); }
 

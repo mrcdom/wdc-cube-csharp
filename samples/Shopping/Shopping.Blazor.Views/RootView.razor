@@ -5,6 +5,6 @@
 
     @if (Scope.ErrorMessage is { } message)
     {
-        <div class="toast" role="alert" @onclick="Scope.OnDismissError">@message</div>
+        <div class="toast" role="alert" @onclick="Scope.OnDismissError">@T(message)</div>
     }
 </div>

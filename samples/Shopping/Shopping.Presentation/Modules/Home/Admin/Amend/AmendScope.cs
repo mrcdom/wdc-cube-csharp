@@ -3,7 +3,7 @@ using Wdc.Cube;
 namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 
 /// <summary>An errata already made: when, by whom, why, and what changed ("Volleyball: 3 → 1").</summary>
-public sealed record AmendmentEntry(string DateLabel, string AuthorLabel, string Reason, IReadOnlyList<string> Changes);
+public sealed record AmendmentEntry(Message? DateLabel, string AuthorLabel, string Reason, IReadOnlyList<Message> Changes);
 
 /// <summary>One item of the purchase: what it has, and what it will have after the correction.</summary>
 public sealed class AmendLineScope : Scope
@@ -27,11 +27,11 @@ public sealed class AmendScope : Scope
     public AmendScope() => Lines = new ScopeList<AmendLineScope>(this, nameof(Lines));
 
     /// <summary>"Purchase #{id}".</summary>
-    public string TitleLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? TitleLabel { get; set => Set(ref field, value); }
 
     public string CustomerLabel { get; set => Set(ref field, value); } = string.Empty;
 
-    public string DateLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? DateLabel { get; set => Set(ref field, value); }
 
     public ScopeList<AmendLineScope> Lines { get; }
 
@@ -50,10 +50,10 @@ public sealed class AmendScope : Scope
 
     public bool Saving { get; set => Set(ref field, value); }
 
-    public string? ErrorMessage { get; set => Set(ref field, value); }
+    public Message? ErrorMessage { get; set => Set(ref field, value); }
 
     /// <summary>"Correction recorded." after confirming.</summary>
-    public string? SuccessMessage { get; set => Set(ref field, value); }
+    public Message? SuccessMessage { get; set => Set(ref field, value); }
 
     public Func<string, Task> OnChangeReason { get; set; } = ScopeActions.Unbound<string>();
 

@@ -12,6 +12,7 @@ already made (an errata, kept with who, when and why).
 | `Shopping.Presentation.Tests` | The presentation without UI, against a real database in a throwaway schema. |
 | `Shopping.Blazor.Views` | The Blazor views, pages and CSS, shared by the two Blazor hosts. |
 | `Shopping.Generators` | What `generate.cs` writes from `Design/`: the design tokens as CSS and as Avalonia resources. |
+| `Shopping.I18n` | The texts in every language (`Catalog/messages.<tag>.json`), the keys and typed messages generated from them, and the translation the views use. |
 | `Shopping.Hosting` | Health checks (`/health/live`, `/health/ready`) and metrics over OTLP, for both web hosts. |
 | `Shopping.Blazor` | The interactive-server host (one application per circuit), image endpoint, sealed addresses. |
 | `Shopping.Wasm` | The WebAssembly host: the presentation in the browser, data and login through `Shopping.Server`. |
@@ -88,6 +89,14 @@ dotnet build generate.cs && dotnet run --no-build generate.cs
 It writes `Shopping.Blazor.Views/wwwroot/tokens.css` (CSS custom properties, imported by `app.css`) and
 `Shopping.Avalonia/Tokens.axaml` (brushes, colors, sizes and radii, merged by `App.axaml`). Both are in the
 repository, and a test fails while either is out of date.
+
+## Texts
+
+The presenters put messages in their scopes (`Texts.CartEmpty()`), never texts; each view translates them. The texts
+are in `Shopping.I18n/Catalog/messages.en-US.json` and `messages.pt-BR.json`: the same keys, the same `{placeholders}`.
+After adding or changing a key, run `generate.cs` (above): it checks the catalogs against each other and writes
+`MessageKeys`, `Texts` (one factory per key, an argument per placeholder) and `Languages`. A count picks between a
+`…One` and a `…Other` key; a date is the catalog's `format.date`.
 
 ## Tests
 
