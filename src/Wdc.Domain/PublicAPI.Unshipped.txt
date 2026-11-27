@@ -443,3 +443,57 @@ const Wdc.Domain.CriteriaCodec.AnyOfProperty = "anyOf" -> string!
 Wdc.Domain.Criteria<TSelf, TEntity>.AnyOf.get -> System.Collections.Generic.IReadOnlyList<TSelf!>!
 Wdc.Domain.Criteria<TSelf, TEntity>.WithAnyOf(params System.Collections.Generic.IEnumerable<TSelf!>! groups) -> TSelf!
 Wdc.Domain.ICriteria.AnyOf.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.ICriteria!>!
+const Wdc.Domain.Mask.Fill = '*' -> char
+override Wdc.Domain.DataGrant<TEntity, TCriteria>.ToString() -> string!
+static Wdc.Domain.DataPolicy.For<TEntity, TCriteria>(Wdc.Domain.EntityModel<TEntity!>! model, System.Func<TCriteria!>! newCriteria) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+static Wdc.Domain.Mask.KeepFirst(int count) -> Wdc.Domain.Mask!
+static Wdc.Domain.Mask.KeepLast(int count) -> Wdc.Domain.Mask!
+static Wdc.Domain.RowScope.All<TEntity, TCriteria>() -> Wdc.Domain.IRowScope<TEntity!, TCriteria>!
+Wdc.Domain.DataAccess<TEntity, TCriteria>
+Wdc.Domain.DataAccess<TEntity, TCriteria>.CheckCreate(TEntity! row, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Wdc.Domain.DataAccess<TEntity, TCriteria>.CheckUpdate(TEntity! row, TEntity! changes, System.Func<TEntity!, TEntity!, System.Threading.CancellationToken, System.Threading.Tasks.Task<TEntity?>!>! load, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Wdc.Domain.DataAccess<TEntity, TCriteria>.Grants.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.DataGrant<TEntity!, TCriteria!>!>!
+Wdc.Domain.DataAccess<TEntity, TCriteria>.PrepareRead(TCriteria! criteria) -> Wdc.Domain.ReadPlan<TEntity!>!
+Wdc.Domain.DataAccess<TEntity, TCriteria>.ReadBack(TEntity! row, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TEntity!>
+Wdc.Domain.DataAccess<TEntity, TCriteria>.RestrictCount(TCriteria! criteria) -> void
+Wdc.Domain.DataAccess<TEntity, TCriteria>.RestrictDelete(TCriteria! criteria) -> void
+Wdc.Domain.DataGrant<TEntity, TCriteria>
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Create.get -> System.Collections.Generic.IReadOnlySet<string!>!
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Delete.get -> bool
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Masked.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Wdc.Domain.Mask!>!
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Read.get -> System.Collections.Generic.IReadOnlySet<string!>!
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Reads.get -> bool
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Rows.get -> Wdc.Domain.IRowScope<TEntity!, TCriteria>!
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Sees(string! field) -> bool
+Wdc.Domain.DataGrant<TEntity, TCriteria>.Update.get -> System.Collections.Generic.IReadOnlySet<string!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Create(params System.Collections.Generic.IEnumerable<string!>! fields) -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Delete() -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Mask(Wdc.Domain.Mask! mask, params System.Collections.Generic.IEnumerable<string!>! fields) -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Read(params System.Collections.Generic.IEnumerable<string!>! fields) -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Rows(Wdc.Domain.IRowScope<TEntity!, TCriteria!>! scope) -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataGrantBuilder<TEntity, TCriteria>.Update(params System.Collections.Generic.IEnumerable<string!>! fields) -> Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicy
+Wdc.Domain.DataPolicy<TEntity, TCriteria>
+Wdc.Domain.DataPolicy<TEntity, TCriteria>.AccessFor(Wdc.Domain.Actor? actor) -> Wdc.Domain.DataAccess<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicy<TEntity, TCriteria>.GrantsOf(string! role) -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.DataGrant<TEntity!, TCriteria!>!>!
+Wdc.Domain.DataPolicy<TEntity, TCriteria>.Model.get -> Wdc.Domain.EntityModel<TEntity!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Build() -> Wdc.Domain.DataPolicy<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Collection<TOther, TOtherCriteria>(string! field, string! inverse, System.Func<Wdc.Domain.DataPolicy<TOther!, TOtherCriteria!>!>! policy) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Criterion(string! criterion, string! fieldPath) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.DefaultShape(System.Func<TEntity!>! shape) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Grant(System.Collections.Generic.IEnumerable<string!>! roles, System.Action<Wdc.Domain.DataGrantBuilder<TEntity!, TCriteria!>!>! declare) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Orderings(System.Func<TCriteria!, System.Collections.Generic.IEnumerable<string!>!>! fields) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.Reference<TOther, TOtherCriteria>(string! field, System.Func<Wdc.Domain.DataPolicy<TOther!, TOtherCriteria!>!>! policy) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.DataPolicyBuilder<TEntity, TCriteria>.WriteOnly(params System.Collections.Generic.IEnumerable<string!>! fields) -> Wdc.Domain.DataPolicyBuilder<TEntity!, TCriteria!>!
+Wdc.Domain.IRowScope<TEntity, TCriteria>
+Wdc.Domain.IRowScope<TEntity, TCriteria>.Covers(TEntity! row, Wdc.Domain.Actor! actor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
+Wdc.Domain.IRowScope<TEntity, TCriteria>.Projection() -> TEntity?
+Wdc.Domain.IRowScope<TEntity, TCriteria>.Restrict(TCriteria group, Wdc.Domain.Actor! actor) -> void
+Wdc.Domain.Mask
+Wdc.Domain.Mask.Apply(string! value) -> string!
+Wdc.Domain.ReadPlan<TEntity>
+Wdc.Domain.ReadPlan<TEntity>.Apply(TEntity! row, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TEntity!>
+Wdc.Domain.ReadPlan<TEntity>.ApplyAll(System.Collections.Generic.IReadOnlyList<TEntity!>! rows, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<TEntity!>!>
+Wdc.Domain.RowScope

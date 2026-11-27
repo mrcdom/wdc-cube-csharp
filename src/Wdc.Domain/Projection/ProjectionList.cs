@@ -4,7 +4,7 @@ namespace Wdc.Domain;
 /// A collection in a projection: a list holding one element, the shape of each item, plus the criteria, limit and
 /// offset that filter, order and slice the collection.
 /// </summary>
-public sealed class ProjectionList<T> : List<T>
+public sealed class ProjectionList<T> : List<T>, IProjectionList
     where T : class
 {
     public ProjectionList(T shape, object? criteria = null, int? limit = null, int? offset = null)
@@ -31,4 +31,18 @@ public sealed class ProjectionList<T> : List<T>
     public int? Limit { get; }
 
     public int? Offset { get; }
+
+    object IProjectionList.Shape => Shape;
+}
+
+/// <summary>A projection list seen without its item type.</summary>
+internal interface IProjectionList
+{
+    object Shape { get; }
+
+    object? Criteria { get; }
+
+    int? Limit { get; }
+
+    int? Offset { get; }
 }

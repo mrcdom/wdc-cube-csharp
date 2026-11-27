@@ -54,7 +54,8 @@ async Task<bool> WaitFor(Func<Task<bool>> condition, int seconds)
 async Task<bool> Ready(string address) =>
     (await http.GetAsync(address + "/health/ready")).StatusCode == HttpStatusCode.OK;
 
-// nginx limits /api/auth per address: past its burst, wait for the next slot.
+// nginx limits /api/auth per address, one request a second past its burst. A sign-in takes two (the challenge and the
+// login): waiting one second would hand the new slot to the challenge and refuse the login again, every time.
 async Task<Shopping.Presentation.Infra.Subject?> SignIn(ShoppingClient client)
 {
     for (var attempt = 1; ; attempt++)
@@ -63,9 +64,9 @@ async Task<Shopping.Presentation.Infra.Subject?> SignIn(ShoppingClient client)
         {
             return await client.Authentication.Login("fulano", "fulano");
         }
-        catch (TooManyRequestsException) when (attempt < 60)
+        catch (TooManyRequestsException) when (attempt < 30)
         {
-            await Task.Delay(1000);
+            await Task.Delay(3000);
         }
     }
 }
