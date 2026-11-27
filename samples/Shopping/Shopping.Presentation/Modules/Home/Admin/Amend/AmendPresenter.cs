@@ -36,13 +36,9 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
 
         if (initialization)
         {
-            Scope.OnChangeReason = Action<string>(reason =>
-            {
-                Scope.Reason = reason;
-                Refresh();
-            });
-            Scope.OnConfirm = Action(Confirm);
-            Scope.OnBack = Action(Back);
+            Scope.OnChangeReason = Action<string>(OnChangeReason);
+            Scope.OnConfirm = Action(OnConfirm);
+            Scope.OnBack = Action(OnBack);
         }
 
         if (purchaseId != _purchaseId)
@@ -85,19 +81,27 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
             NewQuantity = item.Amount ?? 0,
         };
         _prices[line.ItemId] = item.Price ?? 0;
-        line.OnChangeNewQuantity = Action<int>(quantity =>
-        {
-            if (quantity < 0 || quantity > line.Quantity)
-            {
-                Scope.ErrorMessage = OnlyDown;
-                return;
-            }
-
-            line.NewQuantity = quantity;
-            Scope.ErrorMessage = null;
-            Refresh();
-        });
+        line.OnChangeNewQuantity = Action<int>(quantity => OnChangeNewQuantity(line, quantity));
         return line;
+    }
+
+    private void OnChangeNewQuantity(AmendLineScope line, int quantity)
+    {
+        if (quantity < 0 || quantity > line.Quantity)
+        {
+            Scope.ErrorMessage = OnlyDown;
+            return;
+        }
+
+        line.NewQuantity = quantity;
+        Scope.ErrorMessage = null;
+        Refresh();
+    }
+
+    private void OnChangeReason(string reason)
+    {
+        Scope.Reason = reason;
+        Refresh();
     }
 
     private decimal Total(Func<AmendLineScope, int> quantity) =>
@@ -132,7 +136,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         return string.IsNullOrWhiteSpace(Scope.Reason) ? ReasonRequired : null;
     }
 
-    private async Task Confirm()
+    private async Task OnConfirm()
     {
         if (Problem() is { } problem)
         {
@@ -176,6 +180,6 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         }
     }
 
-    private Task Back() =>
+    private Task OnBack() =>
         new AdminKeys(App) { ListPage = _admin?.Page ?? 1, Customer = _admin?.Customer }.Flip();
 }

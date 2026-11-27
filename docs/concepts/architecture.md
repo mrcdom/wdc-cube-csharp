@@ -156,7 +156,7 @@ public override async Task<bool> ApplyParameters(FlipIntent intent, bool initial
     if (initialization)
     {
         Scope.OnAddToCart = Action<int>(OnAddToCart);
-        Scope.OnBack = Action(() => new HomeKeys(App).Flip());
+        Scope.OnBack = Action(OnBack);
     }
 
     if (productId != _productId)
@@ -169,6 +169,8 @@ public override async Task<bool> ApplyParameters(FlipIntent intent, bool initial
 }
 
 public override void PublishParameters(FlipIntent intent) => new ProductKeys(App, intent).ProductId = _productId;
+
+private Task OnBack() => new HomeKeys(App).Flip();
 ```
 
 Child presenters without a place (`Presenter<TApp, TScope>`) are created by their owner, usually during
@@ -232,6 +234,11 @@ public sealed class ProductScope : Scope
 
 - `ScopeActions.Unbound()` is a no-op that writes a trace warning when called; `ScopeActions.IsUnbound(action)`
   lets a test assert that every action was bound.
+- **Naming:** an action calls the presenter's method of the same name: `Scope.OnBuy = Action(OnBuy)`, even when it
+  only navigates (`private Task OnBack() => new HomeKeys(App).Flip();`). An action of a row passes the row to it:
+  `row.OnRemove = Action(() => OnRemove(row))`. An `On…` method is an entry point from the view and nothing else calls
+  it; what two actions share goes in a method of its own (`OnPrevious` and `OnNext` both call `ShowPage`). See
+  [decision 0021](../decisions/0021-actions-named-after-what-the-user-does.md).
 - `Action(...)` (on every presenter) wraps a handler so that it runs on the application's dispatcher, does nothing if
   the presenter was already released, and hands an exception to the presenter's `OnActionFailure` instead of faulting
   the caller.

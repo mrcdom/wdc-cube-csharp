@@ -79,11 +79,11 @@ public sealed class RootPresenter : ApplicationPresenter<RootScope>
         }
 
         var alert = new AlertScope { Severity = severity, Title = title, Message = message };
-        alert.OnClose = Action(() => CloseAlert(alert, onClose));
+        alert.OnClose = Action(() => OnClose(alert, onClose));
         Scope.Alert = alert;
     }
 
-    private async Task CloseAlert(AlertScope alert, Func<Task>? onClose)
+    private async Task OnClose(AlertScope alert, Func<Task>? onClose)
     {
         if (ReferenceEquals(Scope.Alert, alert))
         {

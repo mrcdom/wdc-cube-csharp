@@ -14,14 +14,16 @@ public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, Purchases
     public const int PageSize = 5;
 
     private int _pending;
+    private readonly Func<long, Task> _openReceipt;
     private int _loadedPage;
 
     public PurchasesPanelPresenter(RootPresenter app, Func<long, Task> openReceipt)
         : base(app, new PurchasesPanelScope())
     {
-        Scope.OnOpenReceipt = Action<long>(openReceipt);
-        Scope.OnPrevious = Action(() => ShowPage(Page - 1));
-        Scope.OnNext = Action(() => ShowPage(Page + 1));
+        _openReceipt = openReceipt;
+        Scope.OnOpenReceipt = Action<long>(OnOpenReceipt);
+        Scope.OnPrevious = Action(OnPrevious);
+        Scope.OnNext = Action(OnNext);
     }
 
     /// <summary>The page shown (1-based).</summary>
@@ -78,4 +80,10 @@ public sealed class PurchasesPanelPresenter : Presenter<RootPresenter, Purchases
             string.Join(", ", items.Select(i => i.Product?.Name).Where(n => !string.IsNullOrWhiteSpace(n))),
             Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0))));
     }
+
+    private Task OnOpenReceipt(long purchaseId) => _openReceipt(purchaseId); // the owner decides where it goes
+
+    private Task OnPrevious() => ShowPage(Page - 1);
+
+    private Task OnNext() => ShowPage(Page + 1);
 }

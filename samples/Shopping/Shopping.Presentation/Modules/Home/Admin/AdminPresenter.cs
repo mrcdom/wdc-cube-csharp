@@ -42,11 +42,11 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
         keys.ParentSlot(Scope); // into Home, before any wait
         if (initialization)
         {
-            Scope.OnFilter = Action<string>(text => ShowPage(1, text));
-            Scope.OnPrevious = Action(() => ShowPage(Page - 1, Customer));
-            Scope.OnNext = Action(() => ShowPage(Page + 1, Customer));
-            Scope.OnOpenPurchase = Action<long>(OpenPurchase);
-            Scope.OnBack = Action(() => new HomeKeys(App).Flip());
+            Scope.OnFilter = Action<string>(OnFilter);
+            Scope.OnPrevious = Action(OnPrevious);
+            Scope.OnNext = Action(OnNext);
+            Scope.OnOpenPurchase = Action<long>(OnOpenPurchase);
+            Scope.OnBack = Action(OnBack);
         }
 
         if (last)
@@ -116,7 +116,15 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
         }
     }
 
-    private async Task OpenPurchase(long purchaseId)
+    private Task OnFilter(string customer) => ShowPage(1, customer);
+
+    private Task OnPrevious() => ShowPage(Page - 1, Customer);
+
+    private Task OnNext() => ShowPage(Page + 1, Customer);
+
+    private Task OnBack() => new HomeKeys(App).Flip();
+
+    private async Task OnOpenPurchase(long purchaseId)
     {
         try
         {
