@@ -63,3 +63,34 @@ jobs:
       - run: dotnet build wdc-cube.slnx --no-restore
 
       - run: dotnet test --solution wdc-cube.slnx --no-build
+
+  compose:
+    name: Compose (two instances of each host, nginx, Prometheus)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.0.x
+
+      - name: Start the compose setup
+        working-directory: samples/Shopping/docker
+        run: |
+          printf 'SHOPPING_DB_PASSWORD=%s\nSHOPPING_JWT_KEY=%s\nSHOPPING_HISTORY_KEY=%s\n' \
+            "$(openssl rand -hex 24)" "$(openssl rand -base64 32)" "$(openssl rand -base64 32)" > .env
+          docker compose up -d --build --wait
+
+      - name: Check it end to end
+        working-directory: samples/Shopping/docker
+        run: dotnet build check.cs && dotnet run --no-build check.cs
+
+      - name: Compose logs
+        if: failure()
+        working-directory: samples/Shopping/docker
+        run: docker compose logs --no-color > compose.log; tail -300 compose.log

@@ -1,5 +1,7 @@
+using Shopping.Hosting;
 using Shopping.Persistence;
 using Shopping.Server;
+using Wdc.Rest.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ using var startupLogs = LoggerFactory.Create(l => l.AddConsole());
 var auth = ShoppingApi.AuthOptions(builder.Configuration, builder.Environment, startupLogs.CreateLogger("Shopping.Server"));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddShoppingApi(store, auth);
+builder.AddShoppingOperations(store, RestServerMetrics.MeterName);
 
 var app = builder.Build();
 
@@ -24,6 +27,7 @@ if (await store.EnsureCreated())
 // The WebAssembly app: its files, and index.html for any address that is not the API's.
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
+app.MapShoppingHealth();
 app.MapShoppingApi();
 app.MapFallbackToFile("index.html");
 

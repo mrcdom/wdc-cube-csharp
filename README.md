@@ -109,7 +109,7 @@ The documentation below, with the API reference, is also published as a site:
 - [Getting started](docs/getting-started.md): build a small app, step by step.
 - [Concepts](docs/README.md#concepts): how each part works and why.
 - [Guides](docs/README.md#guides): testing, Blazor, Avalonia, SQL repositories, REST, rules per role, sealed
-  addresses, trimming.
+  addresses, several instances, trimming.
 - [Wire protocol](docs/reference/wire-protocol.md) and [decisions](docs/decisions/README.md).
 - Samples:
   - [`samples/GettingStarted`](samples/GettingStarted): the app of the tutorial.
