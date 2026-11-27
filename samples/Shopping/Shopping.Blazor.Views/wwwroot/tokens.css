@@ -1,0 +1,40 @@
+/* Generated from Design/tokens.json by samples/Shopping/generate.cs: edit the tokens, not this file. */
+:root {
+  --primary: #1B5E7B;
+  --primary-hover: #174F68;
+  --primary-container: #D0E8F2;
+  --on-primary: #FFFFFF;
+  --on-primary-line: #FFFFFF80;
+  --on-primary-hover: #FFFFFF1A;
+  --bg: #F5F7F9;
+  --surface: #FFFFFF;
+  --hover: #F1F3F4;
+  --fg: #1C1B1F;
+  --muted: #5F6368;
+  --line: #DADCE0;
+  --price: #2E7D32;
+  --price-hover: #276B2B;
+  --error: #B3261E;
+  --success-bg: #E6F4EA;
+  --toast: #333333E6;
+  --space-xxs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-body: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 28px;
+  --font-size-display: 40px;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+}

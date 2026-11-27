@@ -11,7 +11,7 @@
       <TextBlock Grid.Column="2" Text="{Binding Quantity}" TextAlignment="Right" VerticalAlignment="Center" />
       <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
         <Button Content="−" Click="OnMinus" />
-        <TextBlock x:Name="NewQuantity" Text="{Binding NewQuantity}" FontWeight="SemiBold" VerticalAlignment="Center"
+        <TextBlock x:Name="NewQuantity" Text="{Binding NewQuantity}" FontWeight="{StaticResource FontWeightSemibold}" VerticalAlignment="Center"
                    MinWidth="24" TextAlignment="Center" />
         <Button Content="+" Click="OnPlus" />
       </StackPanel>

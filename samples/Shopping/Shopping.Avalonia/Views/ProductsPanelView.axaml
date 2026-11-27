@@ -21,7 +21,7 @@
             <Button Classes="product-card" Margin="0,0,12,12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="OnOpen">
               <StackPanel Spacing="6">
                 <Image Height="140" Stretch="Uniform" v:RemoteImage.Url="{Binding ImageUrl}" />
-                <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="{StaticResource FontWeightSemibold}" />
                 <TextBlock Classes="price" Text="{Binding PriceLabel}" />
               </StackPanel>
             </Button>

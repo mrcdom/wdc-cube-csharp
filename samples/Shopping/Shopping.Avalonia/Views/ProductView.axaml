@@ -11,7 +11,7 @@
       <Grid ColumnDefinitions="120,16,*">
         <Image Width="120" Height="120" Stretch="Uniform" VerticalAlignment="Top" v:RemoteImage.Url="{Binding ImageUrl}" />
         <StackPanel Grid.Column="2" Spacing="12">
-          <TextBlock x:Name="ProductName" Text="{Binding Name}" FontSize="26" FontWeight="Bold" TextWrapping="Wrap" />
+          <TextBlock x:Name="ProductName" Text="{Binding Name}" FontSize="26" FontWeight="{StaticResource FontWeightBold}" TextWrapping="Wrap" />
           <ItemsControl ItemsSource="{Binding DescriptionItems}" Margin="4,0,0,0">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="x:String">
@@ -23,7 +23,7 @@
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="Qty:" VerticalAlignment="Center" />
             <Button Content="−" Click="OnMinus" />
-            <TextBlock x:Name="Quantity" Text="1" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
+            <TextBlock x:Name="Quantity" Text="1" FontWeight="{StaticResource FontWeightSemibold}" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
             <Button Content="+" Click="OnPlus" />
           </StackPanel>
         </StackPanel>

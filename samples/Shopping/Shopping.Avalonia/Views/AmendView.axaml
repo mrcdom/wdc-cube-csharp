@@ -13,7 +13,7 @@
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="4">
         <TextBlock Classes="muted" Text="Customer:" />
-        <TextBlock Text="{Binding CustomerLabel}" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding CustomerLabel}" FontWeight="{StaticResource FontWeightSemibold}" />
       </StackPanel>
       <Border Classes="success" IsVisible="{Binding SuccessMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
         <TextBlock x:Name="Success" Text="{Binding SuccessMessage}" />
@@ -23,19 +23,19 @@
       <StackPanel>
         <Border Classes="row">
           <Grid ColumnDefinitions="*,100,60,130">
-            <TextBlock Text="Item" FontWeight="Bold" />
-            <TextBlock Grid.Column="1" Text="Price" FontWeight="Bold" TextAlignment="Right" />
-            <TextBlock Grid.Column="2" Text="Qty" FontWeight="Bold" TextAlignment="Right" />
-            <TextBlock Grid.Column="3" Text="New qty" FontWeight="Bold" TextAlignment="Right" />
+            <TextBlock Text="Item" FontWeight="{StaticResource FontWeightBold}" />
+            <TextBlock Grid.Column="1" Text="Price" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="Qty" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
+            <TextBlock Grid.Column="3" Text="New qty" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
           </Grid>
         </Border>
         <ItemsControl x:Name="LinesList" ItemsSource="{Binding Lines}" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
-        <TextBlock Text="Total:" FontSize="18" />
-        <TextBlock Text="{Binding TotalLabel}" FontSize="18" />
-        <TextBlock Text="→" FontSize="18" />
-        <TextBlock x:Name="NewTotal" Text="{Binding NewTotalLabel}" FontSize="18" FontWeight="Bold" />
+        <TextBlock Text="Total:" FontSize="{StaticResource FontSizeLg}" />
+        <TextBlock Text="{Binding TotalLabel}" FontSize="{StaticResource FontSizeLg}" />
+        <TextBlock Text="→" FontSize="{StaticResource FontSizeLg}" />
+        <TextBlock x:Name="NewTotal" Text="{Binding NewTotalLabel}" FontSize="{StaticResource FontSizeLg}" FontWeight="{StaticResource FontWeightBold}" />
       </StackPanel>
       <StackPanel Spacing="4">
         <TextBlock Classes="muted" Text="Reason" />
@@ -58,7 +58,7 @@
         </Button>
       </StackPanel>
       <StackPanel Spacing="8" IsVisible="{Binding History, Converter={x:Static v:Is.NotEmpty}}">
-        <TextBlock Text="Previous corrections" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0" />
+        <TextBlock Text="Previous corrections" FontSize="16" FontWeight="{StaticResource FontWeightSemibold}" Margin="0,8,0,0" />
         <ItemsControl x:Name="HistoryList" ItemsSource="{Binding History}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="m:AmendmentEntry">
