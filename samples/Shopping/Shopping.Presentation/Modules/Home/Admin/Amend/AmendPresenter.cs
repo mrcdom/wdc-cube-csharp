@@ -1,8 +1,7 @@
-using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
-using Shopping.Domain.Users;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Admin;
+using Shopping.Presentation.Modules.Home.Admin.Amend.Calls;
 using Wdc.Cube;
 using Wdc.Domain;
 
@@ -59,30 +58,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
 
     private async Task Load(long purchaseId)
     {
-        var criteria = new PurchaseCriteria()
-            .PurchaseId.Eq(purchaseId)
-            .WithProjection(new Purchase
-            {
-                Id = Mark.Int64,
-                BuyDate = Mark.Instant,
-                User = new User { Name = Mark.String },
-                Items = Mark.List(
-                    new PurchaseItem { Id = Mark.Int64, Price = Mark.Decimal, Amount = Mark.Int32, Product = new Product { Name = Mark.String } },
-                    new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.OldestFirst)),
-                Amendments = Mark.List(
-                    new PurchaseAmendment
-                    {
-                        Date = Mark.Instant,
-                        Reason = Mark.String,
-                        Author = new User { Name = Mark.String },
-                        Lines = Mark.List(
-                            new PurchaseAmendmentLine { AmountBefore = Mark.Int32, AmountAfter = Mark.Int32, Product = new Product { Name = Mark.String } },
-                            new PurchaseAmendmentLineCriteria().WithOrderBy(PurchaseAmendmentLineOrderBy.OldestFirst)),
-                    },
-                    new PurchaseAmendmentCriteria().WithOrderBy(PurchaseAmendmentOrderBy.OldestFirst)),
-            });
-        var purchase = (await App.Repositories.Purchases.Fetch(criteria, limit: 1)).FirstOrDefault()
-                       ?? throw new PurchaseNotFoundException(purchaseId);
+        var purchase = await new AmendablePurchaseQuery(App.Repositories, purchaseId).Run();
 
         _purchaseId = purchaseId;
         Scope.TitleLabel = $"Purchase #{purchaseId}";
@@ -181,7 +157,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         Scope.SuccessMessage = null;
         try
         {
-            await App.Repositories.Amendments.Insert(errata);
+            await new AmendmentCreate(App.Repositories, errata).Run();
             await Load(purchaseId);
             Scope.SuccessMessage = Saved;
             _ = _admin?.Reload();

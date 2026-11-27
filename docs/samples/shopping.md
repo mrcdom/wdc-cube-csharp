@@ -156,15 +156,17 @@ var purchaseId = await Cart.Commit(subject);
 await new Receipt.ReceiptKeys(App) { PurchaseId = purchaseId, PurchaseMade = true }.Flip();
 ```
 
-`CartManager.Commit` builds a `Purchase` with its `Items` and inserts it with one call:
+`CartManager.Commit` checks the cart and runs a resource call, `PurchaseCreate`, which builds a `Purchase` with its
+`Items` and inserts it in one transaction that the call opens itself:
 
 ```csharp
 // samples/Shopping/Shopping.Presentation/Modules/Home/CartManager.cs
-if (!await repositories.Purchases.Insert(purchase))
-{
-    throw new InvalidOperationException("The purchase was not recorded.");
-}
+var id = await new PurchaseCreate(repositories, userId: subject.Id, buyDate: time.GetUtcNow(), lines: [.. _lines]).Run();
 ```
+
+Every read and write of the presentation is such a call, in a `Calls/` folder next to its presenter
+(`ReceiptQuery`, `ProductQuery`, `MyPurchasesPageQuery`, `AmendmentCreate`...): see
+[Transactions](../concepts/transactions.md#resource-calls).
 
 The cart is kept on failure. A business error (`InvalidCartItemException`) becomes a message on the cart; a database
 or network failure is logged and shown as "unavailable".
@@ -320,6 +322,7 @@ dotnet test --solution wdc-cube.slnx
 
 | To see | Look at |
 |---|---|
+| Reads and writes as resource calls | The `Calls/` folders, `PurchaseCreate`, `PurchasesPage` |
 | A guard that redirects with the intent in transit | `HomePresenter.ApplyParameters` |
 | Panels loaded in parallel, without holding the flip | `ProductsPanelPresenter`, `PurchasesPanelPresenter` |
 | Paging kept in the address | `HomeKeys.Page`, `PurchasesPanelPresenter` |

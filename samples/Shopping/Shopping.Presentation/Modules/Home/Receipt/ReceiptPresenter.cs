@@ -1,8 +1,7 @@
-using Shopping.Domain.Purchases;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
+using Shopping.Presentation.Modules.Home.Receipt.Calls;
 using Wdc.Cube;
-using Wdc.Domain;
 
 namespace Shopping.Presentation.Modules.Home.Receipt;
 
@@ -42,22 +41,7 @@ public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPres
     private async Task Load(long purchaseId)
     {
         var subject = App.Subject ?? throw new InvalidOperationException("No session.");
-        var criteria = new PurchaseCriteria()
-            .PurchaseId.Eq(purchaseId)
-            .UserId.Eq(subject.Id) // ownership: never only by key
-            .WithProjection(new Purchase
-            {
-                Id = Mark.Int64,
-                BuyDate = Mark.Instant,
-                Items = Mark.List(
-                    new PurchaseItem { Id = Mark.Int64, Price = Mark.Decimal, Amount = Mark.Int32, Product = new Domain.Products.Product { Name = Mark.String } },
-                    new PurchaseItemCriteria().WithOrderBy(PurchaseItemOrderBy.OldestFirst)),
-                Amendments = Mark.List(
-                    new PurchaseAmendment { Date = Mark.Instant, Reason = Mark.String },
-                    new PurchaseAmendmentCriteria().WithOrderBy(PurchaseAmendmentOrderBy.OldestFirst)),
-            });
-        var purchase = (await App.Repositories.Purchases.Fetch(criteria, limit: 1)).FirstOrDefault()
-                       ?? throw new PurchaseNotFoundException(purchaseId);
+        var purchase = await new ReceiptQuery(App.Repositories, purchaseId: purchaseId, userId: subject.Id).Run();
 
         var items = purchase.Items ?? [];
         _purchaseId = purchaseId;

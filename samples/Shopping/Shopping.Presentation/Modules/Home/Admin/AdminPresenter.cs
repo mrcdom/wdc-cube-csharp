@@ -1,11 +1,9 @@
-using Shopping.Domain.Products;
 using Shopping.Domain.Purchases;
-using Shopping.Domain.Users;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
+using Shopping.Presentation.Modules.Home.Admin.Calls;
 using Wdc.Cube;
-using Wdc.Domain;
 
 namespace Shopping.Presentation.Modules.Home.Admin;
 
@@ -91,36 +89,19 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
         Scope.Loading = true;
         try
         {
-            var criteria = new PurchaseCriteria().WithOrderBy(PurchaseOrderBy.MostRecentPurchaseFirst);
-            if (customer is not null)
-            {
-                criteria.CustomerName.Containing(customer);
-            }
-
-            var total = await App.Repositories.Purchases.Count(criteria);
-            var totalPages = Math.Max(1, (total + PageSize - 1) / PageSize);
-            page = Math.Min(page, totalPages);
-            criteria.WithProjection(new Purchase
-            {
-                Id = Mark.Int64,
-                BuyDate = Mark.Instant,
-                User = new User { Name = Mark.String },
-                Items = Mark.List(new PurchaseItem { Price = Mark.Decimal, Amount = Mark.Int32, Product = new Product { Name = Mark.String } }),
-                Amendments = Mark.List(new PurchaseAmendment { Id = Mark.Int64 }),
-            });
-            var purchases = total == 0 ? [] : await App.Repositories.Purchases.Fetch(criteria, (page - 1) * PageSize, PageSize);
+            var result = await new PurchasesPageQuery(App.Repositories, customer, page: page, pageSize: PageSize).Run();
             if (token != _pending || IsReleased)
             {
                 return;
             }
 
-            Page = page;
-            _loaded = (page, customer);
-            Scope.Purchases = [.. purchases.Select(ToRow)];
-            Scope.CountLabel = $"{total} {(total == 1 ? "purchase" : "purchases")}";
-            Scope.PageLabel = $"{page} / {totalPages}";
-            Scope.HasPrevious = page > 1;
-            Scope.HasNext = page < totalPages;
+            Page = result.Page;
+            _loaded = (result.Page, customer);
+            Scope.Purchases = [.. result.Purchases.Select(ToRow)];
+            Scope.CountLabel = $"{result.Total} {(result.Total == 1 ? "purchase" : "purchases")}";
+            Scope.PageLabel = $"{result.Page} / {result.TotalPages}";
+            Scope.HasPrevious = result.Page > 1;
+            Scope.HasNext = result.Page < result.TotalPages;
         }
         catch (Exception caught) when (caught is not OperationCanceledException)
         {

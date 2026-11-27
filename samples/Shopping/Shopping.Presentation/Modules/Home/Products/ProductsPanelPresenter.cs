@@ -1,7 +1,6 @@
-using Shopping.Domain.Products;
 using Shopping.Presentation.Infra;
+using Shopping.Presentation.Modules.Home.Products.Calls;
 using Wdc.Cube;
-using Wdc.Domain;
 
 namespace Shopping.Presentation.Modules.Home.Products;
 
@@ -24,10 +23,7 @@ public sealed class ProductsPanelPresenter : Presenter<RootPresenter, ProductsPa
         Scope.Loading = true;
         try
         {
-            var criteria = new ProductCriteria()
-                .WithOrderBy(ProductOrderBy.NameAToZ)
-                .WithProjection(new Product { Id = Mark.Int64, Name = Mark.String, Price = Mark.Decimal });
-            var products = await App.Repositories.Products.Fetch(criteria, limit: MaxProducts);
+            var products = await new ProductListQuery(App.Repositories, MaxProducts).Run();
             if (token != _pending || IsReleased)
             {
                 return;
