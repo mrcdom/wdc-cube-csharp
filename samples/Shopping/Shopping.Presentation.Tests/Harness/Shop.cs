@@ -83,7 +83,7 @@ internal sealed class Shop
         }
         while (await App.InvokeAsync(() => Task.FromResult(IsBusy())) && DateTime.UtcNow < deadline);
 
-        Assert.False(IsBusy(), $"Still loading after 15 s. Error toast: {App.Scope.ErrorMessage ?? "(none)"}");
+        Assert.False(IsBusy(), $"Still loading after 15 s. Error toast: {App.Scope.ErrorMessage?.ToString() ?? "(none)"}");
     }
 
     private bool IsBusy()

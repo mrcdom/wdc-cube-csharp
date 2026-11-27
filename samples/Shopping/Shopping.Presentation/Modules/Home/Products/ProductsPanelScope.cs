@@ -12,7 +12,7 @@ public sealed class ProductsPanelScope : Scope
     public bool Loading { get; set => Set(ref field, value); }
 
     /// <summary>"{n} items".</summary>
-    public string CountLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? CountLabel { get; set => Set(ref field, value); }
 
     public Func<long, Task> OnOpenProduct { get; set; } = ScopeActions.Unbound<long>();
 }

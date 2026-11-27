@@ -1,4 +1,5 @@
 using Shopping.Domain.Purchases;
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Admin.Amend;
@@ -19,7 +20,7 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
     /// <summary>The permission the administration needs.</summary>
     public const string Permission = "purchase-amendment:write";
 
-    public const string NotAllowed = "You do not have access to administration.";
+    public static Message NotAllowed => Texts.AdminNotAllowed();
 
     private int _pending;
     private (int Page, string? Customer)? _loaded;
@@ -98,8 +99,8 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
             Page = result.Page;
             _loaded = (result.Page, customer);
             Scope.Purchases = [.. result.Purchases.Select(ToRow)];
-            Scope.CountLabel = $"{result.Total} {(result.Total == 1 ? "purchase" : "purchases")}";
-            Scope.PageLabel = $"{result.Page} / {result.TotalPages}";
+            Scope.CountLabel = Texts.CommonPurchaseCount(count: result.Total);
+            Scope.PageLabel = Texts.CommonPageOf(page: result.Page, pages: result.TotalPages);
             Scope.HasPrevious = result.Page > 1;
             Scope.HasNext = result.Page < result.TotalPages;
         }
@@ -141,9 +142,9 @@ public sealed class AdminPresenter(RootPresenter app) : CubePresenter<RootPresen
         var items = p.Items ?? [];
         return new AdminPurchaseRow(
             p.Id!.Value,
-            $"#{p.Id}",
+            Texts.AdminPurchaseNumber(id: p.Id!.Value),
             p.User?.Name ?? string.Empty,
-            p.BuyDate is { } date ? Formats.Date(date) : string.Empty,
+            p.BuyDate is { } date ? Formats.Date(date) : null,
             string.Join(", ", items.Select(i => i.Product?.Name).Where(n => !string.IsNullOrWhiteSpace(n))),
             Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0))),
             p.Amendments is { Count: > 0 });

@@ -257,3 +257,12 @@ Wdc.Cube.UpdateScheduler.UpdateScheduler(Wdc.Cube.PresentationDispatcher! dispat
 Wdc.Cube.UpdateScheduler.Window.get -> System.TimeSpan
 virtual Wdc.Cube.ApplicationPresenter<TScope>.OnActionFailure(string! action, System.Exception! caught) -> void
 virtual Wdc.Cube.Presenter<TApp, TScope>.OnActionFailure(string! action, System.Exception! caught) -> void
+override Wdc.Cube.Message.Equals(object? obj) -> bool
+override Wdc.Cube.Message.GetHashCode() -> int
+override Wdc.Cube.Message.ToString() -> string!
+static Wdc.Cube.Message.Of(string! key, params System.ReadOnlySpan<(string! Name, object? Value)> args) -> Wdc.Cube.Message!
+Wdc.Cube.Message
+Wdc.Cube.Message.Args.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Wdc.Cube.Message.Equals(Wdc.Cube.Message? other) -> bool
+Wdc.Cube.Message.Key.get -> string!
+Wdc.Cube.Message.Message(string! key, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? args = null) -> void

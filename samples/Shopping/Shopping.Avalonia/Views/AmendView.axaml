@@ -1,6 +1,7 @@
 <cube:ScopeView xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:cube="using:Wdc.Cube.Avalonia"
+                xmlns:wdc="using:Wdc.Cube"
                 xmlns:m="using:Shopping.Presentation.Modules.Home.Admin.Amend"
                 xmlns:v="using:Shopping.Avalonia.Views"
                 x:Class="Shopping.Avalonia.Views.AmendView"
@@ -8,17 +9,17 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="h2" Text="{Binding TitleLabel}" />
-        <Border Classes="chip"><TextBlock Text="{Binding DateLabel}" /></Border>
+        <TextBlock Classes="h2" Text="{Binding TitleLabel, Converter={StaticResource T}}" />
+        <Border Classes="chip"><TextBlock Text="{Binding DateLabel, Converter={StaticResource T}}" /></Border>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="4">
         <TextBlock Classes="muted" Text="Customer:" />
         <TextBlock Text="{Binding CustomerLabel}" FontWeight="{StaticResource FontWeightSemibold}" />
       </StackPanel>
       <Border Classes="success" IsVisible="{Binding SuccessMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
-        <TextBlock x:Name="Success" Text="{Binding SuccessMessage}" />
+        <TextBlock x:Name="Success" Text="{Binding SuccessMessage, Converter={StaticResource T}}" />
       </Border>
-      <TextBlock x:Name="Error" Classes="error" Text="{Binding ErrorMessage}"
+      <TextBlock x:Name="Error" Classes="error" Text="{Binding ErrorMessage, Converter={StaticResource T}}"
                  IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <StackPanel>
         <Border Classes="row">
@@ -65,12 +66,18 @@
               <Border Classes="row">
                 <StackPanel Spacing="2">
                   <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Classes="muted" Text="{Binding DateLabel}" />
+                    <TextBlock Classes="muted" Text="{Binding DateLabel, Converter={StaticResource T}}" />
                     <TextBlock Classes="muted" Text="—" />
                     <TextBlock Classes="muted" Text="{Binding AuthorLabel}" />
                   </StackPanel>
                   <TextBlock Text="{Binding Reason}" TextWrapping="Wrap" />
-                  <ItemsControl ItemsSource="{Binding Changes}" />
+                  <ItemsControl ItemsSource="{Binding Changes}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="wdc:Message">
+                        <TextBlock Classes="muted" Text="{Binding Converter={StaticResource T}}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
                 </StackPanel>
               </Border>
             </DataTemplate>

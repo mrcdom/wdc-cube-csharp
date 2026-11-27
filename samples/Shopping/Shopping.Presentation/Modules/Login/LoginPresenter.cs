@@ -1,3 +1,4 @@
+using Shopping.I18n;
 using Shopping.Presentation.Modules.Home;
 using Wdc.Cube;
 
@@ -6,13 +7,14 @@ namespace Shopping.Presentation.Modules.Login;
 /// <summary>Public place: asks for the credentials and, when they match, opens the session and goes home.</summary>
 public sealed class LoginPresenter(RootPresenter app) : CubePresenter<RootPresenter, LoginScope>(app, new LoginScope())
 {
-    public const string NotRecognized = "Username or password not recognized!";
-    public const string CommunicationFailure = "Could not reach the server. Check your connection.";
+    public static Message NotRecognized => Texts.LoginNotRecognized();
+
+    public static Message CommunicationFailure => Texts.LoginCommunicationFailure();
 
     /// <summary>The message after too many failures: how long to wait, when known.</summary>
-    public static string TooManyAttempts(TimeSpan? wait) => wait is { } w
-        ? $"Too many failed attempts. Try again in {Math.Max(1, (int)Math.Ceiling(w.TotalSeconds))} seconds."
-        : "Too many failed attempts. Try again later.";
+    public static Message TooManyAttempts(TimeSpan? wait) => wait is { } w
+        ? Texts.LoginTooManyAttempts(seconds: Math.Max(1, (int)Math.Ceiling(w.TotalSeconds)))
+        : Texts.LoginTooManyAttemptsLater();
 
     public override Task<bool> ApplyParameters(FlipIntent intent, bool initialization, bool last)
     {

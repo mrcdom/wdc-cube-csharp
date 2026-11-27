@@ -7,7 +7,7 @@
                 x:DataType="m:ProductScope">
   <Border Classes="card">
     <StackPanel Spacing="16">
-      <TextBlock Classes="error" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <TextBlock Classes="error" Text="{Binding ErrorMessage, Converter={StaticResource T}}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <Grid ColumnDefinitions="120,16,*">
         <Image Width="120" Height="120" Stretch="Uniform" VerticalAlignment="Top" v:RemoteImage.Url="{Binding ImageUrl}" />
         <StackPanel Grid.Column="2" Spacing="12">

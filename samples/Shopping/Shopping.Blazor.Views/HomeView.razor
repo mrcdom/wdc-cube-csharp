@@ -3,7 +3,7 @@
 <div class="home">
     <header class="app-header">
         <button class="logo" @onclick="Scope.OnHome">🛍 Shopping</button>
-        <span class="greeting">@Scope.Greeting</span>
+        <span class="greeting">@T(Scope.Greeting)</span>
         @if (Scope.ShowAdmin)
         {
             <button class="admin-button" @onclick="Scope.OnOpenAdmin">Administration</button>

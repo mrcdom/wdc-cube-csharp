@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The texts of the Shopping sample in every language: the catalogs (Catalog/messages.<tag>.json), the keys and
+       the typed factories generated from them (by samples/Shopping/generate.cs), and the translation the views use. -->
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Wdc.Cube/Wdc.Cube.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Not culture resources (the tag in the name would send them to satellite assemblies): every catalog stays in
+         this assembly. -->
+    <EmbeddedResource Include="Catalog/messages.*.json" LogicalName="%(Filename)%(Extension)" WithCulture="false" />
+  </ItemGroup>
+</Project>

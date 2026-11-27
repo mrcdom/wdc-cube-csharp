@@ -217,6 +217,22 @@ flowchart TD
     A -->|ParentSlot = body| L["LoginPresenter (login)"]
 ```
 
+### Texts: messages
+
+A scope does not hold the text a user reads, but a `Message`: the key of the text in the application's catalog, and
+the values of its placeholders. The presentation does not know the user's language; each view translates the message
+with the catalog of its own.
+
+```csharp
+Scope.ErrorMessage = Message.Of("login.tooManyAttempts", ("seconds", 30));
+```
+
+- An argument is a string, or another message translated in the same language (a date, written by the catalog's own
+  pattern). `Message.Of` writes a number invariantly and `null` as an empty text.
+- Two messages with the same key and arguments are equal, so setting the same one again does not redraw.
+- The catalog, the languages and the translation belong to the application. The Shopping sample keeps them in
+  `Shopping.I18n`, with a typed factory per key generated from its catalogs (`Texts.LoginTooManyAttempts(seconds)`).
+
 ## Actions
 
 A scope declares its actions as delegate properties with a placeholder, and the presenter binds them once, inside

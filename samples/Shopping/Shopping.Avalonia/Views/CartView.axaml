@@ -8,7 +8,7 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <TextBlock Classes="h2" Text="Shopping Cart" />
-      <TextBlock Classes="error" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <TextBlock Classes="error" Text="{Binding ErrorMessage, Converter={StaticResource T}}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <StackPanel IsVisible="{Binding Lines, Converter={x:Static v:Is.Empty}}" HorizontalAlignment="Center" Spacing="4">
         <TextBlock Text="🛒" FontSize="{StaticResource FontSizeDisplay}" HorizontalAlignment="Center" />
         <TextBlock Text="Your cart is empty" HorizontalAlignment="Center" />

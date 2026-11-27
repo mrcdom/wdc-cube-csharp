@@ -28,7 +28,7 @@
           <TextBlock Classes="label" Text="Password" />
           <TextBox x:Name="PasswordBox" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
         </StackPanel>
-        <TextBlock Classes="error" Text="{Binding ErrorMessage}" TextWrapping="Wrap" HorizontalAlignment="Center"
+        <TextBlock Classes="error" Text="{Binding ErrorMessage, Converter={StaticResource T}}" TextWrapping="Wrap" HorizontalAlignment="Center"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
         <Button x:Name="EnterButton" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                 Padding="12,8" IsEnabled="{Binding !Loading}" Click="OnEnter">

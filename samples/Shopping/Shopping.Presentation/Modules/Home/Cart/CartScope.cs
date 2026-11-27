@@ -28,7 +28,7 @@ public sealed class CartScope : Scope
 
     public string TotalLabel { get; set => Set(ref field, value); } = string.Empty;
 
-    public string? ErrorMessage { get; set => Set(ref field, value); }
+    public Message? ErrorMessage { get; set => Set(ref field, value); }
 
     public bool Buying { get; set => Set(ref field, value); }
 

@@ -9,7 +9,7 @@
     <ContentControl Content="{Binding Body}" />
     <Border Classes="toast" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
             PointerPressed="OnDismiss">
-      <TextBlock x:Name="Toast" Text="{Binding ErrorMessage}" TextWrapping="Wrap" MaxWidth="520" />
+      <TextBlock x:Name="Toast" Text="{Binding ErrorMessage, Converter={StaticResource T}}" TextWrapping="Wrap" MaxWidth="520" />
     </Border>
   </Panel>
 </cube:ScopeView>

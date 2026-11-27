@@ -15,7 +15,7 @@ public sealed class ProductScope : Scope
 
     public string ImageUrl { get; set => Set(ref field, value); } = string.Empty;
 
-    public string? ErrorMessage { get; set => Set(ref field, value); }
+    public Message? ErrorMessage { get; set => Set(ref field, value); }
 
     /// <summary>The quantity chosen in the view.</summary>
     public Func<int, Task> OnAddToCart { get; set; } = ScopeActions.Unbound<int>();

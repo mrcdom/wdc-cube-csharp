@@ -3,7 +3,7 @@
 <section class="card product-page">
     @if (Scope.ErrorMessage is { } error)
     {
-        <p class="error">@error</p>
+        <p class="error">@T(error)</p>
     }
     <div class="product-detail">
         <img src="@Scope.ImageUrl" alt="" />

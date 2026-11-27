@@ -2,6 +2,7 @@ using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Cart;
 using Shopping.Presentation.Modules.Home.ProductDetail;
 using Shopping.Presentation.Modules.Home.Receipt;
+using static Shopping.Presentation.Tests.Shown;
 
 namespace Shopping.Presentation.Tests;
 
@@ -14,7 +15,7 @@ public sealed class SqlServerFlowTests(ShoppingSqlServerFixture db) : IClassFixt
         var shop = await Shop.LoggedIn(db, "admin");
         var home = shop.PresenterOf<HomePresenter>(HomeKeys.Place);
 
-        Assert.Equal("Hello, John Smith", home.Scope.Greeting);
+        Assert.Equal("Hello, John Smith", En(home.Scope.Greeting));
         Assert.Equal(["Italian Design Coffee Maker", "Thread Seal Tape", "USB Flash Drive 2GB", "Volleyball"],
             home.Scope.Products!.Products.Select(p => p.Name));
         Assert.Equal(["$47.97", "$200.00"], home.Scope.Purchases!.Purchases.Select(p => p.TotalLabel));

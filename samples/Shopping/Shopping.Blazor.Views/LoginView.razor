@@ -13,7 +13,7 @@
 
         @if (Scope.ErrorMessage is { } error)
         {
-            <p class="error">@error</p>
+            <p class="error">@T(error)</p>
         }
 
         <button class="primary enter" type="submit" disabled="@Scope.Loading">

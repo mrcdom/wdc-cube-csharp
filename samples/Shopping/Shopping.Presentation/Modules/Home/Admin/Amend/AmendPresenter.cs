@@ -1,4 +1,5 @@
 using Shopping.Domain.Purchases;
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home.Admin;
 using Shopping.Presentation.Modules.Home.Admin.Amend.Calls;
@@ -13,12 +14,18 @@ namespace Shopping.Presentation.Modules.Home.Admin.Amend;
 /// </summary>
 public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresenter, AmendScope>(app, new AmendScope())
 {
-    public const string NothingToCorrect = "Lower or remove at least one item.";
-    public const string ReasonRequired = "Enter the reason for the correction.";
-    public const string EveryItemRemoved = "The correction cannot remove every item.";
-    public const string OnlyDown = "The quantity can only go down (0 removes the item).";
-    public const string ChangedMeanwhile = "The purchase changed while you were correcting it. Check it and try again.";
-    public const string Saved = "Correction recorded.";
+    public static Message NothingToCorrect => Texts.AmendNothingToCorrect();
+
+    public static Message ReasonRequired => Texts.AmendReasonRequired();
+
+    public static Message EveryItemRemoved => Texts.AmendEveryItemRemoved();
+
+    public static Message OnlyDown => Texts.AmendOnlyDown();
+
+    public static Message ChangedMeanwhile => Texts.AmendChangedMeanwhile();
+
+    public static Message Saved => Texts.AmendSaved();
+
 
     private readonly Dictionary<long, decimal> _prices = [];
     private long? _purchaseId;
@@ -57,9 +64,9 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         var purchase = await new AmendablePurchaseQuery(App.Repositories, purchaseId).Run();
 
         _purchaseId = purchaseId;
-        Scope.TitleLabel = $"Purchase #{purchaseId}";
+        Scope.TitleLabel = Texts.AmendTitle(id: purchaseId);
         Scope.CustomerLabel = purchase.User?.Name ?? string.Empty;
-        Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : string.Empty;
+        Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : null;
         _prices.Clear();
         Scope.Lines.Assign([.. (purchase.Items ?? []).Select(NewLine)]);
         Scope.TotalLabel = Formats.Money(Total(l => l.Quantity));
@@ -108,10 +115,10 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
         Scope.Lines.Sum(l => _prices.GetValueOrDefault(l.ItemId) * quantity(l));
 
     private static AmendmentEntry ToEntry(PurchaseAmendment a) => new(
-        a.Date is { } date ? Formats.Date(date) : string.Empty,
+        a.Date is { } date ? Formats.Date(date) : null,
         a.Author?.Name ?? string.Empty,
         a.Reason ?? string.Empty,
-        [.. (a.Lines ?? []).Select(l => $"{l.Product?.Name}: {l.AmountBefore} → {l.AmountAfter}")]);
+        [.. (a.Lines ?? []).Select(l => Texts.AmendHistoryLine(product: l.Product?.Name ?? string.Empty, before: l.AmountBefore ?? 0, after: l.AmountAfter ?? 0))]);
 
     /// <summary>What follows from the lines and the reason: the new total and whether to offer the confirmation.</summary>
     private void Refresh()
@@ -121,7 +128,7 @@ public sealed class AmendPresenter(RootPresenter app) : CubePresenter<RootPresen
     }
 
     /// <summary>Why the correction cannot be confirmed as it is, or <see langword="null"/>.</summary>
-    private string? Problem()
+    private Message? Problem()
     {
         if (!Scope.Lines.Any(l => l.NewQuantity < l.Quantity))
         {

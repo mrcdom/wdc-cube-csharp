@@ -3,7 +3,7 @@
                 xmlns:cube="using:Wdc.Cube.Avalonia"
                 xmlns:m="using:Shopping.Presentation.Modules.Home.Receipt"
                 xmlns:v="using:Shopping.Avalonia.Views"
-                xmlns:sys="using:System"
+                xmlns:wdc="using:Wdc.Cube"
                 x:Class="Shopping.Avalonia.Views.ReceiptView"
                 x:DataType="m:ReceiptScope">
   <Border Classes="card">
@@ -13,7 +13,7 @@
       </Border>
       <StackPanel Orientation="Horizontal" Spacing="8">
         <TextBlock Classes="h2" Text="🧾 Receipt" />
-        <Border Classes="chip"><TextBlock Text="{Binding DateLabel}" /></Border>
+        <Border Classes="chip"><TextBlock Text="{Binding DateLabel, Converter={StaticResource T}}" /></Border>
       </StackPanel>
       <StackPanel>
         <Border Classes="row">
@@ -43,9 +43,9 @@
       </StackPanel>
       <ItemsControl x:Name="Corrections" ItemsSource="{Binding Corrections}">
         <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="sys:String">
+          <DataTemplate x:DataType="wdc:Message">
             <Border Classes="chip" Padding="10,6" Margin="0,4,0,0" HorizontalAlignment="Stretch">
-              <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding Converter={StaticResource T}}" TextWrapping="Wrap" />
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

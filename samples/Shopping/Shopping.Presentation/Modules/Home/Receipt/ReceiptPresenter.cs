@@ -1,3 +1,4 @@
+using Shopping.I18n;
 using Shopping.Presentation.Infra;
 using Shopping.Presentation.Modules.Home;
 using Shopping.Presentation.Modules.Home.Receipt.Calls;
@@ -45,11 +46,11 @@ public sealed class ReceiptPresenter(RootPresenter app) : CubePresenter<RootPres
 
         var items = purchase.Items ?? [];
         _purchaseId = purchaseId;
-        Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : string.Empty;
+        Scope.DateLabel = purchase.BuyDate is { } date ? Formats.Date(date) : null;
         Scope.Lines = [.. items.Select(i => new ReceiptLine(i.Product?.Name ?? string.Empty, i.Amount ?? 0, Formats.Money(i.Price ?? 0)))];
         Scope.TotalLabel = Formats.Money(items.Sum(i => (i.Price ?? 0) * (i.Amount ?? 0)));
         Scope.Corrections = [.. (purchase.Amendments ?? []).Select(a =>
-            $"Purchase corrected on {(a.Date is { } when ? Formats.Date(when) : string.Empty)}: {a.Reason}")];
+            Texts.ReceiptCorrection(date: a.Date is { } when ? Formats.Date(when) : string.Empty, reason: a.Reason ?? string.Empty))];
     }
 
     private Task OnContinue() => new HomeKeys(App).Flip();

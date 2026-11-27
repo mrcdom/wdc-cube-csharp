@@ -13,7 +13,7 @@ The first version, not yet published.
 - **`Wdc.Cube`:** places in a tree declared by keys classes, flip intents and addresses, presenters and scopes,
   batched updates with a render handshake, a serial dispatcher per application, guarded actions that run one at a
   time (a failure goes to the presenter's `OnActionFailure`, then to the application), history with Back/Forward and
-  deep links.
+  deep links, `Message` (a text by its key and arguments, translated by each view).
 - **`Wdc.Cube.Blazor`, `Wdc.Cube.Avalonia`:** views for Blazor (Server and WebAssembly) and Avalonia.
 - **`Wdc.Cube.Codec`:** sealed addresses (AES-SIV), compatible with the TypeScript implementation.
 - **`Wdc.Cube.Testing`:** driving an application in tests, without a view.

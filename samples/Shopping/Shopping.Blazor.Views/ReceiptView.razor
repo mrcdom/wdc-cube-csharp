@@ -5,7 +5,7 @@
     {
         <p class="success">Purchase completed successfully!</p>
     }
-    <h2>🧾 Receipt <span class="chip">@Scope.DateLabel</span></h2>
+    <h2>🧾 Receipt <span class="chip">@T(Scope.DateLabel)</span></h2>
     <table>
         <thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead>
         <tbody>
@@ -18,7 +18,7 @@
     <p class="total">Total: <strong>@Scope.TotalLabel</strong></p>
     @foreach (var correction in Scope.Corrections)
     {
-        <p class="correction">@correction</p>
+        <p class="correction">@T(correction)</p>
     }
     <div class="actions">
         <button class="primary continue" @onclick="Scope.OnContinue">Continue Shopping</button>

@@ -3,7 +3,7 @@ using Wdc.Cube;
 namespace Shopping.Presentation.Modules.Home.Admin;
 
 /// <summary>A purchase in the administration's list: whose, when, what, how much, and whether it was corrected.</summary>
-public sealed record AdminPurchaseRow(long Id, string NumberLabel, string CustomerLabel, string DateLabel, string ItemsLabel,
+public sealed record AdminPurchaseRow(long Id, Message NumberLabel, string CustomerLabel, Message? DateLabel, string ItemsLabel,
     string TotalLabel, bool Corrected);
 
 public sealed class AdminScope : Scope
@@ -19,10 +19,10 @@ public sealed class AdminScope : Scope
     public bool Loading { get; set => Set(ref field, value); }
 
     /// <summary>"{n} purchases".</summary>
-    public string CountLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? CountLabel { get; set => Set(ref field, value); }
 
     /// <summary>"page / total".</summary>
-    public string PageLabel { get; set => Set(ref field, value); } = string.Empty;
+    public Message? PageLabel { get; set => Set(ref field, value); }
 
     public bool HasPrevious { get; set => Set(ref field, value); }
 
