@@ -18,9 +18,9 @@
       <StackPanel>
         <Border Classes="row">
           <Grid ColumnDefinitions="*,Auto,370">
-            <TextBlock Text="Item" FontWeight="Bold" />
-            <TextBlock Grid.Column="1" Text="Qty" FontWeight="Bold" TextAlignment="Right" />
-            <TextBlock Grid.Column="2" Text="Amount" FontWeight="Bold" TextAlignment="Right" />
+            <TextBlock Text="Item" FontWeight="{StaticResource FontWeightBold}" />
+            <TextBlock Grid.Column="1" Text="Qty" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="Amount" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
           </Grid>
         </Border>
         <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
@@ -38,8 +38,8 @@
         </ItemsControl>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <TextBlock Text="Total: " FontSize="18" />
-        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="18" FontWeight="Bold" />
+        <TextBlock Text="Total: " FontSize="{StaticResource FontSizeLg}" />
+        <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="{StaticResource FontSizeLg}" FontWeight="{StaticResource FontWeightBold}" />
       </StackPanel>
       <ItemsControl x:Name="Corrections" ItemsSource="{Binding Corrections}">
         <ItemsControl.ItemTemplate>

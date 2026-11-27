@@ -2,20 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Shopping.Avalonia.App"
              RequestedThemeVariant="Light">
-  <!-- The look of the web app (Shopping.Blazor.Views/wwwroot/app.css), value for value: same palette, sizes, radii. -->
+  <!-- The palette, sizes, radii and weights come from Tokens.axaml, generated from Design/tokens.json, as the web
+       app's tokens.css: the two look the same. -->
   <Application.Resources>
-    <SolidColorBrush x:Key="Primary" Color="#1B5E7B" />
-    <SolidColorBrush x:Key="PrimaryContainer" Color="#D0E8F2" />
-    <SolidColorBrush x:Key="Bg" Color="#F5F7F9" />
-    <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="Fg" Color="#1C1B1F" />
-    <SolidColorBrush x:Key="Muted" Color="#5F6368" />
-    <SolidColorBrush x:Key="Line" Color="#DADCE0" />
-    <SolidColorBrush x:Key="Price" Color="#2E7D32" />
-    <SolidColorBrush x:Key="Error" Color="#B3261E" />
-    <SolidColorBrush x:Key="SuccessBg" Color="#E6F4EA" />
-    <SolidColorBrush x:Key="OnPrimaryLine" Color="#80FFFFFF" />
-    <SolidColorBrush x:Key="Hover" Color="#F1F3F4" />
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Shopping.Avalonia/Tokens.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
   </Application.Resources>
 
   <Application.Styles>
@@ -23,12 +17,12 @@
 
     <!-- :: Text -->
     <Style Selector="TextBlock">
-      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
       <Setter Property="Foreground" Value="{StaticResource Fg}" />
     </Style>
     <Style Selector="TextBlock.h2">
-      <Setter Property="FontSize" Value="18" />
-      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeLg}" />
+      <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}" />
     </Style>
     <Style Selector="TextBlock.muted">
       <Setter Property="Foreground" Value="{StaticResource Muted}" />
@@ -38,38 +32,38 @@
     </Style>
     <Style Selector="TextBlock.price">
       <Setter Property="Foreground" Value="{StaticResource Price}" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontWeight" Value="{StaticResource FontWeightSemibold}" />
     </Style>
 
     <!-- :: Chip, card -->
     <Style Selector="Border.chip">
       <Setter Property="Background" Value="{StaticResource PrimaryContainer}" />
-      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
       <Setter Property="Padding" Value="8,2" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Border.chip > TextBlock">
-      <Setter Property="FontSize" Value="12" />
-      <Setter Property="FontWeight" Value="Medium" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeXs}" />
+      <Setter Property="FontWeight" Value="{StaticResource FontWeightMedium}" />
       <Setter Property="Foreground" Value="{StaticResource Primary}" />
     </Style>
     <Style Selector="Border.card">
       <Setter Property="Background" Value="{StaticResource Surface}" />
       <Setter Property="BorderBrush" Value="{StaticResource Line}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
       <Setter Property="Padding" Value="16" />
       <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
 
     <!-- :: Buttons: white with a thin line; primary, outlined, buy, on the header, remove -->
     <Style Selector="Button">
-      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
       <Setter Property="Background" Value="{StaticResource Surface}" />
       <Setter Property="Foreground" Value="{StaticResource Fg}" />
       <Setter Property="BorderBrush" Value="{StaticResource Line}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
@@ -91,15 +85,15 @@
     <Style Selector="Button.primary">
       <Setter Property="Background" Value="{StaticResource Primary}" />
       <Setter Property="BorderBrush" Value="{StaticResource Primary}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#174F68" />
-      <Setter Property="BorderBrush" Value="#174F68" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Background" Value="{StaticResource PrimaryHover}" />
+      <Setter Property="BorderBrush" Value="{StaticResource PrimaryHover}" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.primary TextBlock">
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <!-- Disabled keeps its color, faded: the generic disabled look left the white text on a white button. -->
     <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
@@ -117,15 +111,15 @@
     <Style Selector="Button.buy">
       <Setter Property="Background" Value="{StaticResource Price}" />
       <Setter Property="BorderBrush" Value="{StaticResource Price}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.buy:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#276B2B" />
-      <Setter Property="BorderBrush" Value="#276B2B" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Background" Value="{StaticResource PriceHover}" />
+      <Setter Property="BorderBrush" Value="{StaticResource PriceHover}" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.buy TextBlock">
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.buy:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{StaticResource Price}" />
@@ -142,24 +136,24 @@
     <Style Selector="Button.onPrimary">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{StaticResource OnPrimaryLine}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.onPrimary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#1AFFFFFF" />
+      <Setter Property="Background" Value="{StaticResource OnPrimaryHover}" />
       <Setter Property="BorderBrush" Value="{StaticResource OnPrimaryLine}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.onPrimary TextBlock">
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.logo">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
     <Style Selector="Button.logo:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
 
     <!-- Product and purchase cards: a white button with the line, content on the left -->
@@ -176,11 +170,11 @@
 
     <!-- :: Inputs -->
     <Style Selector="TextBox">
-      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeBody}" />
       <Setter Property="Background" Value="{StaticResource Surface}" />
       <Setter Property="BorderBrush" Value="{StaticResource Line}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
       <Setter Property="Padding" Value="8" />
     </Style>
     <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
@@ -193,14 +187,14 @@
       <Setter Property="BorderThickness" Value="1" />
     </Style>
     <Style Selector="TextBlock.label">
-      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
       <Setter Property="Foreground" Value="{StaticResource Muted}" />
     </Style>
 
     <!-- :: Toast: dark, at the bottom, centred -->
     <Style Selector="Border.toast">
-      <Setter Property="Background" Value="#E6333333" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="{StaticResource Toast}" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
       <Setter Property="Padding" Value="16,10" />
       <Setter Property="Margin" Value="16,0,16,48" />
       <Setter Property="HorizontalAlignment" Value="Center" />
@@ -208,8 +202,8 @@
       <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Border.toast > TextBlock">
-      <Setter Property="FontSize" Value="14" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+      <Setter Property="Foreground" Value="{StaticResource OnPrimary}" />
     </Style>
 
     <!-- :: Receipt table and cart lines: a line under each row -->
@@ -220,12 +214,12 @@
     </Style>
     <Style Selector="Border.success">
       <Setter Property="Background" Value="{StaticResource SuccessBg}" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusSm}" />
       <Setter Property="Padding" Value="10" />
     </Style>
     <Style Selector="Border.success > TextBlock">
       <Setter Property="Foreground" Value="{StaticResource Price}" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontWeight" Value="{StaticResource FontWeightSemibold}" />
     </Style>
   </Application.Styles>
 </Application>

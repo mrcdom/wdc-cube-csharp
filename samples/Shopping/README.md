@@ -11,6 +11,7 @@ already made (an errata, kept with who, when and why).
 | `Shopping.Presentation` | Places, keys, presenters, scopes. No view, no database. |
 | `Shopping.Presentation.Tests` | The presentation without UI, against a real database in a throwaway schema. |
 | `Shopping.Blazor.Views` | The Blazor views, pages and CSS, shared by the two Blazor hosts. |
+| `Shopping.Generators` | What `generate.cs` writes from `Design/`: the design tokens as CSS and as Avalonia resources. |
 | `Shopping.Hosting` | Health checks (`/health/live`, `/health/ready`) and metrics over OTLP, for both web hosts. |
 | `Shopping.Blazor` | The interactive-server host (one application per circuit), image endpoint, sealed addresses. |
 | `Shopping.Wasm` | The WebAssembly host: the presentation in the browser, data and login through `Shopping.Server`. |
@@ -73,6 +74,20 @@ more); in Development a random key is used and the tokens die with the process.
 a check of the whole setup from outside.
 
 The Shopping presentation tests run twice: on the database and through the server (`*HttpTests`), unchanged.
+
+## Design tokens
+
+The palette, spacing, radii and type of every renderer come from one file, `Design/tokens.json` (W3C format). After
+editing it, regenerate what the views use:
+
+```bash
+cd samples/Shopping
+dotnet build generate.cs && dotnet run --no-build generate.cs
+```
+
+It writes `Shopping.Blazor.Views/wwwroot/tokens.css` (CSS custom properties, imported by `app.css`) and
+`Shopping.Avalonia/Tokens.axaml` (brushes, colors, sizes and radii, merged by `App.axaml`). Both are in the
+repository, and a test fails while either is out of date.
 
 ## Tests
 

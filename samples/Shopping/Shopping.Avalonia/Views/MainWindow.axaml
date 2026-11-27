@@ -2,6 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Shopping.Avalonia.Views.MainWindow"
         Title="Shopping · Cube Avalonia" Width="1100" Height="760" MinWidth="420" MinHeight="480"
-        Background="#F5F7F9">
+        Background="{StaticResource Bg}">
   <ContentControl x:Name="Body" />
 </Window>

@@ -12,6 +12,7 @@
     <ProjectReference Include="../../../src/Wdc.Cube.Testing/Wdc.Cube.Testing.csproj" />
     <ProjectReference Include="../Shopping.Server/Shopping.Server.csproj" />
     <ProjectReference Include="../Shopping.Client/Shopping.Client.csproj" />
+    <ProjectReference Include="../Shopping.Generators/Shopping.Generators.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>

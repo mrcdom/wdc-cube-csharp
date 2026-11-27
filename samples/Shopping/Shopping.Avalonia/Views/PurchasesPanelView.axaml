@@ -18,7 +18,7 @@
           <DataTemplate x:DataType="m:PurchaseCard">
             <Button Classes="purchase-card" Click="OnOpen">
               <StackPanel Spacing="2">
-                <TextBlock Classes="muted" FontSize="12" Text="{Binding DateLabel}" />
+                <TextBlock Classes="muted" FontSize="{StaticResource FontSizeXs}" Text="{Binding DateLabel}" />
                 <TextBlock Text="{Binding ItemsLabel}" TextTrimming="CharacterEllipsis" />
                 <TextBlock Classes="price" Text="{Binding TotalLabel}" />
               </StackPanel>

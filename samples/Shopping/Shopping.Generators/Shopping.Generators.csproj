@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- What samples/Shopping/generate.cs writes from the sources in samples/Shopping/Design: the code is here so the
+       tests can regenerate in memory and compare with what is in the repository. -->
+</Project>
