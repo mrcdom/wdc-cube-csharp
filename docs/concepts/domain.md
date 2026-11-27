@@ -149,12 +149,35 @@ Rules:
 - `Clear()` does not remove them. `Restrict(null)` throws; `RestrictIn([])` matches nothing.
 - A restriction that the repository cannot translate is an error, never a dropped filter.
 
+### Alternative groups
+
+The fields of a criteria always combine with AND, and `Or()` joins only the requests of one field. A disjunction
+across fields ("my purchases, or the ones I manage") takes **alternative groups**:
+- each group is a criteria of the same entity, with its fields in AND;
+- the criteria matches when its own fields match and at least one group matches;
+- a group may have groups of its own.
+
+```csharp
+var mine = new PurchaseCriteria().UserId.Eq(me);
+var recent = new PurchaseCriteria().BuyDate.Ge(lastWeek);
+var criteria = new PurchaseCriteria().CustomerName.Containing("Doe").WithAnyOf(mine, recent);
+```
+
+- `WithAnyOf(...)` replaces the groups, and `WithAnyOf()` clears them.
+- A group that asks nothing matches every row: "or anything" is everything.
+- Only a group's filter counts. Its projection and ordering are ignored, since the query has one of each.
+- **Groups are for code on the server**, such as a policy restricting the rows each role reaches. They never travel:
+  writing a criteria with groups throws `InvalidRequestException`, and the server answers 400 to an `anyOf` key.
+  Leaving them out would send a looser filter than the one built.
+- A term searched in several columns is a criterion of its own, which the repository translates over those columns
+  (`FilterContext.TranslateAny`).
+
 ### Ordering, projection and filter state
 
 - The third type argument of `Criteria<TSelf, TEntity, TOrderBy>` is an enum of named orderings, named by their effect (`CheapestFirst`, `NameAToZ`), not by columns. The repository maps each name to columns and adds the key as a tie-breaker.
 - On the wire an ordering travels in upper snake case (`CHEAPEST_FIRST`). An unknown ordering is refused with `InvalidRequestException`; an unknown operator is dropped, which can only make the filter looser.
 - `WithOrderBy(value)` and `WithProjection(bean)` set the ordering and the projection fluently.
-- `HasFilter` is true when any criterion has a request or a restriction.
+- `HasFilter` is true when any criterion has a request or a restriction, or when every alternative group filters.
 
 The criteria wire format (shared with the Kotlin implementation):
 

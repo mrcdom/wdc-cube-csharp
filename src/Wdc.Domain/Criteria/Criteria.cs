@@ -25,10 +25,17 @@ public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<T
     where TEntity : class
 {
     private readonly List<Criterion> _criterions = [];
+    private TSelf[] _anyOf = [];
 
     public IReadOnlyList<Criterion> Criterions => _criterions;
 
-    public bool HasFilter => _criterions.Exists(c => c.IsSet || c.IsRestricted);
+    public bool HasFilter =>
+        _criterions.Exists(c => c.IsSet || c.IsRestricted) || (_anyOf.Length > 0 && Array.TrueForAll(_anyOf, g => g.HasFilter));
+
+    /// <inheritdoc cref="ICriteria.AnyOf"/>
+    public IReadOnlyList<TSelf> AnyOf => _anyOf;
+
+    IReadOnlyList<ICriteria> ICriteria.AnyOf => _anyOf;
 
     /// <summary>What to fetch (a bean filled with <see cref="Mark"/> values); the repository's default when null.</summary>
     public TEntity? Projection { get; set; }
@@ -53,10 +60,41 @@ public abstract class Criteria<TSelf, TEntity> : ICriteria, IProjectionCarrier<T
         }
     }
 
+    /// <summary>Replaces the alternative groups (none clears them).</summary>
+    public TSelf WithAnyOf(params IEnumerable<TSelf> groups)
+    {
+        ArgumentNullException.ThrowIfNull(groups);
+        var list = groups.ToArray();
+        foreach (var group in list)
+        {
+            ArgumentNullException.ThrowIfNull(group, nameof(groups));
+            if (ReferenceEquals(group, this))
+            {
+                throw new ArgumentException("A criteria cannot be one of its own groups.", nameof(groups));
+            }
+        }
+
+        _anyOf = list;
+        return Self;
+    }
+
     public Criterion? Find(string name) => _criterions.Find(c => c.Name == name);
 
-    public override string ToString() =>
-        $"{GetType().Name}({string.Join("; ", _criterions.Where(c => c.IsSet || c.IsRestricted))}{(OrderByName is { } o ? $"; orderBy {o}" : "")})";
+    public override string ToString()
+    {
+        var parts = _criterions.Where(c => c.IsSet || c.IsRestricted).Select(c => c.ToString()).ToList();
+        if (_anyOf.Length > 0)
+        {
+            parts.Add($"anyOf [{string.Join(" | ", _anyOf.Select(g => g.ToString()))}]");
+        }
+
+        if (OrderByName is { } o)
+        {
+            parts.Add($"orderBy {o}");
+        }
+
+        return $"{GetType().Name}({string.Join("; ", parts)})";
+    }
 
     /// <summary>A field compared for identity only.</summary>
     protected Criterion<TSelf, T> Equality<T>(ValueKind<T> kind, string name) => Register(new Criterion<TSelf, T>(Self, name, kind));

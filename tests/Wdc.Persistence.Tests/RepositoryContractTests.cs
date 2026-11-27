@@ -403,6 +403,90 @@ public abstract class RepositoryContractTests(DatabaseFixture fixture) : IAsyncL
         Assert.Equal(when, storedPurchase!.BuyDate); // same instant, read back in UTC
     }
 
+    // :: Alternative groups and a term over several columns
+
+    [Fact]
+    public async Task AnyOf_GroupsJoinWithOr_AndTheOwnFieldsWithAnd()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "alternative groups do not travel: the refusal has its own test");
+        var a = await NewProduct("Group A", 10m);
+        await NewProduct("Group B", 20m);
+        var c = await NewProduct("Group C", 30m);
+        await NewProduct("Other", 10m);
+
+        var criteria = new ProductCriteria().Name.StartingWith("Group ")
+            .WithAnyOf(new ProductCriteria().Price.Eq(10m), new ProductCriteria().Price.Eq(30m))
+            .WithOrderBy(ProductOrderBy.NameAToZ);
+
+        Assert.Equal([a.Id, c.Id], (await Db.Products.Fetch(criteria, cancellationToken: Ct)).Select(p => p.Id));
+        Assert.Equal(2, await Db.Products.Count(criteria, Ct));
+    }
+
+    [Fact]
+    public async Task AnyOf_AGroupAskingNothing_MatchesEveryRow()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "alternative groups do not travel: the refusal has its own test");
+        await NewProduct("Group A", 10m);
+        await NewProduct("Group B", 20m);
+
+        var criteria = new ProductCriteria().Name.StartingWith("Group ")
+            .WithAnyOf(new ProductCriteria().Price.Eq(10m), new ProductCriteria());
+
+        Assert.Equal(2, await Db.Products.Count(criteria, Ct));
+    }
+
+    [Fact]
+    public async Task AnyOf_GroupsNest_AndADeleteTakesOnlyTheRowsTheyMatch()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "alternative groups do not travel: the refusal has its own test");
+        var a = await NewProduct("Group A", 10m);
+        await NewProduct("Group B", 20m);
+        await NewProduct("Group C", 30m);
+
+        // price >= 15 and (name = "Group C"), or price = 10
+        var nested = new ProductCriteria().Price.Ge(15m).WithAnyOf(new ProductCriteria().Name.Eq("Group C"));
+        var criteria = new ProductCriteria().WithAnyOf(nested, new ProductCriteria().Price.Eq(10m));
+
+        Assert.Equal(2, await Db.Products.Count(criteria, Ct));
+        Assert.Equal(2, await Db.Products.Delete(criteria, Ct));
+        Assert.Equal(["Group B"], (await Db.Products.Fetch(new ProductCriteria().Name.StartingWith("Group "),
+            cancellationToken: Ct)).Select(p => p.Name));
+        Assert.Null(await Db.Products.FetchById(a.Id!.Value, cancellationToken: Ct));
+    }
+
+    [Fact]
+    public async Task AnyOf_IsRefusedByTheClient_BeforeAnythingTravels()
+    {
+        Assert.SkipWhen(!fixture.IsRemote, "the refusal is the wire's");
+
+        var criteria = new ProductCriteria().WithAnyOf(new ProductCriteria().Price.Eq(10m));
+
+        await Assert.ThrowsAsync<InvalidRequestException>(() => Db.Products.Fetch(criteria, cancellationToken: Ct));
+    }
+
+    [Fact]
+    public async Task TranslateAny_LooksForTheTermInEveryColumn()
+    {
+        var inName = await NewProduct("a needle box", 1m);
+        var inDescription = await NewProduct("Kit", 2m, "with a needle");
+        await NewProduct("Thread", 3m, "no sharp things");
+
+        var found = await Db.Products.Fetch(new ProductCriteria().Search.Containing("needle"), cancellationToken: Ct);
+
+        Assert.Equal(new[] { inName.Id, inDescription.Id }.Order(), found.Select(p => p.Id).Order());
+    }
+
+    [Fact]
+    public async Task TranslateAny_RefusesARestrictedCriterion()
+    {
+        Assert.SkipWhen(fixture.IsRemote, "restrictions are set by the server");
+
+        var criteria = new ProductCriteria();
+        criteria.Search.Restrict("needle");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Db.Products.Fetch(criteria, cancellationToken: Ct));
+    }
+
     // :: Criteria
 
     [Fact]

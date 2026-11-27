@@ -25,5 +25,6 @@ public sealed class PurchaseItemRepository(Database database)
         t.Translate("id", criteria.PurchaseItemId),
         t.Translate("purchase_id", criteria.PurchaseId),
         t.Translate("amount", criteria.Amount),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 }

@@ -30,5 +30,6 @@ public sealed class UserRepository(Database database)
         t.Translate("user_name", criteria.UserName),
         t.Translate("name", criteria.Name),
         t.Translate("roles", criteria.Roles),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 }

@@ -19,6 +19,7 @@ public sealed class PurchaseRepository(Database database) : SqlRepository<Purcha
         t.Translate("user_id", criteria.UserId),
         t.Translate("buy_date", criteria.BuyDate),
         ExistsItemMatching(criteria, t),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 
     /// <summary>Purchases that contain the product: the condition applies to their items.</summary>

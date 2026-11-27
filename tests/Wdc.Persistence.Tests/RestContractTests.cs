@@ -104,6 +104,23 @@ public sealed class RestContractTests(PostgreSqlFixture fixture) : IAsyncLifetim
         Assert.Equal(before, await Local.Products.Count(new ProductCriteria(), Ct));
     }
 
+    [Theory]
+    [InlineData("/api/repo/product/fetch", """{"anyOf":[{"price":10}]}""")]
+    [InlineData("/api/repo/product/count", """{"name":"Kept","anyOf":[]}""")]
+    [InlineData("/api/repo/product/delete", """{"anyOf":[{"name":"Kept"}]}""")]
+    public async Task Wire_AlternativeGroups_AreABadRequest_NotALooserFilter(string path, string criteria)
+    {
+        await NewProduct("Kept", 1m);
+        var host = await Host();
+        var before = await Local.Products.Count(new ProductCriteria(), Ct);
+
+        var (status, body) = await Raw(host, HttpMethod.Post, path, criteria);
+
+        Assert.Equal(HttpStatusCode.BadRequest, status);
+        Assert.Contains("anyOf", body, StringComparison.Ordinal);
+        Assert.Equal(before, await Local.Products.Count(new ProductCriteria(), Ct));
+    }
+
     [Fact]
     public async Task Wire_InsertLooseEntity_UpdatePartial_DeleteByCriteria()
     {

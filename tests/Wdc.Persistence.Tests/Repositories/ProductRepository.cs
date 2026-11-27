@@ -25,5 +25,7 @@ public sealed class ProductRepository(Database database) : SqlRepository<Product
         t.Translate("id", criteria.ProductId),
         t.Translate("name", criteria.Name),
         t.Translate("price", criteria.Price),
+        t.TranslateAny(["name", "description"], criteria.Search),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 }

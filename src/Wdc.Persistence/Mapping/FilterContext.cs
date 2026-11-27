@@ -39,6 +39,55 @@ public sealed class FilterContext
         return Sql.Translate(expression, criterion);
     }
 
+    /// <summary>
+    /// The criterion on any of several columns of this table: the whole criterion on each column, the columns joined
+    /// with OR (a term searched in the name or the description). <see langword="null"/> when it asks nothing or there
+    /// are no columns.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The criterion carries a restriction: in an OR across columns it
+    /// would stop restricting.</exception>
+    public ISqlFragment? TranslateAny(IEnumerable<string> columns, Criterion criterion)
+    {
+        ArgumentNullException.ThrowIfNull(columns);
+        ArgumentNullException.ThrowIfNull(criterion);
+        if (criterion.IsRestricted)
+        {
+            throw new InvalidOperationException(
+                $"'{criterion.Name}' carries a restriction: it cannot be translated over several columns joined by OR.");
+        }
+
+        _covered.Add(criterion);
+        return Sql.Or(columns.Select(c => Sql.Translate(Column(c), criterion)));
+    }
+
+    /// <summary>
+    /// The alternative groups of a criteria, each translated by <paramref name="translate"/> (the repository's own
+    /// conditions), joined with OR. <see langword="null"/> when there are no groups, or when some group asks nothing:
+    /// "or anything" matches every row.
+    /// </summary>
+    public ISqlFragment? AnyOf<TCriteria>(IReadOnlyList<TCriteria> groups, Func<TCriteria, ISqlFragment?> translate)
+    {
+        ArgumentNullException.ThrowIfNull(groups);
+        ArgumentNullException.ThrowIfNull(translate);
+        if (groups.Count == 0)
+        {
+            return null;
+        }
+
+        var alternatives = new List<ISqlFragment>(groups.Count);
+        foreach (var group in groups)
+        {
+            if (translate(group) is not { } condition)
+            {
+                return null;
+            }
+
+            alternatives.Add(condition);
+        }
+
+        return Sql.Or(alternatives);
+    }
+
     /// <summary>Whether the criterion asks for something (requests or restrictions): an <c>EXISTS</c> is only worth it then.</summary>
     public static bool Asks(Criterion criterion) => criterion is { IsSet: true } or { IsRestricted: true };
 

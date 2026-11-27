@@ -153,3 +153,5 @@ Wdc.Persistence.TypedNull.ClrType.init -> void
 Wdc.Persistence.TypedNull.Deconstruct(out System.Type! ClrType) -> void
 Wdc.Persistence.TypedNull.Equals(Wdc.Persistence.TypedNull? other) -> bool
 Wdc.Persistence.TypedNull.TypedNull(System.Type! ClrType) -> void
+Wdc.Persistence.FilterContext.AnyOf<TCriteria>(System.Collections.Generic.IReadOnlyList<TCriteria>! groups, System.Func<TCriteria, Wdc.Persistence.ISqlFragment?>! translate) -> Wdc.Persistence.ISqlFragment?
+Wdc.Persistence.FilterContext.TranslateAny(System.Collections.Generic.IEnumerable<string!>! columns, Wdc.Domain.Criterion! criterion) -> Wdc.Persistence.ISqlFragment?

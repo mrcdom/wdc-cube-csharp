@@ -50,6 +50,7 @@ public sealed class PurchaseRepository(Database database)
         t.Translate("buy_date", criteria.BuyDate),
         ExistsItemMatching(criteria, t),
         ExistsUserNamed(criteria, t),
+        t.AnyOf(criteria.AnyOf, g => Conditions(g, t)),
     ]);
 
     /// <summary>Purchases of users whose name matches: the name is a field of the user, correlated by the foreign key.</summary>
