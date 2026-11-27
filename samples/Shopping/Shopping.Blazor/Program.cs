@@ -1,9 +1,11 @@
+using System.Globalization;
 using Microsoft.AspNetCore.DataProtection;
 using Shopping.Blazor.Components;
 using Shopping.Blazor.Infra;
 using Shopping.Blazor.Views;
 using Shopping.Domain.Security;
 using Shopping.Hosting;
+using Shopping.I18n;
 using Shopping.Persistence;
 using Shopping.Presentation.Infra;
 using Wdc.Cube.Blazor;
@@ -54,6 +56,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.MapShoppingHealth();
+// The UI culture of each request from Accept-Language, the one that opens the circuit included: the circuit keeps it,
+// and the views write in its language. Only the UI culture: numbers and dates are written by the catalog.
+// A language in another region (pt-PT) is accepted by its neutral parent (pt), and the catalog picks pt-BR for it.
+app.UseRequestLocalization(options =>
+{
+    options.DefaultRequestCulture = new(CultureInfo.InvariantCulture, new CultureInfo(Languages.Default));
+    options.SupportedCultures = [CultureInfo.InvariantCulture];
+    options.SupportedUICultures = [.. Languages.All.SelectMany(l => new[] { l, l.Split('-')[0] }).Distinct().Select(l => new CultureInfo(l))];
+});
 app.UseAntiforgery();
 app.MapStaticAssets();
 

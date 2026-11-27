@@ -17,7 +17,7 @@
             </ul>
             <span class="price">@Scope.PriceLabel</span>
             <div class="quantity">
-                Qty:
+                @T(MessageKeys.ProductQuantity)
                 <button class="minus" @onclick="() => ChangeQuantity(-1)">−</button>
                 <span class="value">@_quantity</span>
                 <button class="plus" @onclick="() => ChangeQuantity(+1)">+</button>
@@ -25,8 +25,8 @@
         </div>
     </div>
     <div class="actions">
-        <button class="outlined back" @onclick="Scope.OnBack">Back</button>
-        <button class="primary add" @onclick="() => Scope.OnAddToCart(_quantity)">🛒 Add to Cart</button>
+        <button class="outlined back" @onclick="Scope.OnBack">@T(MessageKeys.CommonBack)</button>
+        <button class="primary add" @onclick="() => Scope.OnAddToCart(_quantity)">🛒 @T(MessageKeys.ProductAddToCart)</button>
     </div>
 </section>
 

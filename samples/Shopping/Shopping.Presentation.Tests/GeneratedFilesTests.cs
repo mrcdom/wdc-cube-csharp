@@ -10,6 +10,9 @@ public sealed class GeneratedFilesTests
 {
     private static readonly string s_shopping = Path.Combine(RepositoryRoot(), "samples", "Shopping");
 
+    /// <summary>The folder of the Shopping sample in the repository.</summary>
+    internal static string Shopping => s_shopping;
+
     [Fact]
     public void TheDesignTokens_AreGenerated()
     {

@@ -3,12 +3,12 @@
 <div class="login-page">
     <form class="login-card" @onsubmit="Submit" @onsubmit:preventDefault>
         <div class="avatar">🛍</div>
-        <h1>Shopping</h1>
-        <p class="subtitle">Sign in to continue</p>
+        <h1>@T(MessageKeys.CommonAppName)</h1>
+        <p class="subtitle">@T(MessageKeys.LoginSubtitle)</p>
 
-        <label>Username<input class="user" autocomplete="username" value="@_userName" disabled="@Scope.Loading"
+        <label>@T(MessageKeys.LoginUsername)<input class="user" autocomplete="username" value="@_userName" disabled="@Scope.Loading"
                              @oninput="e => _userName = e.Value?.ToString() ?? string.Empty" /></label>
-        <label>Password<input class="password" type="password" autocomplete="current-password" value="@_password"
+        <label>@T(MessageKeys.LoginPassword)<input class="password" type="password" autocomplete="current-password" value="@_password"
                            disabled="@Scope.Loading" @oninput="e => _password = e.Value?.ToString() ?? string.Empty" /></label>
 
         @if (Scope.ErrorMessage is { } error)
@@ -17,7 +17,7 @@
         }
 
         <button class="primary enter" type="submit" disabled="@Scope.Loading">
-            @(Scope.Loading ? "Signing in…" : "Sign in")
+            @T(Scope.Loading ? MessageKeys.LoginSigningIn : MessageKeys.LoginSignIn)
         </button>
     </form>
 </div>

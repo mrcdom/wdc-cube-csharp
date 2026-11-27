@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -37,6 +38,12 @@ public sealed partial class Messages
     public static Messages Default => For(Languages.Default);
 
     /// <summary>
+    /// The catalog of the current UI culture: the host sets it (per circuit from <c>Accept-Language</c> on Blazor
+    /// Server, from the browser on WebAssembly, from the system on the desktop).
+    /// </summary>
+    public static Messages Current => For(CultureInfo.CurrentUICulture.Name);
+
+    /// <summary>
     /// The catalog closest to <paramref name="languageTag"/>: the same tag, else the same language in another region
     /// (<c>pt-PT</c> gets <c>pt-BR</c>), else the default.
     /// </summary>
@@ -63,6 +70,9 @@ public sealed partial class Messages
             ? value as string ?? Text(value as Message)
             : match.Value);
     }
+
+    /// <summary>The text of <paramref name="key"/>, a message without arguments (the fixed texts of a view).</summary>
+    public string Text(string key) => Text(new Message(key));
 
     private string? PatternOf(string key) => _catalog.GetValueOrDefault(key) ?? _fallback.GetValueOrDefault(key);
 

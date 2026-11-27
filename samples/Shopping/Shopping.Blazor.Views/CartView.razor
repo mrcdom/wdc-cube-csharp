@@ -1,7 +1,7 @@
 @inherits ScopeView<CartScope>
 
 <section class="card cart-page">
-    <h2>Shopping Cart</h2>
+    <h2>@T(MessageKeys.CartTitle)</h2>
     @if (Scope.ErrorMessage is { } error)
     {
         <p class="error">@T(error)</p>
@@ -10,8 +10,8 @@
     {
         <div class="empty">
             <p class="big">🛒</p>
-            <p>Your cart is empty</p>
-            <p class="muted">Add products to start shopping</p>
+            <p>@T(MessageKeys.CartEmptyTitle)</p>
+            <p class="muted">@T(MessageKeys.CartEmptyHint)</p>
         </div>
     }
     else
@@ -20,13 +20,13 @@
         {
             <CartLineView @key="line.Identity" Scope="line" />
         }
-        <p class="total">Total: <strong>@Scope.TotalLabel</strong></p>
+        <p class="total">@T(MessageKeys.CommonTotal) <strong>@Scope.TotalLabel</strong></p>
     }
     <div class="actions">
-        <button class="outlined continue" @onclick="Scope.OnContinue">Continue Shopping</button>
+        <button class="outlined continue" @onclick="Scope.OnContinue">@T(MessageKeys.CommonContinueShopping)</button>
         @if (Scope.Lines.Count > 0)
         {
-            <button class="buy" disabled="@Scope.Buying" @onclick="Scope.OnBuy">@(Scope.Buying ? "Buying…" : "Buy")</button>
+            <button class="buy" disabled="@Scope.Buying" @onclick="Scope.OnBuy">@T(Scope.Buying ? MessageKeys.CartBuying : MessageKeys.CartBuy)</button>
         }
     </div>
 </section>
