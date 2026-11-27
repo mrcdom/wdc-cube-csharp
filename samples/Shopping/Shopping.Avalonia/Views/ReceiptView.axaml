@@ -9,18 +9,18 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <Border Classes="success" Margin="0,16,0,0" IsVisible="{Binding NotifySuccess}">
-        <TextBlock Text="Purchase completed successfully!" />
+        <TextBlock Text="{v:T receipt.purchaseCompleted}" />
       </Border>
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="h2" Text="🧾 Receipt" />
+        <TextBlock Classes="h2"><Run Text="🧾 " /><Run Text="{v:T receipt.title}" /></TextBlock>
         <Border Classes="chip"><TextBlock Text="{Binding DateLabel, Converter={StaticResource T}}" /></Border>
       </StackPanel>
       <StackPanel>
         <Border Classes="row">
           <Grid ColumnDefinitions="*,Auto,370">
-            <TextBlock Text="Item" FontWeight="{StaticResource FontWeightBold}" />
-            <TextBlock Grid.Column="1" Text="Qty" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
-            <TextBlock Grid.Column="2" Text="Amount" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
+            <TextBlock Text="{v:T common.item}" FontWeight="{StaticResource FontWeightBold}" />
+            <TextBlock Grid.Column="1" Text="{v:T common.quantity}" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="{v:T receipt.amount}" FontWeight="{StaticResource FontWeightBold}" TextAlignment="Right" />
           </Grid>
         </Border>
         <ItemsControl x:Name="Lines" ItemsSource="{Binding Lines}">
@@ -38,7 +38,7 @@
         </ItemsControl>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-        <TextBlock Text="Total: " FontSize="{StaticResource FontSizeLg}" />
+        <TextBlock Text="{v:T common.total}" Margin="0,0,4,0" FontSize="{StaticResource FontSizeLg}" />
         <TextBlock x:Name="Total" Text="{Binding TotalLabel}" FontSize="{StaticResource FontSizeLg}" FontWeight="{StaticResource FontWeightBold}" />
       </StackPanel>
       <ItemsControl x:Name="Corrections" ItemsSource="{Binding Corrections}">
@@ -50,7 +50,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <Button Classes="primary" Content="Continue Shopping" HorizontalAlignment="Right" Click="OnContinue" />
+      <Button Classes="primary" Content="{v:T common.continueShopping}" HorizontalAlignment="Right" Click="OnContinue" />
     </StackPanel>
   </Border>
 </cube:ScopeView>

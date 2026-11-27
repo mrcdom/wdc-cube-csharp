@@ -18,14 +18,14 @@
         <Border Width="72" Height="72" CornerRadius="36" Background="{StaticResource PrimaryContainer}" HorizontalAlignment="Center">
           <TextBlock Text="🛍" FontSize="{StaticResource FontSizeDisplay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
-        <TextBlock Text="Shopping" FontSize="{StaticResource FontSizeXl}" FontWeight="{StaticResource FontWeightBold}" HorizontalAlignment="Center" />
-        <TextBlock Classes="muted" Text="Sign in to continue" HorizontalAlignment="Center" />
+        <TextBlock Text="{v:T common.appName}" FontSize="{StaticResource FontSizeXl}" FontWeight="{StaticResource FontWeightBold}" HorizontalAlignment="Center" />
+        <TextBlock Classes="muted" Text="{v:T login.subtitle}" HorizontalAlignment="Center" />
         <StackPanel Spacing="4">
-          <TextBlock Classes="label" Text="Username" />
+          <TextBlock Classes="label" Text="{v:T login.username}" />
           <TextBox x:Name="UserBox" IsEnabled="{Binding !Loading}" />
         </StackPanel>
         <StackPanel Spacing="4">
-          <TextBlock Classes="label" Text="Password" />
+          <TextBlock Classes="label" Text="{v:T login.password}" />
           <TextBox x:Name="PasswordBox" PasswordChar="•" IsEnabled="{Binding !Loading}" KeyDown="OnPasswordKey" />
         </StackPanel>
         <TextBlock Classes="error" Text="{Binding ErrorMessage, Converter={StaticResource T}}" TextWrapping="Wrap" HorizontalAlignment="Center"
@@ -33,8 +33,8 @@
         <Button x:Name="EnterButton" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                 Padding="12,8" IsEnabled="{Binding !Loading}" Click="OnEnter">
           <Panel>
-            <TextBlock Text="Sign in" FontWeight="{StaticResource FontWeightSemibold}" IsVisible="{Binding !Loading}" />
-            <TextBlock Text="Signing in…" FontWeight="{StaticResource FontWeightSemibold}" IsVisible="{Binding Loading}" />
+            <TextBlock Text="{v:T login.signIn}" FontWeight="{StaticResource FontWeightSemibold}" IsVisible="{Binding !Loading}" />
+            <TextBlock Text="{v:T login.signingIn}" FontWeight="{StaticResource FontWeightSemibold}" IsVisible="{Binding Loading}" />
           </Panel>
         </Button>
       </StackPanel>

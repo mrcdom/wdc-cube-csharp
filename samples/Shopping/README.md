@@ -98,6 +98,16 @@ After adding or changing a key, run `generate.cs` (above): it checks the catalog
 `MessageKeys`, `Texts` (one factory per key, an argument per placeholder) and `Languages`. A count picks between a
 `…One` and a `…Other` key; a date is the catalog's `format.date`.
 
+The fixed texts of the views are in the same catalogs, with a key per screen (`cart.title`, `login.username`). The web
+views write `@T(Scope.ErrorMessage)` for a message and `@T(MessageKeys.CartTitle)` for a fixed text; the desktop views
+bind a message through the `T` converter (`{Binding ErrorMessage, Converter={StaticResource T}}`) and write a fixed
+text with `{v:T cart.title}` (a test checks that every key named in the markup is in the catalog).
+
+The language is the UI culture, which each host sets: Blazor Server from the browser's `Accept-Language`, once per
+circuit (`UseRequestLocalization`); WebAssembly from the browser; the desktop from the system. The closest catalog
+wins: the same tag, else the same language in another region (`pt-PT` gets `pt-BR`), else en-US. Prices are always
+in dollars, and a date follows the language.
+
 ## Tests
 
 ```bash

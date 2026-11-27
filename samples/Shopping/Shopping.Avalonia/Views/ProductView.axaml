@@ -21,7 +21,7 @@
           </ItemsControl>
           <TextBlock Classes="price" Text="{Binding PriceLabel}" />
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="Qty:" VerticalAlignment="Center" />
+            <TextBlock Text="{v:T product.quantity}" VerticalAlignment="Center" />
             <Button Content="−" Click="OnMinus" />
             <TextBlock x:Name="Quantity" Text="1" FontWeight="{StaticResource FontWeightSemibold}" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
             <Button Content="+" Click="OnPlus" />
@@ -29,8 +29,8 @@
         </StackPanel>
       </Grid>
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-        <Button Classes="outlined" Content="Back" Click="OnBack" />
-        <Button x:Name="AddButton" Classes="primary" Content="🛒 Add to Cart" Click="OnAdd" />
+        <Button Classes="outlined" Content="{v:T common.back}" Click="OnBack" />
+        <Button x:Name="AddButton" Classes="primary" Click="OnAdd"><TextBlock><Run Text="🛒 " /><Run Text="{v:T product.addToCart}" /></TextBlock></Button>
       </StackPanel>
     </StackPanel>
   </Border>

@@ -2,7 +2,7 @@
 
 <section class="card amend-page">
     <h2>@T(Scope.TitleLabel) <span class="chip">@T(Scope.DateLabel)</span></h2>
-    <p class="customer">Customer: <strong>@Scope.CustomerLabel</strong></p>
+    <p class="customer">@T(MessageKeys.AmendCustomer) <strong>@Scope.CustomerLabel</strong></p>
     @if (Scope.SuccessMessage is { } success)
     {
         <p class="success">@T(success)</p>
@@ -12,7 +12,7 @@
         <p class="error">@T(error)</p>
     }
     <table>
-        <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>New qty</th></tr></thead>
+        <thead><tr><th>@T(MessageKeys.CommonItem)</th><th>@T(MessageKeys.CommonPrice)</th><th>@T(MessageKeys.CommonQuantity)</th><th>@T(MessageKeys.AmendNewQuantity)</th></tr></thead>
         <tbody>
             @foreach (var line in Scope.Lines)
             {
@@ -20,20 +20,20 @@
             }
         </tbody>
     </table>
-    <p class="total">Total: @Scope.TotalLabel → <strong>@Scope.NewTotalLabel</strong></p>
-    <label class="reason">Reason
+    <p class="total">@T(MessageKeys.CommonTotal) @Scope.TotalLabel → <strong>@Scope.NewTotalLabel</strong></p>
+    <label class="reason">@T(MessageKeys.AmendReason)
         <textarea rows="2" value="@Scope.Reason" disabled="@Scope.Saving"
                   @oninput="e => Scope.OnChangeReason(e.Value?.ToString() ?? string.Empty)"></textarea>
     </label>
     <div class="actions">
-        <button class="outlined back" @onclick="Scope.OnBack">Back</button>
+        <button class="outlined back" @onclick="Scope.OnBack">@T(MessageKeys.CommonBack)</button>
         <button class="primary confirm" disabled="@(!Scope.CanConfirm || Scope.Saving)" @onclick="Scope.OnConfirm">
-            @(Scope.Saving ? "Recording…" : "Record correction")
+            @T(Scope.Saving ? MessageKeys.AmendRecording : MessageKeys.AmendRecord)
         </button>
     </div>
     @if (Scope.History.Count > 0)
     {
-        <h3>Previous corrections</h3>
+        <h3>@T(MessageKeys.AmendHistory)</h3>
         <ul class="history">
             @foreach (var entry in Scope.History)
             {

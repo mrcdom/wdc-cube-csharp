@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Shopping.Generators;
 using Shopping.I18n;
 using Wdc.Cube;
@@ -5,7 +7,7 @@ using Wdc.Cube;
 namespace Shopping.Presentation.Tests;
 
 /// <summary>The catalogs agree with each other, and a view translates a message into its language.</summary>
-public sealed class MessagesTests
+public sealed partial class MessagesTests
 {
     [Fact]
     public void TheCatalogs_HaveTheSameKeysAndPlaceholders()
@@ -48,6 +50,39 @@ public sealed class MessagesTests
     {
         Assert.Equal("no.such.key", Messages.Default.Text(new Message("no.such.key")));
         Assert.Equal("Hello, {name}", Messages.Default.Text(new Message(MessageKeys.HomeGreeting)));
-        Assert.Equal(string.Empty, Messages.Default.Text(null));
+        Assert.Equal(string.Empty, Messages.Default.Text((Message?)null));
     }
+
+    [Fact]
+    public void TheCurrentCatalog_IsTheOneOfTheUICulture()
+    {
+        var before = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("pt-BR");
+            Assert.Equal("Carrinho de compras", Messages.Current.Text(MessageKeys.CartTitle));
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-GB");
+            Assert.Equal("Shopping Cart", Messages.Current.Text(MessageKeys.CartTitle));
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
+    }
+
+    [Fact]
+    public void TheDesktopViews_UseOnlyKeysOfTheCatalog()
+    {
+        // The web views name the keys by MessageKeys (the compiler checks them); the desktop markup names them as text.
+        var keys = GeneratedFilesTests.Catalogs()[MessageCatalog.DefaultLanguage];
+        var used = Directory.GetFiles(Path.Combine(GeneratedFilesTests.Shopping, "Shopping.Avalonia"), "*.axaml", SearchOption.AllDirectories)
+            .SelectMany(f => FixedText().Matches(File.ReadAllText(f)).Select(m => (File: Path.GetFileName(f), Key: m.Groups[1].Value)))
+            .ToList();
+
+        Assert.NotEmpty(used);
+        Assert.Empty(used.Where(u => !keys.ContainsKey(u.Key)).Select(u => $"{u.File}: {u.Key}"));
+    }
+
+    [GeneratedRegex(@"\{v:T\s+([^}\s]+)\s*\}")]
+    private static partial Regex FixedText();
 }

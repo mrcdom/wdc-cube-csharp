@@ -2,20 +2,20 @@
 
 <div class="home">
     <header class="app-header">
-        <button class="logo" @onclick="Scope.OnHome">🛍 Shopping</button>
+        <button class="logo" @onclick="Scope.OnHome">🛍 @T(MessageKeys.CommonAppName)</button>
         <span class="greeting">@T(Scope.Greeting)</span>
         @if (Scope.ShowAdmin)
         {
-            <button class="admin-button" @onclick="Scope.OnOpenAdmin">Administration</button>
+            <button class="admin-button" @onclick="Scope.OnOpenAdmin">@T(MessageKeys.AdminTitle)</button>
         }
-        <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="Cart">
+        <button class="cart-button" @onclick="Scope.OnOpenCart" aria-label="@T(MessageKeys.HomeCart)">
             🛒
             @if (Scope.CartCount > 0)
             {
                 <span class="badge">@Scope.CartCount</span>
             }
         </button>
-        <button class="exit" @onclick="Scope.OnExit">Sign out</button>
+        <button class="exit" @onclick="Scope.OnExit">@T(MessageKeys.HomeSignOut)</button>
     </header>
 
     <main class="home-body">

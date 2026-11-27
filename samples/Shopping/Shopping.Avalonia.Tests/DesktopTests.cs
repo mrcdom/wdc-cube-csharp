@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Interactivity;
@@ -134,6 +135,40 @@ public sealed class DesktopTests(ShoppingHttpFixture db) : IClassFixture<Shoppin
         Desktop.Click(desktop.Find<Button>("EnterButton"));
         await desktop.Until(() => desktop.All<HomeView>().Any() && desktop.All<ProductsPanelView>().Any(), "home");
     }
+
+    [Fact]
+    public Task InPortuguese_TheFixedTextsAndTheMessagesOfThePresentation() => Headless.Run(async () =>
+    {
+        // As the system sets it: for every thread, so the work the dispatcher runs outside this test's flow sees it too.
+        var english = CultureInfo.DefaultThreadCurrentUICulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("pt-BR");
+        try
+        {
+            var desktop = await Open();
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Entre para continuar" && t.IsEffectivelyVisible);
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Senha" && t.IsEffectivelyVisible);
+
+            await Login(desktop, "fulano");
+            await desktop.Until(() => desktop.Find<TextBlock>("Greeting").Text == "Olá, John Doe", "the greeting");
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Produtos" && t.IsEffectivelyVisible);
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Sair" && t.IsEffectivelyVisible);
+            await desktop.Until(() => desktop.All<TextBlock>().Any(t => t.Text is { } text && text.EndsWith(" itens", StringComparison.Ordinal)), "the count");
+            desktop.Capture("pt-BR-home");
+
+            Desktop.Click(desktop.Find<Button>("CartButton"));
+            await desktop.Until(() => desktop.All<CartView>().Any(), "the cart");
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Carrinho de compras" && t.IsEffectivelyVisible);
+            Assert.Contains(desktop.All<TextBlock>(), t => t.Text == "Seu carrinho está vazio" && t.IsEffectivelyVisible);
+            Assert.NotNull(desktop.ButtonWith("Continuar comprando"));
+
+            desktop.Presenter.Release();
+            desktop.Window.Close();
+        }
+        finally
+        {
+            CultureInfo.DefaultThreadCurrentUICulture = english;
+        }
+    });
 
     [Fact]
     public Task Login_Home_Product_Cart_Buy_Receipt_AndBack() => Headless.Run(async () =>

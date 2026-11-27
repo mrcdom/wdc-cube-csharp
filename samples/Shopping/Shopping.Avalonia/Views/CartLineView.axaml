@@ -17,7 +17,7 @@
         <TextBlock x:Name="Quantity" Text="{Binding Quantity}" FontWeight="{StaticResource FontWeightSemibold}" VerticalAlignment="Center" MinWidth="24" TextAlignment="Center" />
         <Button Content="+" Click="OnPlus" />
       </StackPanel>
-      <Button Grid.Column="5" Classes="remove" Content="✕" ToolTip.Tip="Remove" Click="OnRemove" VerticalAlignment="Center" />
+      <Button Grid.Column="5" Classes="remove" Content="✕" ToolTip.Tip="{v:T cart.remove}" Click="OnRemove" VerticalAlignment="Center" />
     </Grid>
   </Border>
 </cube:ScopeView>

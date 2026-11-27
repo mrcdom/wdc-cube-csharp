@@ -8,10 +8,10 @@
   <Border Classes="card">
     <StackPanel Spacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="h2" Text="Products" />
+        <TextBlock Classes="h2" Text="{v:T products.title}" />
         <Border Classes="chip"><TextBlock Text="{Binding CountLabel, Converter={StaticResource T}}" /></Border>
       </StackPanel>
-      <TextBlock Classes="muted" Text="Loading…" IsVisible="{Binding Loading}" />
+      <TextBlock Classes="muted" Text="{v:T products.loading}" IsVisible="{Binding Loading}" />
       <ItemsControl x:Name="Grid" ItemsSource="{Binding Products}" Margin="0,0,-12,-12">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate><WrapPanel ItemWidth="203" ItemHeight="250" /></ItemsPanelTemplate>

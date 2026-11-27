@@ -9,11 +9,11 @@
     <Border DockPanel.Dock="Top" Background="{StaticResource Primary}" Padding="16,8">
       <DockPanel>
         <Button DockPanel.Dock="Left" Classes="logo" Padding="4,4" Click="OnHome">
-          <TextBlock Text="🛍 Shopping" FontSize="{StaticResource FontSizeLg}" FontWeight="{StaticResource FontWeightBold}" Foreground="{StaticResource OnPrimary}" />
+          <TextBlock FontSize="{StaticResource FontSizeLg}" FontWeight="{StaticResource FontWeightBold}" Foreground="{StaticResource OnPrimary}"><Run Text="🛍 " /><Run Text="{v:T common.appName}" /></TextBlock>
         </Button>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="12">
           <Panel>
-            <Button x:Name="CartButton" Classes="onPrimary" Click="OnCart" ToolTip.Tip="Cart">
+            <Button x:Name="CartButton" Classes="onPrimary" Click="OnCart" ToolTip.Tip="{v:T home.cart}">
               <TextBlock Text="🛒" />
             </Button>
             <Border Background="{StaticResource Error}" CornerRadius="10" Padding="6,0" Margin="0,-6,-6,0"
@@ -23,9 +23,9 @@
             </Border>
           </Panel>
           <Button x:Name="AdminButton" Classes="onPrimary" Click="OnAdmin" IsVisible="{Binding ShowAdmin}">
-            <TextBlock Text="Administration" FontWeight="{StaticResource FontWeightSemibold}" />
+            <TextBlock Text="{v:T admin.title}" FontWeight="{StaticResource FontWeightSemibold}" />
           </Button>
-          <Button Classes="onPrimary" Click="OnExit"><TextBlock Text="Sign out" FontWeight="{StaticResource FontWeightSemibold}" /></Button>
+          <Button Classes="onPrimary" Click="OnExit"><TextBlock Text="{v:T home.signOut}" FontWeight="{StaticResource FontWeightSemibold}" /></Button>
         </StackPanel>
         <TextBlock x:Name="Greeting" Text="{Binding Greeting, Converter={StaticResource T}}" Foreground="{StaticResource OnPrimary}" VerticalAlignment="Center"
                    Margin="12,0" TextTrimming="CharacterEllipsis" />

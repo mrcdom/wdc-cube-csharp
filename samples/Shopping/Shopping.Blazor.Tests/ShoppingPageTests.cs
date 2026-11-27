@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,6 +176,39 @@ public sealed class ShoppingPageTests : IClassFixture<ShoppingDatabaseFixture>, 
         On(page, () => page.FindAll(".purchase-card")[0].Click());
         page.WaitForAssertion(() => Assert.StartsWith("Purchase corrected on ", page.Find(".receipt-page .correction").TextContent, StringComparison.Ordinal), Wait);
         Assert.Contains("$47.97", page.Find(".receipt-page .total").TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void InPortuguese_TheFixedTextsAndTheMessagesOfThePresentation()
+    {
+        var english = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("pt-BR"); // as Accept-Language sets it per circuit
+        try
+        {
+            var page = Open();
+            page.WaitForElement(".login-card", Wait);
+            Assert.Equal("Entre para continuar", page.Find(".login-card .subtitle").TextContent);
+            Assert.Equal("Entrar", page.Find(".login-card .enter").TextContent.Trim());
+
+            LogIn(page, "fulano", "errada");
+            page.WaitForAssertion(() => Assert.Equal("Usuário ou senha não reconhecidos!", page.Find(".login-card .error").TextContent), Wait);
+
+            LogIn(page, "fulano", "fulano");
+            page.WaitForAssertion(() => Assert.Equal("Olá, John Doe", page.Find(".greeting").TextContent), Wait);
+            Assert.Equal("Sair", page.Find(".exit").TextContent);
+            page.WaitForAssertion(() => Assert.StartsWith("Produtos", page.Find(".products-panel h2").TextContent, StringComparison.Ordinal), Wait);
+            page.WaitForAssertion(() => Assert.EndsWith(" itens", page.Find(".products-panel .chip").TextContent, StringComparison.Ordinal), Wait);
+            Assert.Contains("Anterior", page.Find(".purchases-panel .previous").TextContent, StringComparison.Ordinal);
+
+            On(page, () => page.Find(".cart-button").Click());
+            page.WaitForAssertion(() => Assert.Equal("Carrinho de compras", page.Find(".cart-page h2").TextContent), Wait);
+            Assert.Equal("Seu carrinho está vazio", page.Find(".cart-page .empty p:not(.big):not(.muted)").TextContent);
+            Assert.Equal("Continuar comprando", page.Find(".cart-page .continue").TextContent);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = english;
+        }
     }
 
     [Fact]
