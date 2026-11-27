@@ -36,6 +36,7 @@ Demo users (the password is the login):
 | `Shopping.Persistence` | `Shopping.Domain`, `Wdc.Persistence.PostgreSql`, `Wdc.Persistence.SqlServer` | Mappings and SQL repositories, the DDL for PostgreSQL and SQL Server, the demo data and product images (`ShoppingStore`). |
 | `Shopping.Presentation` | `Shopping.Domain`, `Wdc.Cube`, `Wdc.Cube.Codec` | Places, keys, presenters, scopes, the session (`Infra/`). No view, no database. |
 | `Shopping.Blazor.Views` | `Shopping.Presentation`, `Wdc.Cube.Blazor` | Razor views, the host page and CSS, shared by both Blazor hosts. |
+| `Shopping.Hosting` | `Shopping.Persistence` | Health checks and metrics (OpenTelemetry), shared by the two web hosts. |
 | `Shopping.Blazor` | `Shopping.Blazor.Views`, `Shopping.Persistence` | Blazor Server host: one application per circuit, repositories protected per circuit, image endpoint. |
 | `Shopping.Server` | `Shopping.Persistence`, `Wdc.Rest.Server`, `Shopping.Wasm` | REST backend: repositories as routes, remote transactions, JWT login, images; also serves the WebAssembly app. |
 | `Shopping.Client` | `Shopping.Presentation`, `Wdc.Rest.Client` | The repositories and the login over HTTP, for hosts that run the presentation themselves. |
@@ -255,6 +256,7 @@ of a host answers it and a restart signs nobody out (`ISecurityStore`, implement
 - **Requests per address:** the server's `/api/auth` routes take 60 requests a minute per client address
   (`Shopping:Auth:RequestsPerMinute`; 0 turns it off), with ASP.NET's rate limiter.
 - Expired challenges and tokens, and old failures, are swept at most once a minute, on a challenge.
+- Sign-ins are counted by outcome (`shopping.signins`: `ok`, `refused`, `throttled`).
 
 ## Running it
 
@@ -296,6 +298,12 @@ must exist and the user must be allowed to create a schema in it.
 Outside Development, the hosts also require `Shopping:History:Key` (the master of the address keys) and, on the
 server, `Shopping:Jwt:Key`, both Base64. In Development random keys are used, so sessions and sealed links do not
 survive a restart. See [Sealing addresses](../guides/sealed-addresses.md).
+
+### Several instances
+
+`samples/Shopping/docker` runs two instances of each web host behind nginx, with PostgreSQL and Prometheus, and checks
+them from outside. What the instances share, and how requests are routed, is in
+[Running several instances](../guides/several-instances.md).
 
 ### Running the tests
 

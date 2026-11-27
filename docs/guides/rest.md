@@ -336,7 +336,8 @@ api.MapRemoteTransactions();
 The coordinator publishes its numbers on the meter `Wdc.Rest.Server` (`RestServerMetrics.MeterName`):
 `wdc.remote.transactions.open` (open now) and `wdc.remote.transactions` by `event` (`begun`, `committed`,
 `rolledback`, `reaped`, `refused`). The Blazor host publishes `wdc.cube.applications.live` on `Wdc.Cube.Blazor`.
-Read them with `dotnet-counters`, or export them with OpenTelemetry (`AddMeter(RestServerMetrics.MeterName)`).
+Read them with `dotnet-counters`, or export them with OpenTelemetry (`AddMeter(RestServerMetrics.MeterName)`), as
+[Running several instances](several-instances.md#metrics) shows.
 
 ## 9. Test the server
 

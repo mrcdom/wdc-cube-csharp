@@ -1,0 +1,4 @@
+# The instances push their metrics over OTLP (/api/v1/otlp/v1/metrics, enabled by --web.enable-otlp-receiver):
+# nothing to scrape. Each series carries the service name as "job" and the instance id as "instance".
+global:
+  evaluation_interval: 15s

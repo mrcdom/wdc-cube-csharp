@@ -34,18 +34,23 @@ public sealed class LoginThrottle(ISecurityStore store, TimeProvider time)
         var now = time.GetUtcNow();
         if (failures.Last >= now - ForgetAfter && WaitAfter(failures.Count) is { } wait && failures.Last + wait > now)
         {
+            ShoppingMetrics.SignIn(ShoppingMetrics.Throttled);
             throw new TooManyRequestsException(Refused, failures.Last + wait - now);
         }
     }
 
     public Task Failed(string userName, CancellationToken cancellationToken = default)
     {
+        ShoppingMetrics.SignIn(ShoppingMetrics.Refused);
         var now = time.GetUtcNow();
         return store.RecordFailure(Key(userName), now, now - ForgetAfter, cancellationToken);
     }
 
-    public Task Succeeded(string userName, CancellationToken cancellationToken = default) =>
-        store.ClearFailures(Key(userName), cancellationToken);
+    public Task Succeeded(string userName, CancellationToken cancellationToken = default)
+    {
+        ShoppingMetrics.SignIn(ShoppingMetrics.Ok);
+        return store.ClearFailures(Key(userName), cancellationToken);
+    }
 
     /// <summary>How long a user name waits after <paramref name="failures"/> in a row; none while they are free.</summary>
     public TimeSpan? WaitAfter(int failures)

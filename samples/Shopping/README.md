@@ -11,6 +11,7 @@ already made (an errata, kept with who, when and why).
 | `Shopping.Presentation` | Places, keys, presenters, scopes. No view, no database. |
 | `Shopping.Presentation.Tests` | The presentation without UI, against a real database in a throwaway schema. |
 | `Shopping.Blazor.Views` | The Blazor views, pages and CSS, shared by the two Blazor hosts. |
+| `Shopping.Hosting` | Health checks (`/health/live`, `/health/ready`) and metrics over OTLP, for both web hosts. |
 | `Shopping.Blazor` | The interactive-server host (one application per circuit), image endpoint, sealed addresses. |
 | `Shopping.Wasm` | The WebAssembly host: the presentation in the browser, data and login through `Shopping.Server`. |
 | `Shopping.Blazor.Tests` | The whole page on Blazor's renderer (bUnit) and the host in memory. |
@@ -65,6 +66,11 @@ dotnet run                     # or: dotnet run -- --server http://host:port   (
 
 No navigation bar on the desktop; Alt+←/→ walk back and forward. In production the server needs `Shopping:Jwt:Key` (Base64, 32 bytes or
 more); in Development a random key is used and the tokens die with the process.
+
+### Several instances
+
+[`docker/`](docker/README.md) runs two instances of each web host behind nginx, with PostgreSQL and Prometheus, and
+a check of the whole setup from outside.
 
 The Shopping presentation tests run twice: on the database and through the server (`*HttpTests`), unchanged.
 

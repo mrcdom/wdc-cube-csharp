@@ -8,5 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="../Shopping.Blazor.Views/Shopping.Blazor.Views.csproj" />
     <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
+    <ProjectReference Include="../Shopping.Hosting/Shopping.Hosting.csproj" />
   </ItemGroup>
 </Project>

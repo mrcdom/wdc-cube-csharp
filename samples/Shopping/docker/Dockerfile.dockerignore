@@ -1,0 +1,17 @@
+# Only the sources the two hosts build from: no build output, history, local notes or settings.
+**/bin/
+**/obj/
+.git/
+.github/
+.claude/
+.vs/
+.vscode/
+.idea/
+artifacts/
+docs/
+tests/
+scripts/
+samples/*/docker/
+samples/**/*.Tests/
+**/.env
+**/*.local.*

@@ -100,6 +100,10 @@ public sealed class ShoppingStore : IAsyncDisposable
         return created;
     }
 
+    /// <summary>A round trip to the database: throws when it does not answer.</summary>
+    public Task Ping(CancellationToken cancellationToken = default) =>
+        Database.Scalar(Statement("SELECT 1"), cancellationToken);
+
     /// <summary>Drops every table and the schema (tests).</summary>
     public async Task Drop(CancellationToken cancellationToken = default)
     {

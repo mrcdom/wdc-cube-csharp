@@ -39,6 +39,7 @@ How to do a given task, step by step.
 | [REST](guides/rest.md) | Serving repositories and transactions over HTTP, and calling them. |
 | [Roles and rules](guides/roles-and-rules.md) | Writing the policy of an entity: who does what, and what reaches whom. |
 | [Sealed addresses](guides/sealed-addresses.md) | Encrypting the addresses, with a key per user. |
+| [Several instances](guides/several-instances.md) | What instances share, routing, health checks and metrics, with a compose setup. |
 | [Trimming and AOT](guides/trimming-and-aot.md) | What the libraries guarantee and what an application must do. |
 
 ## Reference

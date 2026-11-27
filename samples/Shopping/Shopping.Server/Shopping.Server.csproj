@@ -3,6 +3,7 @@
        for clients that run the presentation themselves (the Avalonia desktop app). -->
   <ItemGroup>
     <ProjectReference Include="../Shopping.Persistence/Shopping.Persistence.csproj" />
+    <ProjectReference Include="../Shopping.Hosting/Shopping.Hosting.csproj" />
     <ProjectReference Include="../../../src/Wdc.Rest.Server/Wdc.Rest.Server.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>

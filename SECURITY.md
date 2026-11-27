@@ -22,7 +22,8 @@ to make one of them worse than described.
 
 - **Shopping, per-address limit of the login routes:** counted in the memory of each instance, by the client address
   the server sees. Behind a proxy that address is the proxy's: let the proxy limit (and set
-  `Shopping:Auth:RequestsPerMinute` to 0), or configure forwarded headers. The limit on failed sign-ins per user name is
+  `Shopping:Auth:RequestsPerMinute` to 0, as the compose setup in `samples/Shopping/docker` does), or configure
+  forwarded headers. The limit on failed sign-ins per user name is
   in the database and holds across instances.
 - **Shopping, data protection keys:** the Blazor Server host keeps its key ring in the database without an XML
   encryptor, so whoever reads that table can read the session storage of the browsers.

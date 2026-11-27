@@ -3,6 +3,7 @@ using Shopping.Blazor.Components;
 using Shopping.Blazor.Infra;
 using Shopping.Blazor.Views;
 using Shopping.Domain.Security;
+using Shopping.Hosting;
 using Shopping.Persistence;
 using Shopping.Presentation.Infra;
 using Wdc.Cube.Blazor;
@@ -38,6 +39,7 @@ builder.Services.AddScoped<IAuthentication>(sp => new LocalAuthentication(store.
 builder.Services.AddDataProtection().SetApplicationName("wdc-shopping")
     .AddKeyManagementOptions(o => o.XmlRepository = new ShoppingKeyRing(store.Security));
 builder.Services.AddCubeViews(ViewCatalog.Register);
+builder.AddShoppingOperations(store, CubeBlazorMetrics.MeterName);
 
 var app = builder.Build();
 
@@ -51,6 +53,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/error", createScopeForErrors: true);
 }
 
+app.MapShoppingHealth();
 app.UseAntiforgery();
 app.MapStaticAssets();
 
