@@ -42,7 +42,9 @@ Each presenter has a `ScopeUpdateManager` (its `UpdateManager`) that collects th
 
 - The presenter's own scope is taken by its manager at construction.
 - A scope assigned to an observed property, or added to a `ScopeList`, that has no owner yet is **adopted** by the
-  same manager, now or as soon as the holder gets one.
+  same manager, now or as soon as the holder gets one. This is how a **segment** works: a piece of the screen with
+  no presenter of its own (see [segments](architecture.md#segments) for when to use one instead of a child
+  presenter).
 - A scope that already belongs to another presenter (one published through a slot) keeps its owner; the holder only
   keeps the reference. The child presenter redraws its own scope; the holder redraws only when the reference changes.
 - A presenter, the application presenter included, marks its root scope dirty when it is constructed, for the first

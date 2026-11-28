@@ -176,6 +176,44 @@ private Task OnBack() => new HomeKeys(App).Flip();
 Child presenters without a place (`Presenter<TApp, TScope>`) are created by their owner, usually during
 `initialization`, and the owner calls their `Release()` from its own.
 
+### Segments
+
+A piece of a screen does not need a presenter of its own. A **segment** is a smaller scope that the owner creates,
+fills and binds to its own actions, then places in an observed property or a `ScopeList` of its scope. The owner's
+update manager adopts it (see [the update cycle](update-cycle.md#child-scopes-and-ownership)): a change to the
+segment redraws only its view, and the segment leaves the screen when it leaves the property or the list.
+
+```csharp
+// CartPresenter: one segment per cart line, bound to the cart's actions.
+private CartLineScope NewRow(long productId) => new()
+{
+    ProductId = productId,
+    OnChangeQuantity = Action<int>(quantity => OnChangeQuantity(productId, quantity)),
+    OnRemove = Action(() => OnRemove(productId)),
+};
+```
+
+`Refresh` reuses the scope of a line that stays, creates the new ones with `NewRow`, fills their fields and hands the
+result to `Scope.Lines.Assign`, which adopts the new scopes.
+
+The two forms render the same way; they differ in organization and lifecycle. Choose by what the piece does:
+
+| | Segment | Child presenter |
+|---|---|---|
+| Types | the scope | scope and presenter |
+| Lifecycle | none: off the property, off the screen | the owner calls `Release()` |
+| Actions and navigation | the owner's, bound in the scope | its own; navigation through callbacks the owner passes |
+| Derived state, action failures | the owner's `OnBeforeScopeUpdate` and `OnActionFailure` | its own |
+
+- **A segment by default**: a list row, or a panel that only shows what its owner loads and whose actions the owner
+  handles.
+- **A child presenter** when the piece has state and asynchronous work of its own (loading, paging, a newer load
+  superseding an older one), or appears on more than one screen. Forgetting its `Release()` lets a pending load
+  write into a scope that is gone, so the owner releases it from its own `Release()`.
+
+In the Shopping sample, the cart lines are segments; the products and purchases panels of the home screen are child
+presenters: one loads the products, superseding an older load with a newer one, and the other pages the purchases.
+
 ## Scopes and scope slots
 
 A `Scope` is the rendering state of a presenter: observed properties the view reads, and action delegates the view
