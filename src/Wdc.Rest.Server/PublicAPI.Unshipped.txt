@@ -1,4 +1,5 @@
 #nullable enable
+Wdc.Rest.Server.RestServerOpenApiExtensions
 override Wdc.Rest.Server.RemoteTransactionStats.GetHashCode() -> int
 static Wdc.Rest.Server.RemoteTransactionRoutes.MapRemoteTransactions(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! routes, string! basePath = "/api/tx") -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!
 static Wdc.Rest.Server.RemoteTransactionRoutes.WireName(Wdc.Rest.Server.RemoteTransactionStatus status) -> string!
@@ -8,6 +9,7 @@ static Wdc.Rest.Server.RestHttp.ReadBody(Microsoft.AspNetCore.Http.HttpContext! 
 static Wdc.Rest.Server.RestHttp.Respond(Microsoft.AspNetCore.Http.HttpContext! context, System.Func<System.Threading.Tasks.Task<byte[]?>!>! handle) -> System.Threading.Tasks.Task!
 static Wdc.Rest.Server.RestHttp.Write(Microsoft.AspNetCore.Http.HttpContext! context, System.Net.HttpStatusCode status, byte[]! body) -> System.Threading.Tasks.Task!
 static Wdc.Rest.Server.RestHttp.WriteError(Microsoft.AspNetCore.Http.HttpContext! context, System.Exception! error) -> System.Threading.Tasks.Task!
+static Wdc.Rest.Server.RestServerOpenApiExtensions.AddCubeRest(this Microsoft.AspNetCore.OpenApi.OpenApiOptions! options) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 static Wdc.Rest.Server.RestServerOptions.DefaultOwner(Microsoft.AspNetCore.Http.HttpContext! context) -> string?
 static Wdc.Rest.Server.RestServerOptions.DefaultQuota(Microsoft.AspNetCore.Http.HttpContext! context) -> string?
 static Wdc.Rest.Server.RestServerServiceCollectionExtensions.AddCubeRest(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Wdc.Rest.Server.RestServerOptions!>? configure = null, bool remoteTransactions = true, System.Action<Wdc.Rest.Server.RemoteTransactionOptions!>? configureTransactions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

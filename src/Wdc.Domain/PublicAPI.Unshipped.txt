@@ -1,4 +1,15 @@
 #nullable enable
+Wdc.Domain.IEntityModel.Fields.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IFieldModel!>!
+Wdc.Domain.IEntityModel.Key.get -> Wdc.Domain.IFieldModel?
+Wdc.Domain.IFieldModel
+Wdc.Domain.IFieldModel.ChildModel.get -> Wdc.Domain.IEntityModel?
+Wdc.Domain.IFieldModel.InDefaultProjection.get -> bool
+Wdc.Domain.IFieldModel.IsKey.get -> bool
+Wdc.Domain.IFieldModel.Kind.get -> Wdc.Domain.FieldKind
+Wdc.Domain.IFieldModel.Name.get -> string!
+Wdc.Domain.IFieldModel.NewCriteria.get -> System.Func<Wdc.Domain.ICriteria!>?
+Wdc.Domain.IFieldModel.ScalarKind.get -> Wdc.Domain.IValueKind?
+Wdc.Domain.IValueKind.Choices.get -> System.Collections.Generic.IReadOnlyList<string!>?
 abstract Wdc.Domain.Criterion.IsSet.get -> bool
 abstract Wdc.Domain.Criterion.Predicates.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
 abstract Wdc.Domain.Criterion.Restrictions.get -> System.Collections.Generic.IReadOnlyList<Wdc.Domain.IPredicate!>!
@@ -22,10 +33,12 @@ const Wdc.Domain.Mark.Int64 = 1 -> long
 const Wdc.Domain.Mark.String = "~" -> string!
 const Wdc.Domain.TextCriterion<TOwner>.EscapeChar = '\\' -> char
 override Wdc.Domain.Actor.ToString() -> string!
+override Wdc.Domain.CollectionField<TEntity, TChild>.ChildModel.get -> Wdc.Domain.IEntityModel!
 override Wdc.Domain.CollectionField<TEntity, TChild>.Differs(TEntity! next, TEntity! previous) -> bool
 override Wdc.Domain.CollectionField<TEntity, TChild>.GetValue(TEntity! entity) -> object?
 override Wdc.Domain.CollectionField<TEntity, TChild>.HasValue(TEntity! entity) -> bool
 override Wdc.Domain.CollectionField<TEntity, TChild>.MarkOwnFields(TEntity! projection) -> void
+override Wdc.Domain.CollectionField<TEntity, TChild>.NewCriteria.get -> System.Func<Wdc.Domain.ICriteria!>?
 override Wdc.Domain.CollectionField<TEntity, TChild>.SetValue(TEntity! entity, object? value) -> void
 override Wdc.Domain.ComparableCriterion<TOwner, T>.And() -> Wdc.Domain.ComparableCriterion<TOwner!, T>!
 override Wdc.Domain.ComparableCriterion<TOwner, T>.Or() -> Wdc.Domain.ComparableCriterion<TOwner!, T>!
@@ -44,6 +57,7 @@ override Wdc.Domain.Page<T>.ToString() -> string!
 override Wdc.Domain.PolicyContext.Equals(object? obj) -> bool
 override Wdc.Domain.PolicyContext.GetHashCode() -> int
 override Wdc.Domain.PolicyContext.ToString() -> string!
+override Wdc.Domain.ReferenceField<TEntity, TChild>.ChildModel.get -> Wdc.Domain.IEntityModel!
 override Wdc.Domain.ReferenceField<TEntity, TChild>.Differs(TEntity! next, TEntity! previous) -> bool
 override Wdc.Domain.ReferenceField<TEntity, TChild>.GetValue(TEntity! entity) -> object?
 override Wdc.Domain.ReferenceField<TEntity, TChild>.HasValue(TEntity! entity) -> bool
@@ -109,7 +123,10 @@ virtual Wdc.Domain.Criteria<TSelf, TEntity>.OrderByName.get -> string?
 virtual Wdc.Domain.Criteria<TSelf, TEntity>.SetOrderByName(string? name) -> void
 virtual Wdc.Domain.Criterion<TOwner, T>.And() -> Wdc.Domain.Criterion<TOwner!, T>!
 virtual Wdc.Domain.Criterion<TOwner, T>.Or() -> Wdc.Domain.Criterion<TOwner!, T>!
+virtual Wdc.Domain.FieldModel<TEntity>.ChildModel.get -> Wdc.Domain.IEntityModel?
+virtual Wdc.Domain.FieldModel<TEntity>.NewCriteria.get -> System.Func<Wdc.Domain.ICriteria!>?
 virtual Wdc.Domain.FieldModel<TEntity>.ScalarKind.get -> Wdc.Domain.IValueKind?
+virtual Wdc.Domain.ValueKind<T>.Choices.get -> System.Collections.Generic.IReadOnlyList<string!>?
 virtual Wdc.Domain.ValueKind<T>.ToDatabase(T value) -> object?
 Wdc.Domain.AccessDeniedException
 Wdc.Domain.AccessDeniedException.AccessDeniedException() -> void
@@ -132,7 +149,6 @@ Wdc.Domain.CascadeGuard
 Wdc.Domain.CollectionField<TEntity, TChild>
 Wdc.Domain.CollectionField<TEntity, TChild>.Get.get -> System.Func<TEntity!, System.Collections.Generic.List<TChild!>?>!
 Wdc.Domain.CollectionField<TEntity, TChild>.Model.get -> Wdc.Domain.EntityModel<TChild!>!
-Wdc.Domain.CollectionField<TEntity, TChild>.NewCriteria.get -> System.Func<Wdc.Domain.ICriteria!>?
 Wdc.Domain.CollectionField<TEntity, TChild>.Set.get -> System.Action<TEntity!, System.Collections.Generic.List<TChild!>?>!
 Wdc.Domain.ComparableCriterion<TOwner, T>
 Wdc.Domain.ComparableCriterion<TOwner, T>.Between(T start, T end) -> TOwner!

@@ -9,6 +9,9 @@ public interface IValueKind
 
     Type ClrType { get; }
 
+    /// <summary>The names an enum kind travels as, in the order of their values; <see langword="null"/> for any other kind.</summary>
+    IReadOnlyList<string>? Choices { get; }
+
     object? ToDatabaseObject(object? value);
 
     object? FromDatabaseObject(object? value);

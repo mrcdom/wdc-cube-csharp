@@ -45,16 +45,17 @@ public sealed class RepositoryRpc<TEntity, TCriteria, TKey>
     {
         ArgumentNullException.ThrowIfNull(routes);
         var group = routes.MapGroup(BasePath);
-        group.MapPost(RestNames.Count, c => Handle(c, false, Count));
-        group.MapPost(RestNames.Fetch, c => Handle(c, false, Fetch));
-        group.MapPost(RestNames.FetchPage, c => Handle(c, false, FetchPage));
-        group.MapPost(RestNames.FetchById, c => Handle(c, false, FetchById));
-        group.MapGet("{id}", c => Handle(c, false, FetchByRoute));
+        var shape = new RestRepositoryShape(Wire.Model, () => Wire.NewCriteria());
+        group.MapPost(RestNames.Count, c => Handle(c, false, Count)).WithMetadata(new RestRouteMetadata(RestRoute.Count, shape));
+        group.MapPost(RestNames.Fetch, c => Handle(c, false, Fetch)).WithMetadata(new RestRouteMetadata(RestRoute.Fetch, shape));
+        group.MapPost(RestNames.FetchPage, c => Handle(c, false, FetchPage)).WithMetadata(new RestRouteMetadata(RestRoute.FetchPage, shape));
+        group.MapPost(RestNames.FetchById, c => Handle(c, false, FetchById)).WithMetadata(new RestRouteMetadata(RestRoute.FetchById, shape));
+        group.MapGet("{id}", c => Handle(c, false, FetchByRoute)).WithMetadata(new RestRouteMetadata(RestRoute.FetchByRoute, shape));
         if (Writes)
         {
-            group.MapPost(RestNames.Insert, c => Handle(c, true, Insert));
-            group.MapPost(RestNames.Update, c => Handle(c, true, Update));
-            group.MapPost(RestNames.Delete, c => Handle(c, true, Delete));
+            group.MapPost(RestNames.Insert, c => Handle(c, true, Insert)).WithMetadata(new RestRouteMetadata(RestRoute.Insert, shape));
+            group.MapPost(RestNames.Update, c => Handle(c, true, Update)).WithMetadata(new RestRouteMetadata(RestRoute.Update, shape));
+            group.MapPost(RestNames.Delete, c => Handle(c, true, Delete)).WithMetadata(new RestRouteMetadata(RestRoute.Delete, shape));
         }
 
         return group;

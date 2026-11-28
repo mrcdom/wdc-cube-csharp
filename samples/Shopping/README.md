@@ -50,6 +50,9 @@ dotnet run -f net11.0          # serves the WebAssembly app at http://localhost:
 
 Addresses stay plain there: WebAssembly has no AES, so the sealed-address codec is off.
 
+In Development, the server also describes its API: the OpenAPI document at `/openapi/v1.json` and a page to read and
+try it at `/scalar` (sign in through `/api/auth/login` first, and paste the access token as the bearer token).
+
 ### Sealed addresses
 
 After login, the Blazor Server app seals the addresses with a key per user (`home/product?_e=…`), derived from

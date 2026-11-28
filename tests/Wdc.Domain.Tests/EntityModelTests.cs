@@ -52,4 +52,32 @@ public sealed class EntityModelTests
             .Key(ValueKinds.Int64, "id", p => p.Id, (p, v) => p.Id = v)
             .Key(ValueKinds.String, "name", p => p.Name, (p, v) => p.Name = v));
     }
+
+    [Fact]
+    public void UntypedView_DescribesFields_ChildModels_AndChildCriteria()
+    {
+        IEntityModel product = Product.Model;
+
+        Assert.Equal("id", product.Key!.Name);
+        Assert.Same(ValueKinds.Int64, product.Key.ScalarKind);
+        var image = product.Fields.Single(f => f.Name == "image");
+        Assert.False(image.InDefaultProjection);
+        Assert.Null(image.ChildModel);
+
+        var items = product.Fields.Single(f => f.Name == "items");
+        Assert.Equal(FieldKind.Collection, items.Kind);
+        Assert.Same(PurchaseItem.Model, items.ChildModel);
+        Assert.IsType<PurchaseItemCriteria>(items.NewCriteria!());
+
+        var purchase = ((IEntityModel)PurchaseItem.Model).Fields.Single(f => f.Name == "purchase");
+        Assert.Same(Purchase.Model, purchase.ChildModel);
+        Assert.Null(purchase.NewCriteria);
+    }
+
+    [Fact]
+    public void Choices_NamesOfAnEnumKind_NullForOthers()
+    {
+        Assert.Equal(Enum.GetNames<Role>(), ValueKinds.Enum<Role>().Choices);
+        Assert.Null(ValueKinds.String.Choices);
+    }
 }

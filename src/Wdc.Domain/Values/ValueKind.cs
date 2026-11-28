@@ -18,6 +18,9 @@ public abstract class ValueKind<T> : IValueKind
     /// </summary>
     public abstract T Marker { get; }
 
+    /// <summary>The names an enum kind travels as, in the order of their values; <see langword="null"/> for any other kind.</summary>
+    public virtual IReadOnlyList<string>? Choices => null;
+
     /// <summary>Whether <paramref name="value"/> is absent.</summary>
     public static bool IsNull(T value) => value is null;
 
