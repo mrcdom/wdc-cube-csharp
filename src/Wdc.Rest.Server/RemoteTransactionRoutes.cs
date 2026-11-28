@@ -27,12 +27,14 @@ public static class RemoteTransactionRoutes
                 w.WriteString("txId", id);
                 w.WriteEndObject();
             });
-        }));
+        })).WithMetadata(new RestRouteMetadata(RestRoute.TransactionBegin));
         group.MapPost("commit", context => RestHttp.Respond(context, async () =>
-            StatusBody(await Coordinator(context).Commit(Id(context), Owner(context), context.RequestAborted))));
+            StatusBody(await Coordinator(context).Commit(Id(context), Owner(context), context.RequestAborted))))
+            .WithMetadata(new RestRouteMetadata(RestRoute.TransactionCommit));
         group.MapPost("rollback", context => RestHttp.Respond(context, async () =>
-            StatusBody(await Coordinator(context).Rollback(Id(context), Owner(context), context.RequestAborted))));
-        group.MapGet("status", Status);
+            StatusBody(await Coordinator(context).Rollback(Id(context), Owner(context), context.RequestAborted))))
+            .WithMetadata(new RestRouteMetadata(RestRoute.TransactionRollback));
+        group.MapGet("status", Status).WithMetadata(new RestRouteMetadata(RestRoute.TransactionStatus));
         return group;
     }
 

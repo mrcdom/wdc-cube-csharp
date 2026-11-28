@@ -264,6 +264,8 @@ public static class ValueKinds
 
         public override string Name => typeof(TEnum).Name;
 
+        public override IReadOnlyList<string> Choices { get; } = System.Enum.GetNames<TEnum>();
+
         // A defined member, so the marker reads back as marked (an enum may have no member with value 0).
         public override TEnum? Marker { get; } = System.Enum.GetValues<TEnum>() is [var first, ..] ? first : default(TEnum);
 

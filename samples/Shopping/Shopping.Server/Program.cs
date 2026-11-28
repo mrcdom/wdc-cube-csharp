@@ -15,6 +15,7 @@ using var startupLogs = LoggerFactory.Create(l => l.AddConsole());
 var auth = ShoppingApi.AuthOptions(builder.Configuration, builder.Environment, startupLogs.CreateLogger("Shopping.Server"));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddShoppingApi(store, auth);
+builder.Services.AddShoppingOpenApi();
 builder.AddShoppingOperations(store, RestServerMetrics.MeterName);
 
 var app = builder.Build();
@@ -29,6 +30,7 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 app.MapShoppingHealth();
 app.MapShoppingApi();
+app.MapShoppingOpenApi();
 app.MapFallbackToFile("index.html");
 
 await app.RunAsync();

@@ -28,6 +28,8 @@ The first version, not yet published.
 - **`Wdc.Rest`, `.Server`, `.Client`:** repositories and remote transactions over HTTP, with the wire of the Kotlin
   implementation. Security and cache headers on every answer, `Server-Timing`, a pluggable error map, 429 with
   `Retry-After` (`TooManyRequestsException`, also for ASP.NET's rate limiter), and metrics of the remote transactions.
+  The OpenAPI description of the routes (`AddOpenApi(o => o.AddCubeRest())`), with the schemas of the entities,
+  projections, criteria and answers read from the models; `IFieldModel` and `IValueKind.Choices` in `Wdc.Domain`.
 - **`Wdc.Rest.Testing`:** a REST server in memory for tests, its client and raw requests.
 - **`Wdc.Cube.Templates`:** `dotnet new cube-blazor`, a list of tasks with its detail on Blazor Server and
   PostgreSQL, with tests of the presenters and of the page; `--Framework net10.0|net11.0`.

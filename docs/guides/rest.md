@@ -17,7 +17,7 @@ The examples come from the Shopping sample: the server in `samples/Shopping/Shop
 |---|---|
 | Server (ASP.NET Core) | `Wdc.Rest.Server`, your persistence project, `Microsoft.AspNetCore.Authentication.JwtBearer` for tokens |
 | Client (WebAssembly, desktop, tests) | `Wdc.Rest.Client`, your domain project |
-| Tests of the server | `Wdc.Rest.Testing` (see [section 9](#9-test-the-server)) |
+| Tests of the server | `Wdc.Rest.Testing` (see [section 10](#10-test-the-server)) |
 
 Both sides reference `Wdc.Rest` (through those packages) and the **same domain project**: the entity models and
 criteria are what encode and decode the bodies, so the client needs nothing else to talk to the server.
@@ -339,7 +339,42 @@ The coordinator publishes its numbers on the meter `Wdc.Rest.Server` (`RestServe
 Read them with `dotnet-counters`, or export them with OpenTelemetry (`AddMeter(RestServerMetrics.MeterName)`), as
 [Running several instances](several-instances.md#metrics) shows.
 
-## 9. Test the server
+## 9. Describe the API (OpenAPI)
+
+`AddCubeRest()` on the options of ASP.NET's `AddOpenApi` adds to the document every route of each
+`RepositoryRpc` and of `MapRemoteTransactions`, at the path it is served (a group's prefix included), with schemas
+read from the entity models and criteria:
+
+- the entity (every field nullable; a reference is the child entity, a collection its list) and its projection (a
+  collection as one shape or as the envelope with `where`, the child's criteria);
+- the criteria: per value kind, the field object (`or`, `p`, `o`, `v`) with the operators that kind accepts
+  (`LIKE` and `ILIKE` only on text), or a bare value; `orderBy` as the list of accepted names;
+- the query (the criteria with `projection`, `offset`, `limit`, `page` and `pageSize`), the bodies of `fetch-by-id`
+  and `insert`, the answers (`items`, `totalItems`, `count`, `success`, `id`) and `{"error":…}` for every error;
+- the headers `X-Tx-Id` and `X-Client-Id`.
+
+```csharp
+builder.Services.AddOpenApi(o => o.AddCubeRest());
+...
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();                 // /openapi/v1.json
+    app.MapScalarApiReference();      // /scalar, from the Scalar.AspNetCore package
+}
+```
+
+- **Reference `Microsoft.AspNetCore.OpenApi` in the host** that calls `AddOpenApi`, as `dotnet new webapi` does,
+  even though `Wdc.Rest.Server` depends on it: the dependency brings the library, but its source generator and the
+  build settings the generator needs come only with a reference of your own.
+- The document is the one ASP.NET builds, so the host's own endpoints stay in it. A read-only repository
+  (`Writes = false`) shows no write routes; `.ExcludeFromDescription()` on the group that `Map` returns leaves a
+  repository out.
+- Authentication is the host's: add its security scheme with a transformer of your own. The Shopping server
+  (`ShoppingOpenApi`) declares its bearer token and serves the document and the page in development only.
+- Everything is read from the models, with no reflection; on `net10.0` the document is OpenAPI 3.1, on `net11.0`
+  3.2.
+
+## 10. Test the server
 
 `Wdc.Rest.Testing` runs the server in memory, with no socket: the same services, middleware and routes as
 `Program.cs`, then a `RestClient` of it, or raw requests to check the wire.
@@ -384,6 +419,8 @@ Assert.Equal("no-store", answer.Header("Cache-Control"));
 - [ ] Each `RemoteRepository` uses the same base path, model and criteria as its `RepositoryRpc`.
 - [ ] The signing key and the connection string come from configuration or a secret store.
 - [ ] The rate limiter, if any, answers with `RestRateLimiting.OnRejected`.
+- [ ] The OpenAPI document and its page, if any, are served only where they should be (development, or behind
+  authentication).
 
 ## See also
 

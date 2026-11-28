@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- ASP.NET Core minimal APIs for the REST contract: repository routes, per-request and remote transactions. -->
   <PropertyGroup>
-    <Description>Cube REST server: repository RPC, per-request transactions and remote transactions over ASP.NET Core.</Description>
+    <Description>Cube REST server: repository RPC, per-request transactions and remote transactions over ASP.NET Core, with their OpenAPI description.</Description>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Wdc.Rest/Wdc.Rest.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>

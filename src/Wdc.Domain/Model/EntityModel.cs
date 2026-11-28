@@ -33,6 +33,10 @@ public sealed class EntityModel<TEntity> : IEntityModel
     /// <summary>The key field, when declared.</summary>
     public FieldModel<TEntity>? Key { get; }
 
+    IReadOnlyList<IFieldModel> IEntityModel.Fields => Fields;
+
+    IFieldModel? IEntityModel.Key => Key;
+
     /// <summary>A new, empty instance.</summary>
     public TEntity New() => _factory();
 

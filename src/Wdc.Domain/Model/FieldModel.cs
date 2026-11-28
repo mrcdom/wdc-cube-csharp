@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace Wdc.Domain;
 
 /// <summary>One field of an entity model.</summary>
-public abstract class FieldModel<TEntity>
+public abstract class FieldModel<TEntity> : IFieldModel
     where TEntity : class
 {
     protected FieldModel(string name, FieldKind kind, bool isKey, bool inDefault)
@@ -44,6 +44,12 @@ public abstract class FieldModel<TEntity>
 
     /// <summary>The value kind of a scalar field; <see langword="null"/> for references and collections.</summary>
     public virtual IValueKind? ScalarKind => null;
+
+    /// <summary>The model of the entity a reference or a collection holds; <see langword="null"/> for a scalar.</summary>
+    public virtual IEntityModel? ChildModel => null;
+
+    /// <summary>Creates the child's criteria of a collection that declares one, or <see langword="null"/>.</summary>
+    public virtual Func<ICriteria>? NewCriteria => null;
 
     /// <summary>Copies this field's mark into a write projection (nested shapes get their keys: see <see cref="EntityModel{TEntity}.WriteProjection"/>).</summary>
     internal virtual void CopyForWrite(TEntity from, TEntity to) => Copy(from, to);

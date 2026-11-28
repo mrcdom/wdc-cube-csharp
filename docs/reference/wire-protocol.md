@@ -658,3 +658,5 @@ It is harmless in mixed deployments: readers treat an omitted field and an expli
 - [Domain](../concepts/domain.md): entity models, projections, criteria.
 - [Transactions](../concepts/transactions.md) and [Protected repositories](../concepts/protected-repositories.md).
 - [History](../concepts/history.md): addresses and sealed addresses.
+- [Describe the API](../guides/rest.md#9-describe-the-api-openapi): the same contract as an OpenAPI document, built
+  from the server's models.

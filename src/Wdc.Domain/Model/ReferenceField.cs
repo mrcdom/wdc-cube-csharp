@@ -22,6 +22,8 @@ public sealed class ReferenceField<TEntity, TChild> : FieldModel<TEntity>
 
     public EntityModel<TChild> Model => _model.Value;
 
+    public override IEntityModel ChildModel => Model;
+
     public Func<TEntity, TChild?> Get { get; }
 
     public Action<TEntity, TChild?> Set { get; }

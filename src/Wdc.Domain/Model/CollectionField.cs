@@ -23,9 +23,11 @@ public sealed class CollectionField<TEntity, TChild> : FieldModel<TEntity>
     }
 
     /// <summary>Creates the child's criteria, to read a projection envelope that filters the collection.</summary>
-    public Func<ICriteria>? NewCriteria { get; }
+    public override Func<ICriteria>? NewCriteria { get; }
 
     public EntityModel<TChild> Model => _model.Value;
+
+    public override IEntityModel ChildModel => Model;
 
     public Func<TEntity, List<TChild>?> Get { get; }
 
